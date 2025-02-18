@@ -54,18 +54,16 @@ func tspbench(store *provider.ProviderStore, parallel int) {
 		<-tickets
 		taskQueue <- provider.NewAsyncTask(
 			context.Background(),
-			&wasimoff.Task_Request{
+			&wasimoff.Task_Wasip1_Request{
 				Info: &wasimoff.Task_Metadata{
 					Id: proto.String(fmt.Sprintf("benchmode/%d", i)),
 				},
-				Parameters: &wasimoff.Task_Request_Wasip1{
-					Wasip1: &wasimoff.Task_Wasip1_Params{
-						Binary: &binary,
-						Args:   args,
-					},
+				Params: &wasimoff.Task_Wasip1_Params{
+					Binary: &binary,
+					Args:   args,
 				},
 			},
-			&wasimoff.Task_Response{},
+			&wasimoff.Task_Wasip1_Response{},
 			doneChan,
 		)
 	}
@@ -89,7 +87,8 @@ func pytest(parallel int) {
 				if t.Response.GetError() != "" {
 					fmt.Printf("Pytest ERR: %s\n", t.Response.GetError())
 				} else {
-					fmt.Printf("Pytest: %s\n", prototext.Format(t.Response.GetPyodide().GetOk()))
+					r := t.Response.(*wasimoff.Task_Pyodide_Response)
+					fmt.Printf("Pytest: %s\n", prototext.Format(r.GetOk()))
 				}
 			}
 			tickets <- struct{}{}
@@ -101,18 +100,16 @@ func pytest(parallel int) {
 		<-tickets
 		taskQueue <- provider.NewAsyncTask(
 			context.Background(),
-			&wasimoff.Task_Request{
+			&wasimoff.Task_Pyodide_Request{
 				Info: &wasimoff.Task_Metadata{
 					Id: proto.String(fmt.Sprintf("pytest/%d", i)),
 				},
-				Parameters: &wasimoff.Task_Request_Pyodide{
-					Pyodide: &wasimoff.Task_Pyodide_Params{
-						Script:   proto.String("import numpy as np; mat = np.random.rand(5,5); print(mat); mat.mean()"),
-						Packages: []string{"numpy"},
-					},
+				Params: &wasimoff.Task_Pyodide_Params{
+					Script:   proto.String("import numpy as np; mat = np.random.rand(5,5); print(mat); mat.mean()"),
+					Packages: []string{"numpy"},
 				},
 			},
-			&wasimoff.Task_Response{},
+			&wasimoff.Task_Pyodide_Response{},
 			doneChan,
 		)
 	}

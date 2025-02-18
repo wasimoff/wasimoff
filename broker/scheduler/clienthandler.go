@@ -48,7 +48,7 @@ func ExecHandler(store *provider.ProviderStore, selector Scheduler, benchmode in
 	go Dispatcher(selector, taskQueue)
 
 	// TODO: remove me
-	// go pytest(4)
+	go pytest(4)
 
 	// maybe activate internal load generator
 	if benchmode > 0 {
@@ -157,17 +157,15 @@ func DispatchTasks(
 	for i, spec := range job.JobSpec.Tasks {
 
 		// create the request+response for remote procedure call
-		response := wasimoff.Task_Response{}
-		request := wasimoff.Task_Request{
+		response := wasimoff.Task_Wasip1_Response{}
+		request := wasimoff.Task_Wasip1_Request{
 			// common task metadata with index counter
 			Info: &wasimoff.Task_Metadata{
 				Id:        proto.String(fmt.Sprintf("%s/%d", job.JobID, i)),
 				Requester: &job.ClientAddr,
 			},
 			// inherit empty parameters from the parent job
-			Parameters: &wasimoff.Task_Request_Wasip1{
-				Wasip1: spec.InheritNil(job.JobSpec.Parent),
-			},
+			Params: spec.InheritNil(job.JobSpec.Parent),
 		}
 
 		// create the async task with the common done channel and queue it for dispatch
@@ -190,34 +188,34 @@ func DispatchTasks(
 
 	// collect the task responses
 	jobResponse := &wasimoff.Client_Job_Wasip1Response{
-		Tasks: make([]*wasimoff.Task_Wasip1_Result, len(pending)),
+		Tasks: make([]*wasimoff.Task_Wasip1_Response, len(pending)),
 	}
 	for i, task := range pending {
-		r := &wasimoff.Task_Wasip1_Result{}
+
 		// internal scheduling error
 		if task.Error != nil {
-			r.Result = &wasimoff.Task_Wasip1_Result_Error{
-				Error: task.Error.Error(),
+			jobResponse.Tasks[i] = &wasimoff.Task_Wasip1_Response{
+				Result: &wasimoff.Task_Wasip1_Response_Error{
+					Error: task.Error.Error(),
+				},
 			}
+			continue
 		}
-		// need to repack result type
-		switch result := task.Response.Result.(type) {
-		case *wasimoff.Task_Response_Error:
-			// error during task execution
-			r.Result = &wasimoff.Task_Wasip1_Result_Error{
-				Error: result.Error,
+
+		// cast the response type
+		r, ok := task.Response.(*wasimoff.Task_Wasip1_Response)
+		if !ok {
+			jobResponse.Tasks[i] = &wasimoff.Task_Wasip1_Response{
+				Result: &wasimoff.Task_Wasip1_Response_Error{
+					Error: "unexpected result type",
+				},
 			}
-		case *wasimoff.Task_Response_Wasip1:
-			// normal expected result
-			r.Result = result.Wasip1.Result
-		default:
-			// unexpected result type
-			log.Printf("DEBUG: unexpected result type: %s", protojson.Format(task.Response))
-			r.Result = &wasimoff.Task_Wasip1_Result_Error{
-				Error: "unexpected result type",
-			}
+			continue
 		}
+
+		// otherwise just pass it through
 		jobResponse.Tasks[i] = r
+
 	}
 
 	return jobResponse

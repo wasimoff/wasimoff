@@ -63,22 +63,12 @@ func (fs *FileStorage) ResolvePbFile(pbf *wasimoff.File) error {
 
 }
 
-func (fs *FileStorage) ResolveTaskFiles(request *wasimoff.Task_Request) error {
+func (fs *FileStorage) ResolveTaskFiles(request *wasimoff.Task_Wasip1_Request) error {
 	// collect errors for all tried files
 	errs := []error{}
-
-	switch p := request.Parameters.(type) {
-
-	case *wasimoff.Task_Request_Wasip1:
-		errs = append(errs, fs.ResolvePbFile(p.Wasip1.Binary))
-		errs = append(errs, fs.ResolvePbFile(p.Wasip1.Rootfs))
-
-	case *wasimoff.Task_Request_Pyodide:
-		// ok
-		// log.Fatalln("ResolveTaskFiles is not implemented for Pyodide yet")
-
-	}
-
+	p := request.GetParams()
+	errs = append(errs, fs.ResolvePbFile(p.Binary))
+	errs = append(errs, fs.ResolvePbFile(p.Rootfs))
 	// will be nil if there are no errs
 	return errors.Join(errs...)
 }

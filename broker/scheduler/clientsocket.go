@@ -35,6 +35,14 @@ func ClientSocketHandler(store *provider.ProviderStore) http.HandlerFunc {
 		job := fmt.Sprintf("websocket/%05d", jobSequence.Add(1))
 		requestSequence := uint64(0)
 
+		nextTaskInfo := func() *wasimoff.Task_Metadata {
+			requestSequence++
+			return &wasimoff.Task_Metadata{
+				Id:        proto.String(fmt.Sprintf("%s/%d", job, requestSequence)),
+				Requester: &addr,
+			}
+		}
+
 		// channel for finished requests
 		// TODO: limit task creation with an equally-sized ticket channel
 		done := make(chan *provider.AsyncTask, 32)
@@ -63,28 +71,31 @@ func ClientSocketHandler(store *provider.ProviderStore) http.HandlerFunc {
 				}
 				switch taskrequest := request.Request.(type) {
 
-				case *wasimoff.Task_Request:
-					requestSequence++
-
+				case *wasimoff.Task_Wasip1_Request:
 					// resolve any filenames to storage hashes
 					if ferr := store.Storage.ResolveTaskFiles(taskrequest); ferr != nil {
 						request.Respond(r.Context(), nil, ferr)
 						continue // handle next request
 					}
-
 					// assemble the task for internal dispatcher queue
-					taskrequest.Info = &wasimoff.Task_Metadata{
-						Id:        proto.String(fmt.Sprintf("%s/%d", job, requestSequence)),
-						Requester: &addr,
-					}
-					response := wasimoff.Task_Response{}
+					taskrequest.Info = nextTaskInfo()
+					response := wasimoff.Task_Wasip1_Response{}
+					taskctx := context.WithValue(r.Context(), ctxkeyRequest{}, request)
+					taskQueue <- provider.NewAsyncTask(taskctx, taskrequest, &response, done)
+					// log.Printf("Task submit: %s :: %#v\n", wreq.Info.TaskID(), wreq.Task.Args)
+					continue
+
+				case *wasimoff.Task_Pyodide_Request:
+					// assemble the task for internal dispatcher queue
+					taskrequest.Info = nextTaskInfo()
+					response := wasimoff.Task_Pyodide_Response{}
 					taskctx := context.WithValue(r.Context(), ctxkeyRequest{}, request)
 					taskQueue <- provider.NewAsyncTask(taskctx, taskrequest, &response, done)
 					// log.Printf("Task submit: %s :: %#v\n", wreq.Info.TaskID(), wreq.Task.Args)
 					continue
 
 				default: // unexpected message type
-					request.Respond(r.Context(), nil, fmt.Errorf("expecting only Task_Request messages on this socket"))
+					request.Respond(r.Context(), nil, fmt.Errorf("expecting only Task_*_Request messages on this socket"))
 					continue
 
 				}
@@ -98,7 +109,7 @@ func ClientSocketHandler(store *provider.ProviderStore) http.HandlerFunc {
 
 				// pass through both internal and response errors directly
 				request.Respond(r.Context(), task.Response, task.Error)
-				// log.Printf("Task respond: %s :: %#v\n", task.Args.Info.TaskID(), task.Args.Task.Args)
+				log.Printf("Task respond: %s :: %#v\n", task.Request.GetInfo().GetId(), prototext.Format(task.Response))
 
 			}
 		}

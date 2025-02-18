@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file proto/v1/messages.proto.
  */
 export const file_proto_v1_messages: GenFile = /*@__PURE__*/
-  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyL8CAoEVGFzaxo7CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkaRQoDUW9TEhAKCHByaW9yaXR5GAEgASgIEiwKCGRlYWRsaW5lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBokCgZDYW5jZWwSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJGtMBCgdSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEjEKBndhc2lwMRgKIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtc0gAEjMKB3B5b2RpZGUYCyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zSABCDAoKcGFyYW1ldGVyc0oECAMQChq9AQoIUmVzcG9uc2USKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESDwoFZXJyb3IYAiABKAlIABIxCgZ3YXNpcDEYCiABKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5SZXN1bHRIABIzCgdweW9kaWRlGAsgASgLMiAud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlJlc3VsdEgAQggKBnJlc3VsdEoECAMQChrLAgoGV2FzaXAxGowBCgZQYXJhbXMSIQoGYmluYXJ5GAEgASgLMhEud2FzaW1vZmYudjEuRmlsZRIMCgRhcmdzGAIgAygJEgwKBGVudnMYAyADKAkSDQoFc3RkaW4YBCABKAwSIQoGcm9vdGZzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRIRCglhcnRpZmFjdHMYBiADKAkaXgoGT3V0cHV0Eg4KBnN0YXR1cxgBIAEoBRIOCgZzdGRvdXQYAiABKAwSDgoGc3RkZXJyGAMgASgMEiQKCWFydGlmYWN0cxgEIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUaUgoGUmVzdWx0Eg8KBWVycm9yGAEgASgJSAASLQoCb2sYAiABKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5PdXRwdXRIAEIICgZyZXN1bHQa5QEKB1B5b2RpZGUaOgoGUGFyYW1zEg4KBnNjcmlwdBgBIAEoCRIQCghwYWNrYWdlcxgHIAMoCRIOCgZwaWNrbGUYCCABKAwaSQoGT3V0cHV0Eg4KBnBpY2tsZRgBIAEoDBIOCgZzdGRvdXQYAiABKAwSDgoGc3RkZXJyGAMgASgMEg8KB3ZlcnNpb24YBCABKAkaUwoGUmVzdWx0Eg8KBWVycm9yGAEgASgJSAASLgoCb2sYAiABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0IjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiFAoSRmlsZUxpc3RpbmdSZXF1ZXN0IiQKE0ZpbGVMaXN0aW5nUmVzcG9uc2USDQoFZmlsZXMYASADKAkiIAoQRmlsZVByb2JlUmVxdWVzdBIMCgRmaWxlGAEgASgJIh8KEUZpbGVQcm9iZVJlc3BvbnNlEgoKAm9rGAEgASgIIjYKEUZpbGVVcGxvYWRSZXF1ZXN0EiEKBnVwbG9hZBgBIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUiIQoSRmlsZVVwbG9hZFJlc3BvbnNlEgsKA2VychgBIAEoCSIjChNGaWxlRG93bmxvYWRSZXF1ZXN0EgwKBGZpbGUYASABKAkiSAoURmlsZURvd25sb2FkUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSKZAgoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRowCg1Qcm92aWRlckhlbGxvEgwKBG5hbWUYASABKAkSEQoJdXNlcmFnZW50GAIgASgJGjcKEVByb3ZpZGVyUmVzb3VyY2VzEhMKC2NvbmN1cnJlbmN5GAEgASgNEg0KBXRhc2tzGAIgASgNGiAKC0NsdXN0ZXJJbmZvEhEKCXByb3ZpZGVycxgBIAEoDRosCgpUaHJvdWdocHV0Eg8KB292ZXJhbGwYASABKAISDQoFeW91cnMYAiABKAIaMgoQRmlsZVN5c3RlbVVwZGF0ZRINCgVhZGRlZBgBIAMoCRIPCgdyZW1vdmVkGAIgAygJIpsDCgZDbGllbnQakAMKA0pvYhpwCg1XYXNpcDFSZXF1ZXN0Ei8KBnBhcmVudBgBIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxIuCgV0YXNrcxgCIAMoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxpPCg5XYXNpcDFSZXNwb25zZRINCgVlcnJvchgBIAEoCRIuCgV0YXNrcxgCIAMoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3VsdBpzCg5QeW9kaWRlUmVxdWVzdBIwCgZwYXJlbnQYASABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zEi8KBXRhc2tzGAIgAygLMiAud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlBhcmFtcxpRCg9QeW9kaWRlUmVzcG9uc2USDQoFZXJyb3IYASABKAkSLwoFdGFza3MYAiADKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUmVzdWx0KlwKC1N1YnByb3RvY29sEgsKB1VOS05PV04QABIhCh13YXNpbW9mZl9wcm92aWRlcl92MV9wcm90b2J1ZhABEh0KGXdhc2ltb2ZmX3Byb3ZpZGVyX3YxX2pzb24QAjJbCghXYXNpbW9mZhJPCglSdW5XYXNpcDESHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5QYXJhbXMaHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5SZXN1bHQiAEIeWhx3YXNpbW9mZi9wcm90by92MTt3YXNpbW9mZnYxYghlZGl0aW9uc3DoBw", [file_google_protobuf_any, file_google_protobuf_timestamp]);
+  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyLVCAoEVGFzaxo7CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkaRQoDUW9TEhAKCHByaW9yaXR5GAEgASgIEiwKCGRlYWRsaW5lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBokCgZDYW5jZWwSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJGoIECgZXYXNpcDEaiAEKB1JlcXVlc3QSKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESIgoDcW9zGAIgASgLMhUud2FzaW1vZmYudjEuVGFzay5Rb1MSLwoGcGFyYW1zGAMgASgLMh8ud2FzaW1vZmYudjEuVGFzay5XYXNpcDEuUGFyYW1zGowBCgZQYXJhbXMSIQoGYmluYXJ5GAEgASgLMhEud2FzaW1vZmYudjEuRmlsZRIMCgRhcmdzGAIgAygJEgwKBGVudnMYAyADKAkSDQoFc3RkaW4YBCABKAwSIQoGcm9vdGZzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRIRCglhcnRpZmFjdHMYBiADKAkafgoIUmVzcG9uc2USKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESDwoFZXJyb3IYAiABKAlIABItCgJvaxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLk91dHB1dEgAQggKBnJlc3VsdBpeCgZPdXRwdXQSDgoGc3RhdHVzGAEgASgFEg4KBnN0ZG91dBgCIAEoDBIOCgZzdGRlcnIYAyABKAwSJAoJYXJ0aWZhY3RzGAQgASgLMhEud2FzaW1vZmYudjEuRmlsZRqdAwoHUHlvZGlkZRqJAQoHUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIwCgZwYXJhbXMYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGjoKBlBhcmFtcxIOCgZzY3JpcHQYASABKAkSEAoIcGFja2FnZXMYByADKAkSDgoGcGlja2xlGAggASgMGn8KCFJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg8KBWVycm9yGAIgASgJSAASLgoCb2sYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0GkkKBk91dHB1dBIOCgZwaWNrbGUYASABKAwSDgoGc3Rkb3V0GAIgASgMEg4KBnN0ZGVychgDIAEoDBIPCgd2ZXJzaW9uGAQgASgJIjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiFAoSRmlsZUxpc3RpbmdSZXF1ZXN0IiQKE0ZpbGVMaXN0aW5nUmVzcG9uc2USDQoFZmlsZXMYASADKAkiIAoQRmlsZVByb2JlUmVxdWVzdBIMCgRmaWxlGAEgASgJIh8KEUZpbGVQcm9iZVJlc3BvbnNlEgoKAm9rGAEgASgIIjYKEUZpbGVVcGxvYWRSZXF1ZXN0EiEKBnVwbG9hZBgBIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUiIQoSRmlsZVVwbG9hZFJlc3BvbnNlEgsKA2VychgBIAEoCSIjChNGaWxlRG93bmxvYWRSZXF1ZXN0EgwKBGZpbGUYASABKAkiSAoURmlsZURvd25sb2FkUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSKZAgoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRowCg1Qcm92aWRlckhlbGxvEgwKBG5hbWUYASABKAkSEQoJdXNlcmFnZW50GAIgASgJGjcKEVByb3ZpZGVyUmVzb3VyY2VzEhMKC2NvbmN1cnJlbmN5GAEgASgNEg0KBXRhc2tzGAIgASgNGiAKC0NsdXN0ZXJJbmZvEhEKCXByb3ZpZGVycxgBIAEoDRosCgpUaHJvdWdocHV0Eg8KB292ZXJhbGwYASABKAISDQoFeW91cnMYAiABKAIaMgoQRmlsZVN5c3RlbVVwZGF0ZRINCgVhZGRlZBgBIAMoCRIPCgdyZW1vdmVkGAIgAygJIp8DCgZDbGllbnQalAMKA0pvYhpwCg1XYXNpcDFSZXF1ZXN0Ei8KBnBhcmVudBgBIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxIuCgV0YXNrcxgCIAMoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxpRCg5XYXNpcDFSZXNwb25zZRINCgVlcnJvchgBIAEoCRIwCgV0YXNrcxgCIAMoCzIhLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlGnMKDlB5b2RpZGVSZXF1ZXN0EjAKBnBhcmVudBgBIAEoCzIgLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5QYXJhbXMSLwoFdGFza3MYAiADKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGlMKD1B5b2RpZGVSZXNwb25zZRINCgVlcnJvchgBIAEoCRIxCgV0YXNrcxgCIAMoCzIiLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXNwb25zZSISChBKb2JTcGVjaWZpY2F0aW9uKlwKC1N1YnByb3RvY29sEgsKB1VOS05PV04QABIhCh13YXNpbW9mZl9wcm92aWRlcl92MV9wcm90b2J1ZhABEh0KGXdhc2ltb2ZmX3Byb3ZpZGVyX3YxX2pzb24QAjK1AQoIV2FzaW1vZmYSUgoJUnVuV2FzaXAxEiAud2FzaW1vZmYudjEuVGFzay5XYXNpcDEuUmVxdWVzdBohLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlIgASVQoKUnVuUHlvZGlkZRIhLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXF1ZXN0GiIud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlJlc3BvbnNlIgBCHlocd2FzaW1vZmYvcHJvdG8vdjE7d2FzaW1vZmZ2MWIIZWRpdGlvbnNw6Ac", [file_google_protobuf_any, file_google_protobuf_timestamp]);
 
 /**
  * Envelope is a generic message wrapper with a sequence counter and message type.
@@ -284,139 +284,6 @@ export const Task_CancelSchema: GenMessage<Task_Cancel, Task_CancelJson> = /*@__
   messageDesc(file_proto_v1_messages, 1, 2);
 
 /**
- * @generated from message wasimoff.v1.Task.Request
- */
-export type Task_Request = Message<"wasimoff.v1.Task.Request"> & {
-  /**
-   * "header"
-   *
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_Metadata;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
-   */
-  qos?: Task_QoS;
-
-  /**
-   * @generated from oneof wasimoff.v1.Task.Request.parameters
-   */
-  parameters: {
-    /**
-     * @generated from field: wasimoff.v1.Task.Wasip1.Params wasip1 = 10;
-     */
-    value: Task_Wasip1_Params;
-    case: "wasip1";
-  } | {
-    /**
-     * @generated from field: wasimoff.v1.Task.Pyodide.Params pyodide = 11;
-     */
-    value: Task_Pyodide_Params;
-    case: "pyodide";
-  } | { case: undefined; value?: undefined };
-};
-
-/**
- * JSON type for the message wasimoff.v1.Task.Request.
- */
-export type Task_RequestJson = {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_MetadataJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
-   */
-  qos?: Task_QoSJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Wasip1.Params wasip1 = 10;
-   */
-  wasip1?: Task_Wasip1_ParamsJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Pyodide.Params pyodide = 11;
-   */
-  pyodide?: Task_Pyodide_ParamsJson;
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Request.
- * Use `create(Task_RequestSchema)` to create a new message.
- */
-export const Task_RequestSchema: GenMessage<Task_Request, Task_RequestJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 3);
-
-/**
- * @generated from message wasimoff.v1.Task.Response
- */
-export type Task_Response = Message<"wasimoff.v1.Task.Response"> & {
-  /**
-   * "header"
-   *
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_Metadata;
-
-  /**
-   * @generated from oneof wasimoff.v1.Task.Response.result
-   */
-  result: {
-    /**
-     * @generated from field: string error = 2;
-     */
-    value: string;
-    case: "error";
-  } | {
-    /**
-     * @generated from field: wasimoff.v1.Task.Wasip1.Result wasip1 = 10;
-     */
-    value: Task_Wasip1_Result;
-    case: "wasip1";
-  } | {
-    /**
-     * @generated from field: wasimoff.v1.Task.Pyodide.Result pyodide = 11;
-     */
-    value: Task_Pyodide_Result;
-    case: "pyodide";
-  } | { case: undefined; value?: undefined };
-};
-
-/**
- * JSON type for the message wasimoff.v1.Task.Response.
- */
-export type Task_ResponseJson = {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_MetadataJson;
-
-  /**
-   * @generated from field: string error = 2;
-   */
-  error?: string;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Wasip1.Result wasip1 = 10;
-   */
-  wasip1?: Task_Wasip1_ResultJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Pyodide.Result pyodide = 11;
-   */
-  pyodide?: Task_Pyodide_ResultJson;
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Response.
- * Use `create(Task_ResponseSchema)` to create a new message.
- */
-export const Task_ResponseSchema: GenMessage<Task_Response, Task_ResponseJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 4);
-
-/**
  *  WebAssembly System Interface (WASI), preview1
  * ===============================================
  *
@@ -436,7 +303,56 @@ export type Task_Wasip1Json = {
  * Use `create(Task_Wasip1Schema)` to create a new message.
  */
 export const Task_Wasip1Schema: GenMessage<Task_Wasip1, Task_Wasip1Json> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 5);
+  messageDesc(file_proto_v1_messages, 1, 3);
+
+/**
+ * Offload a Wasip1 task.
+ *
+ * @generated from message wasimoff.v1.Task.Wasip1.Request
+ */
+export type Task_Wasip1_Request = Message<"wasimoff.v1.Task.Wasip1.Request"> & {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_Metadata;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
+   */
+  qos?: Task_QoS;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.Wasip1.Params params = 3;
+   */
+  params?: Task_Wasip1_Params;
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Task.Wasip1.Request.
+ */
+export type Task_Wasip1_RequestJson = {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_MetadataJson;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
+   */
+  qos?: Task_QoSJson;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.Wasip1.Params params = 3;
+   */
+  params?: Task_Wasip1_ParamsJson;
+};
+
+/**
+ * Describes the message wasimoff.v1.Task.Wasip1.Request.
+ * Use `create(Task_Wasip1_RequestSchema)` to create a new message.
+ */
+export const Task_Wasip1_RequestSchema: GenMessage<Task_Wasip1_Request, Task_Wasip1_RequestJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 1, 3, 0);
 
 /**
  * Contains necessary references and execution arguments to instantiate a single
@@ -516,7 +432,63 @@ export type Task_Wasip1_ParamsJson = {
  * Use `create(Task_Wasip1_ParamsSchema)` to create a new message.
  */
 export const Task_Wasip1_ParamsSchema: GenMessage<Task_Wasip1_Params, Task_Wasip1_ParamsJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 5, 0);
+  messageDesc(file_proto_v1_messages, 1, 3, 1);
+
+/**
+ * Wrap a Wasip1.Output in a result, which can be an Error or OK.
+ *
+ * @generated from message wasimoff.v1.Task.Wasip1.Response
+ */
+export type Task_Wasip1_Response = Message<"wasimoff.v1.Task.Wasip1.Response"> & {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_Metadata;
+
+  /**
+   * @generated from oneof wasimoff.v1.Task.Wasip1.Response.result
+   */
+  result: {
+    /**
+     * @generated from field: string error = 2;
+     */
+    value: string;
+    case: "error";
+  } | {
+    /**
+     * @generated from field: wasimoff.v1.Task.Wasip1.Output ok = 3;
+     */
+    value: Task_Wasip1_Output;
+    case: "ok";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Task.Wasip1.Response.
+ */
+export type Task_Wasip1_ResponseJson = {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_MetadataJson;
+
+  /**
+   * @generated from field: string error = 2;
+   */
+  error?: string;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.Wasip1.Output ok = 3;
+   */
+  ok?: Task_Wasip1_OutputJson;
+};
+
+/**
+ * Describes the message wasimoff.v1.Task.Wasip1.Response.
+ * Use `create(Task_Wasip1_ResponseSchema)` to create a new message.
+ */
+export const Task_Wasip1_ResponseSchema: GenMessage<Task_Wasip1_Response, Task_Wasip1_ResponseJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 1, 3, 2);
 
 /**
  * The result of an execution from a Wasip1.Params message. It should only be
@@ -576,53 +548,7 @@ export type Task_Wasip1_OutputJson = {
  * Use `create(Task_Wasip1_OutputSchema)` to create a new message.
  */
 export const Task_Wasip1_OutputSchema: GenMessage<Task_Wasip1_Output, Task_Wasip1_OutputJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 5, 1);
-
-/**
- * Wrap a Wasip1.Output in a Result, which can be an Error or OK.
- *
- * @generated from message wasimoff.v1.Task.Wasip1.Result
- */
-export type Task_Wasip1_Result = Message<"wasimoff.v1.Task.Wasip1.Result"> & {
-  /**
-   * @generated from oneof wasimoff.v1.Task.Wasip1.Result.result
-   */
-  result: {
-    /**
-     * @generated from field: string error = 1;
-     */
-    value: string;
-    case: "error";
-  } | {
-    /**
-     * @generated from field: wasimoff.v1.Task.Wasip1.Output ok = 2;
-     */
-    value: Task_Wasip1_Output;
-    case: "ok";
-  } | { case: undefined; value?: undefined };
-};
-
-/**
- * JSON type for the message wasimoff.v1.Task.Wasip1.Result.
- */
-export type Task_Wasip1_ResultJson = {
-  /**
-   * @generated from field: string error = 1;
-   */
-  error?: string;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Wasip1.Output ok = 2;
-   */
-  ok?: Task_Wasip1_OutputJson;
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Wasip1.Result.
- * Use `create(Task_Wasip1_ResultSchema)` to create a new message.
- */
-export const Task_Wasip1_ResultSchema: GenMessage<Task_Wasip1_Result, Task_Wasip1_ResultJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 5, 2);
+  messageDesc(file_proto_v1_messages, 1, 3, 3);
 
 /**
  *  Pyodide Python scripts
@@ -644,7 +570,56 @@ export type Task_PyodideJson = {
  * Use `create(Task_PyodideSchema)` to create a new message.
  */
 export const Task_PyodideSchema: GenMessage<Task_Pyodide, Task_PyodideJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 6);
+  messageDesc(file_proto_v1_messages, 1, 4);
+
+/**
+ * Offload a Pyodide task.
+ *
+ * @generated from message wasimoff.v1.Task.Pyodide.Request
+ */
+export type Task_Pyodide_Request = Message<"wasimoff.v1.Task.Pyodide.Request"> & {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_Metadata;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
+   */
+  qos?: Task_QoS;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.Pyodide.Params params = 3;
+   */
+  params?: Task_Pyodide_Params;
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Task.Pyodide.Request.
+ */
+export type Task_Pyodide_RequestJson = {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_MetadataJson;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
+   */
+  qos?: Task_QoSJson;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.Pyodide.Params params = 3;
+   */
+  params?: Task_Pyodide_ParamsJson;
+};
+
+/**
+ * Describes the message wasimoff.v1.Task.Pyodide.Request.
+ * Use `create(Task_Pyodide_RequestSchema)` to create a new message.
+ */
+export const Task_Pyodide_RequestSchema: GenMessage<Task_Pyodide_Request, Task_Pyodide_RequestJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 1, 4, 0);
 
 /**
  * @generated from message wasimoff.v1.Task.Pyodide.Params
@@ -697,7 +672,63 @@ export type Task_Pyodide_ParamsJson = {
  * Use `create(Task_Pyodide_ParamsSchema)` to create a new message.
  */
 export const Task_Pyodide_ParamsSchema: GenMessage<Task_Pyodide_Params, Task_Pyodide_ParamsJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 6, 0);
+  messageDesc(file_proto_v1_messages, 1, 4, 1);
+
+/**
+ * Wrap a Pyodide.Output in a result, which can be an Error or OK.
+ *
+ * @generated from message wasimoff.v1.Task.Pyodide.Response
+ */
+export type Task_Pyodide_Response = Message<"wasimoff.v1.Task.Pyodide.Response"> & {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_Metadata;
+
+  /**
+   * @generated from oneof wasimoff.v1.Task.Pyodide.Response.result
+   */
+  result: {
+    /**
+     * @generated from field: string error = 2;
+     */
+    value: string;
+    case: "error";
+  } | {
+    /**
+     * @generated from field: wasimoff.v1.Task.Pyodide.Output ok = 3;
+     */
+    value: Task_Pyodide_Output;
+    case: "ok";
+  } | { case: undefined; value?: undefined };
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Task.Pyodide.Response.
+ */
+export type Task_Pyodide_ResponseJson = {
+  /**
+   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
+   */
+  info?: Task_MetadataJson;
+
+  /**
+   * @generated from field: string error = 2;
+   */
+  error?: string;
+
+  /**
+   * @generated from field: wasimoff.v1.Task.Pyodide.Output ok = 3;
+   */
+  ok?: Task_Pyodide_OutputJson;
+};
+
+/**
+ * Describes the message wasimoff.v1.Task.Pyodide.Response.
+ * Use `create(Task_Pyodide_ResponseSchema)` to create a new message.
+ */
+export const Task_Pyodide_ResponseSchema: GenMessage<Task_Pyodide_Response, Task_Pyodide_ResponseJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 1, 4, 2);
 
 /**
  * @generated from message wasimoff.v1.Task.Pyodide.Output
@@ -756,53 +787,7 @@ export type Task_Pyodide_OutputJson = {
  * Use `create(Task_Pyodide_OutputSchema)` to create a new message.
  */
 export const Task_Pyodide_OutputSchema: GenMessage<Task_Pyodide_Output, Task_Pyodide_OutputJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 6, 1);
-
-/**
- * Wrap a Pyodide.Output in a Result, which can be an Error or OK.
- *
- * @generated from message wasimoff.v1.Task.Pyodide.Result
- */
-export type Task_Pyodide_Result = Message<"wasimoff.v1.Task.Pyodide.Result"> & {
-  /**
-   * @generated from oneof wasimoff.v1.Task.Pyodide.Result.result
-   */
-  result: {
-    /**
-     * @generated from field: string error = 1;
-     */
-    value: string;
-    case: "error";
-  } | {
-    /**
-     * @generated from field: wasimoff.v1.Task.Pyodide.Output ok = 2;
-     */
-    value: Task_Pyodide_Output;
-    case: "ok";
-  } | { case: undefined; value?: undefined };
-};
-
-/**
- * JSON type for the message wasimoff.v1.Task.Pyodide.Result.
- */
-export type Task_Pyodide_ResultJson = {
-  /**
-   * @generated from field: string error = 1;
-   */
-  error?: string;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Pyodide.Output ok = 2;
-   */
-  ok?: Task_Pyodide_OutputJson;
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Pyodide.Result.
- * Use `create(Task_Pyodide_ResultSchema)` to create a new message.
- */
-export const Task_Pyodide_ResultSchema: GenMessage<Task_Pyodide_Result, Task_Pyodide_ResultJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 6, 2);
+  messageDesc(file_proto_v1_messages, 1, 4, 3);
 
 /**
  * File is a file reference with optional mime-type. The ref could be a plain
@@ -1428,9 +1413,9 @@ export type Client_Job_Wasip1Response = Message<"wasimoff.v1.Client.Job.Wasip1Re
   error: string;
 
   /**
-   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Result tasks = 2;
+   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Response tasks = 2;
    */
-  tasks: Task_Wasip1_Result[];
+  tasks: Task_Wasip1_Response[];
 };
 
 /**
@@ -1443,9 +1428,9 @@ export type Client_Job_Wasip1ResponseJson = {
   error?: string;
 
   /**
-   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Result tasks = 2;
+   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Response tasks = 2;
    */
-  tasks?: Task_Wasip1_ResultJson[];
+  tasks?: Task_Wasip1_ResponseJson[];
 };
 
 /**
@@ -1502,9 +1487,9 @@ export type Client_Job_PyodideResponse = Message<"wasimoff.v1.Client.Job.Pyodide
   error: string;
 
   /**
-   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Result tasks = 2;
+   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Response tasks = 2;
    */
-  tasks: Task_Pyodide_Result[];
+  tasks: Task_Pyodide_Response[];
 };
 
 /**
@@ -1517,9 +1502,9 @@ export type Client_Job_PyodideResponseJson = {
   error?: string;
 
   /**
-   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Result tasks = 2;
+   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Response tasks = 2;
    */
-  tasks?: Task_Pyodide_ResultJson[];
+  tasks?: Task_Pyodide_ResponseJson[];
 };
 
 /**
@@ -1528,6 +1513,28 @@ export type Client_Job_PyodideResponseJson = {
  */
 export const Client_Job_PyodideResponseSchema: GenMessage<Client_Job_PyodideResponse, Client_Job_PyodideResponseJson> = /*@__PURE__*/
   messageDesc(file_proto_v1_messages, 12, 0, 3);
+
+/**
+ * Job specifications are serialized versions of a group of tasks. These can
+ * be ingested by the Client CLI and sent to a Broker.
+ *
+ * @generated from message wasimoff.v1.JobSpecification
+ */
+export type JobSpecification = Message<"wasimoff.v1.JobSpecification"> & {
+};
+
+/**
+ * JSON type for the message wasimoff.v1.JobSpecification.
+ */
+export type JobSpecificationJson = {
+};
+
+/**
+ * Describes the message wasimoff.v1.JobSpecification.
+ * Use `create(JobSpecificationSchema)` to create a new message.
+ */
+export const JobSpecificationSchema: GenMessage<JobSpecification, JobSpecificationJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 13);
 
 /**
  * Subprotocol is used to identify the concrete encoding on the wire.
@@ -1567,16 +1574,30 @@ export const SubprotocolSchema: GenEnum<Subprotocol, SubprotocolJson> = /*@__PUR
   enumDesc(file_proto_v1_messages, 0);
 
 /**
+ * The Wasimoff service defines RPC interfaces for clients connecting to a Broker.
+ *
  * @generated from service wasimoff.v1.Wasimoff
  */
 export const Wasimoff: GenService<{
   /**
+   * offload a WebAssembly WASI preview 1 task
+   *
    * @generated from rpc wasimoff.v1.Wasimoff.RunWasip1
    */
   runWasip1: {
     methodKind: "unary";
-    input: typeof Task_Wasip1_ParamsSchema;
-    output: typeof Task_Wasip1_ResultSchema;
+    input: typeof Task_Wasip1_RequestSchema;
+    output: typeof Task_Wasip1_ResponseSchema;
+  },
+  /**
+   * offload a Python task in Pyodide
+   *
+   * @generated from rpc wasimoff.v1.Wasimoff.RunPyodide
+   */
+  runPyodide: {
+    methodKind: "unary";
+    input: typeof Task_Pyodide_RequestSchema;
+    output: typeof Task_Pyodide_ResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_proto_v1_messages, 0);

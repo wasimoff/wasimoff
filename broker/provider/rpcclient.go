@@ -21,7 +21,7 @@ func printdbg(format string, v ...any) {
 // ----- execute -----
 
 // run is the internal detail, which executes a task on the Provider without semaphore guards
-func (p *Provider) run(ctx context.Context, args *wasimoff.Task_Request, result *wasimoff.Task_Response) (err error) {
+func (p *Provider) run(ctx context.Context, args wasimoff.Task_Request, result wasimoff.Task_Response) (err error) {
 	addr := p.Get(Address)
 	task := args.GetInfo().GetId()
 	printdbg("scheduled >> %s >> %s", task, addr)
@@ -35,14 +35,14 @@ func (p *Provider) run(ctx context.Context, args *wasimoff.Task_Request, result 
 }
 
 // Run will run a task on a Provider synchronously, respecting limiter.
-func (p *Provider) Run(ctx context.Context, args *wasimoff.Task_Request, result *wasimoff.Task_Response) error {
+func (p *Provider) Run(ctx context.Context, args wasimoff.Task_Request, result wasimoff.Task_Response) error {
 	p.limiter.Acquire(context.TODO(), 1)
 	defer p.limiter.Release(1)
 	return p.run(ctx, args, result)
 }
 
 // TryRun will attempt to run a task on the Provider but fails when there is no capacity.
-func (p *Provider) TryRun(ctx context.Context, args *wasimoff.Task_Request, result *wasimoff.Task_Response) error {
+func (p *Provider) TryRun(ctx context.Context, args wasimoff.Task_Request, result wasimoff.Task_Response) error {
 	if ok := p.limiter.TryAcquire(1); !ok {
 		return fmt.Errorf("no free capacity")
 	}

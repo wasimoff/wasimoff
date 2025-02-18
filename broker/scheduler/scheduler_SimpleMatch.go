@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 	"wasimoff/broker/provider"
+	wasimoff "wasimoff/proto/v1"
 )
 
 // The SimpleMatchSelector is another simple implementation of a ProviderSelector,
@@ -20,7 +21,10 @@ func NewSimpleMatchSelector(store *provider.ProviderStore) SimpleMatchSelector {
 func (s *SimpleMatchSelector) selectCandidates(task *provider.AsyncTask) (candidates []*provider.Provider, err error) {
 
 	// create a list of needed files to check with the providers
-	requiredFiles := task.Request.GetRequiredFiles()
+	requiredFiles := []string{}
+	if r, ok := task.Request.(*wasimoff.Task_Wasip1_Request); ok {
+		requiredFiles = r.GetRequiredFiles()
+	}
 
 	// find suitable candidates with free slots
 	candidates = make([]*provider.Provider, 0, s.store.Size())

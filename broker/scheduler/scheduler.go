@@ -69,7 +69,7 @@ func Dispatcher(selector Scheduler, queue chan *provider.AsyncTask) {
 				}
 
 				// application errors should not be retried, as they are probably client's fault
-				if result.Response.GetError() != "" || result.Response.OK() {
+				if result.Response.GetError() != "" {
 					break
 				}
 
