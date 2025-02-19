@@ -29,4 +29,4 @@ deploy: broker
 buf:
 	buf generate
 bufwatch: buf
-	inotifywait -m -e close_write messages.proto | while read null; do make buf; done
+	inotifywait -m -e close_write proto/**/*.proto | while read null; do make buf; done
