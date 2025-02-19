@@ -1,6 +1,6 @@
 import numpy as np
 
-mat = np.random.rand(9000,9000)
+mat = np.random.rand(1000,1000)
 print("Matrix with", mat.size, "cells:\n", mat)
 
 mean = mat.mean()
@@ -15,4 +15,5 @@ print("exponentiated:\n", exp)
 #U, s, Vt = np.linalg.svd(mat)
 #print("decomposition:", s)
 
-#mat
+# return a small random array
+np.random.rand(3,3)
