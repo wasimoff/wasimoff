@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"slices"
-	"time"
 	"wasimoff/broker/net/transport"
 	wasimoff "wasimoff/proto/v1"
 )
@@ -62,17 +61,8 @@ func WebSocketHandler(store *ProviderStore, origins []string) http.HandlerFunc {
 
 // eventTransmitter loops to receive incoming messages or send updates to the provider
 func (p *Provider) eventTransmitter() {
-
-	// create a ticker to send regular updates
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
 	for {
 		select {
-
-		// send regular updates
-		case <-ticker.C:
-			// TODO, this branch was used for ClusterInfo originally
 
 		// reject incoming requests
 		case request, ok := <-p.messenger.Requests():
@@ -131,5 +121,4 @@ func (p *Provider) eventTransmitter() {
 
 		}
 	}
-
 }

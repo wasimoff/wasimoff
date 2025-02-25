@@ -56,8 +56,8 @@ func (p *Provider) TryRun(ctx context.Context, args wasimoff.Task_Request, resul
 func (p *Provider) ListFiles() (map[string]struct{}, error) {
 
 	// receive listing into a new struct
-	args := wasimoff.FileListingRequest{}
-	response := wasimoff.FileListingResponse{}
+	args := wasimoff.Filesystem_Listing_Request{}
+	response := wasimoff.Filesystem_Listing_Response{}
 	if err := p.messenger.RequestSync(context.TODO(), &args, &response); err != nil {
 		return nil, fmt.Errorf("provider.ListFiles failed: %w", err)
 	}
@@ -75,8 +75,8 @@ func (p *Provider) ListFiles() (map[string]struct{}, error) {
 func (p *Provider) ProbeFile(addr string) (has bool, err error) {
 
 	// receive response bool into a new struct
-	args := wasimoff.FileProbeRequest{File: &addr}
-	response := wasimoff.FileProbeResponse{}
+	args := wasimoff.Filesystem_Probe_Request{File: &addr}
+	response := wasimoff.Filesystem_Probe_Response{}
 	if err := p.messenger.RequestSync(context.TODO(), &args, &response); err != nil {
 		return false, fmt.Errorf("provider.ProbeFile failed: %w", err)
 	}
@@ -104,17 +104,17 @@ func (p *Provider) Upload(file *storage.File) (err error) {
 	}
 
 	// otherwise upload it
-	args := wasimoff.FileUploadRequest{Upload: &wasimoff.File{
+	args := wasimoff.Filesystem_Upload_Request{Upload: &wasimoff.File{
 		Ref:   &ref,
 		Media: &file.Media,
 		Blob:  file.Bytes,
 	}}
-	response := wasimoff.FileUploadResponse{}
+	response := wasimoff.Filesystem_Upload_Response{}
 	if err := p.messenger.RequestSync(context.TODO(), &args, &response); err != nil {
 		return fmt.Errorf("provider.Upload %q failed: %w", ref, err)
 	}
-	if response.GetErr() != "" {
-		return fmt.Errorf("provider.Upload %q failed at Provider: %s", ref, *response.Err)
+	if response.GetRef() != ref {
+		return fmt.Errorf("provider.Upload %q failed: Provider computed a different ref: %s", ref, response.GetRef())
 	}
 	return
 }
