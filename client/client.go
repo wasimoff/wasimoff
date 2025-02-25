@@ -297,10 +297,12 @@ func RunJobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) []*wasimoff.Task_
 			}
 		} else {
 			if resp, ok := call.Response.(*wasimoff.Task_Wasip1_Response); ok {
-				responses[i].Result = resp.Result
+				responses[i] = resp
 			} else {
-				responses[i].Result = &wasimoff.Task_Wasip1_Response_Error{
-					Error: "failed to parse the response as pb.Task_Response",
+				responses[i] = &wasimoff.Task_Wasip1_Response{
+					Result: &wasimoff.Task_Wasip1_Response_Error{
+						Error: "failed to parse the response as pb.Task_Response",
+					},
 				}
 			}
 		}
@@ -324,6 +326,11 @@ func RunPythonScript(script string) {
 		Params: &wasimoff.Task_Pyodide_Params{
 			Script: &script,
 		},
+	}
+	if verbose {
+		// dump as JSON
+		js, _ := protojson.Marshal(request)
+		log.Println("run:", string(js))
 	}
 
 	// open a websocket to the broker
