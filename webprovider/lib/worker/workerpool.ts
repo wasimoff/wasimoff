@@ -191,29 +191,4 @@ export class WasiWorkerPool {
 
   };
 
-
-  private async do<T>(work: (worker: typeof this.pool[0]) => Promise<T>, next?: () => void) {
-
-    // exit early if pool is empty
-    if (this.length === 0) throw new Error("no workers in pool");
-
-    // take an idle worker from the queue
-    const worker = await this.idlequeue.get(); next?.();
-    worker.busy = true;
-
-    try {
-      return await new Promise((resolve, reject) => {
-        worker.reject = reject;
-        work(worker).then(resolve, reject);
-      });
-    } finally {
-      if (worker.cancelled !== true) {
-        worker.busy = false;
-        worker.taskid = undefined;
-        await this.idlequeue.put(worker);
-      };
-    };
-
-  };
-
 }

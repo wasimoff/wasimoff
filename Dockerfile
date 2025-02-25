@@ -1,9 +1,12 @@
 # ---> build the broker binary
-FROM golang:1.23-bookworm AS broker
+FROM golang:1.24-bookworm AS broker
 
 # compile the binary
-WORKDIR /broker
-COPY ./broker /broker
+COPY ./broker /build/broker
+COPY ./proto /build/proto
+COPY ./client /build/client
+COPY ./go.* /build
+WORKDIR /build/broker
 RUN CGO_ENABLED=0 go build -o broker
 
 
@@ -38,7 +41,7 @@ ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", \
 # ---> combine broker and frontend dist in default container
 # docker build --target wasimoff -t wasimoff/broker .
 FROM alpine AS wasimoff
-COPY --from=broker   /broker/broker /broker
+COPY --from=broker   /build/broker/broker /broker
 COPY --from=frontend /provider/dist /provider
 ENTRYPOINT [ "/broker" ]
 

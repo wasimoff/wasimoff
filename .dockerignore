@@ -5,3 +5,5 @@ client/client
 client/wasimoff
 webprovider/node_modules/
 webprovider/dist/
+**/venv/
+**/.venv/
