@@ -1,12 +1,9 @@
 package storage
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"iter"
-	"net/http"
-	"time"
 	wasimoff "wasimoff/proto/v1"
 )
 
@@ -71,32 +68,4 @@ func (fs *FileStorage) ResolveTaskFiles(request *wasimoff.Task_Wasip1_Request) e
 	errs = append(errs, fs.ResolvePbFile(p.Rootfs))
 	// will be nil if there are no errs
 	return errors.Join(errs...)
-}
-
-// TODO: should store the upload time as modtime
-var zerotime = time.UnixMilli(0)
-
-// Make the FileStorage a http.Handler, so it can serve files on web requests.
-// Expects a path value '{filename}' to retrieve the correct file.
-func (fs *FileStorage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	// get the filename from path pattern
-	filename := r.PathValue("filename")
-	if filename == "" {
-		http.Error(w, "path pattern not found", http.StatusInternalServerError)
-		return
-	}
-
-	// retrieve the file from storage
-	file := fs.Get(filename)
-	if file == nil {
-		http.Error(w, "File not Found in storage", http.StatusNotFound)
-		return
-	}
-
-	// put known content-type in a header and serve the file
-	w.Header().Add("content-type", file.Media)
-	w.Header().Add("x-wasimoff-ref", file.Ref())
-	http.ServeContent(w, r, "", zerotime, bytes.NewReader(file.Bytes))
-
 }

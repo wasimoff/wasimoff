@@ -218,7 +218,7 @@ func RunJob(job *wasimoff.Client_Job_Wasip1Request) []*wasimoff.Task_Wasip1_Resp
 
 	// send the request
 	resp, err := http.Post(
-		brokerUrl+"/api/client/run", "application/protobuf", bytes.NewBuffer(jobpb))
+		brokerUrl+"/api/client/wasimoff.v1.Wasimoff/RunWasip1Job", "application/proto", bytes.NewBuffer(jobpb))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -38,22 +38,23 @@ func main() {
 
 	// storage: serve files from and upload into store storage
 	mux.Handle("/api/storage/{filename}", store.Storage)
-	mux.HandleFunc("/api/storage/upload", scheduler.UploadHandler(store))
 	log.Printf("Storage at %s/api/storage/...", broker.Addr())
 
-	// client offloading request handler
-	mux.HandleFunc("/api/client/run", scheduler.ExecHandler(store, &selector, conf.Benchmode))
-	log.Printf("Client API at %s/api/client/run", broker.Addr())
+	// create a queue for the tasks and start the dispatcher
+	go scheduler.Dispatcher(&selector, scheduler.TaskQueue)
+
+	// maybe start the "benchmode" load generation
+	go scheduler.TspBench(store, conf.Benchmode)
 
 	// connectrpc endpoint for clients
 	rpcserver := &scheduler.ConnectRpcServer{
 		Store: store,
 	}
-	mux.HandleFunc("/api/client/ws", scheduler.ClientSocketHandler(rpcserver))
-	log.Printf("Client socket: %s/api/client/ws", broker.Addr())
 	path, handler := wasimoffv1connect.NewWasimoffHandler(rpcserver)
 	mux.Handle("/api/client"+path, http.StripPrefix("/api/client", handler))
-	log.Printf("ConnectRPC: %s%s", broker.Addr(), path)
+	log.Printf("ConnectRPC: %s%s", broker.Addr(), "/api/client"+path)
+	mux.HandleFunc("/api/client/ws", scheduler.ClientSocketHandler(rpcserver))
+	log.Printf("Client socket: %s/api/client/ws", broker.Addr())
 
 	// health message
 	mux.HandleFunc("/healthz", server.Healthz())

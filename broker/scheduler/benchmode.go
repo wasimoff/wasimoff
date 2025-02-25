@@ -12,7 +12,11 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func tspbench(store *provider.ProviderStore, parallel int) {
+func TspBench(store *provider.ProviderStore, parallel int) {
+
+	if parallel <= 0 {
+		return
+	}
 
 	// wait for required binary upload
 	bin := "tsp.wasm"
@@ -52,7 +56,7 @@ func tspbench(store *provider.ProviderStore, parallel int) {
 	// loop forever with incrementing index
 	for i := 0; ; i++ {
 		<-tickets
-		taskQueue <- provider.NewAsyncTask(
+		TaskQueue <- provider.NewAsyncTask(
 			context.Background(),
 			&wasimoff.Task_Wasip1_Request{
 				Info: &wasimoff.Task_Metadata{
@@ -98,7 +102,7 @@ func pytest(parallel int) {
 	// loop forever with incrementing index
 	for i := 0; ; i++ {
 		<-tickets
-		taskQueue <- provider.NewAsyncTask(
+		TaskQueue <- provider.NewAsyncTask(
 			context.Background(),
 			&wasimoff.Task_Pyodide_Request{
 				Info: &wasimoff.Task_Metadata{

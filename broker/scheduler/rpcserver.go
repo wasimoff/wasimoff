@@ -14,6 +14,9 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// reuseable task queue for HTTP handler and websocket
+var TaskQueue = make(chan *provider.AsyncTask, 2048)
+
 // This ConnectRPC server implements the Wasimoff service from messages.proto, to
 // be used with the Connect handler, which automatically creates correct routes and
 // gRPC endpoints per request. Since each request is handled in a separate goroutine,
@@ -21,8 +24,9 @@ import (
 // threadsafe, of course.
 
 type ConnectRpcServer struct {
-	Store *provider.ProviderStore
-	ctr   atomic.Uint64
+	Store   *provider.ProviderStore
+	taskSeq atomic.Uint64
+	jobSeq  atomic.Uint64
 }
 
 func (s *ConnectRpcServer) Upload(
@@ -74,7 +78,7 @@ func (s *ConnectRpcServer) RunWasip1(
 
 	// assemble task info for internal dispatcher queue
 	r.Info = &wasimoff.Task_Metadata{
-		Id:        proto.String(fmt.Sprintf("connect/%d/wasip1", s.ctr.Add(1))),
+		Id:        proto.String(fmt.Sprintf("connect/%d/wasip1", s.taskSeq.Add(1))),
 		Requester: proto.String(req.Peer().Addr),
 	}
 	log.Println("Run Wasip1", prototext.Format(r.Info))
@@ -82,14 +86,39 @@ func (s *ConnectRpcServer) RunWasip1(
 	// dispatch
 	response := &wasimoff.Task_Wasip1_Response{}
 	done := make(chan *provider.AsyncTask, 1)
-	task := provider.NewAsyncTask(ctx, r, response, done)
-	taskQueue <- task
+	TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
 	call := <-done
 
 	if call.Error != nil {
 		return nil, call.Error
 	} else {
 		return connect.NewResponse(response), nil
+	}
+
+}
+
+func (s *ConnectRpcServer) RunWasip1Job(
+	ctx context.Context,
+	req *connect.Request[wasimoff.Client_Job_Wasip1Request],
+) (
+	*connect.Response[wasimoff.Client_Job_Wasip1Response],
+	error,
+) {
+
+	job := OffloadingJob{JobSpec: req.Msg}
+	// amend the job with information about client
+	job.JobID = fmt.Sprintf("%05d", s.jobSeq.Add(1))
+	job.ClientAddr = req.Peer().Addr
+	log.Printf("RunWasip1Job [%s] from %q: %d tasks\n",
+		job.JobID, job.ClientAddr, len(job.JobSpec.Tasks))
+
+	// compute all the tasks of a request
+	results := dispatchJob(ctx, s.Store, &job, TaskQueue)
+
+	if results.Error != nil {
+		return nil, fmt.Errorf(*results.Error)
+	} else {
+		return connect.NewResponse(results), nil
 	}
 
 }
@@ -105,14 +134,14 @@ func (s *ConnectRpcServer) RunPyodide(
 
 	// assemble task info for internal dispatcher queue
 	r.Info = &wasimoff.Task_Metadata{
-		Id:        proto.String(fmt.Sprintf("connect/%d/pyodide", s.ctr.Add(1))),
+		Id:        proto.String(fmt.Sprintf("connect/%d/pyodide", s.taskSeq.Add(1))),
 		Requester: proto.String(req.Peer().Addr),
 	}
 
 	// dispatch
 	response := &wasimoff.Task_Pyodide_Response{}
 	done := make(chan *provider.AsyncTask, 1)
-	taskQueue <- provider.NewAsyncTask(ctx, r, response, done)
+	TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
 	call := <-done
 
 	if call.Error != nil {

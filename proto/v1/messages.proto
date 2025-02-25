@@ -169,11 +169,13 @@ message Task {
 // The Wasimoff service defines RPC interfaces for clients connecting to a Broker.
 service Wasimoff {
 
-  // offload a WebAssembly WASI preview 1 task
+  // offload a WebAssembly WASI preview 1 tasks
   rpc RunWasip1(Task.Wasip1.Request) returns (Task.Wasip1.Response) {}
+  rpc RunWasip1Job(Client.Job.Wasip1Request) returns (Client.Job.Wasip1Response) {}
 
   // offload a Python task in Pyodide
   rpc RunPyodide(Task.Pyodide.Request) returns (Task.Pyodide.Response) {}
+  // rpc RunPyodideJob(Client.Job.PyodideRequest) returns (Client.Job.PyodideResponse) {}
 
   // upload a file to the broker
   rpc Upload(Filesystem.Upload.Request) returns (Filesystem.Upload.Response) {}
