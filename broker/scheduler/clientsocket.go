@@ -9,14 +9,15 @@ import (
 	"wasimoff/broker/provider"
 	wasimoff "wasimoff/proto/v1"
 
+	"connectrpc.com/connect"
 	"google.golang.org/protobuf/encoding/prototext"
-	"google.golang.org/protobuf/proto"
 )
 
 // ClientSocketHandler returns a http.HandlerFunc to be used on a route that shall serve
 // as an endpoint for Clients to connect to. This particular handler uses WebSocket
 // transport with either Protobuf or JSON encoding, negotiated using subprotocol strings.
-func ClientSocketHandler(store *provider.ProviderStore) http.HandlerFunc {
+// func ClientSocketHandler(rpc *WasimoffRPCServer) http.HandlerFunc {
+func ClientSocketHandler(rpc *ConnectRpcServer) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		addr := transport.ProxiedAddr(r)
@@ -30,18 +31,6 @@ func ClientSocketHandler(store *provider.ProviderStore) http.HandlerFunc {
 		}
 		messenger := transport.NewMessengerInterface(wst)
 		log.Printf("[%s] New Client socket", addr)
-
-		// all tasks on this socket are counted as one "job"
-		job := fmt.Sprintf("websocket/%05d", jobSequence.Add(1))
-		requestSequence := uint64(0)
-
-		nextTaskInfo := func() *wasimoff.Task_Metadata {
-			requestSequence++
-			return &wasimoff.Task_Metadata{
-				Id:        proto.String(fmt.Sprintf("%s/%d", job, requestSequence)),
-				Requester: &addr,
-			}
-		}
 
 		// channel for finished requests
 		// TODO: limit task creation with an equally-sized ticket channel
@@ -72,26 +61,27 @@ func ClientSocketHandler(store *provider.ProviderStore) http.HandlerFunc {
 				switch taskrequest := request.Request.(type) {
 
 				case *wasimoff.Task_Wasip1_Request:
-					// resolve any filenames to storage hashes
-					if ferr := store.Storage.ResolveTaskFiles(taskrequest); ferr != nil {
-						request.Respond(r.Context(), nil, ferr)
-						continue // handle next request
-					}
-					// assemble the task for internal dispatcher queue
-					taskrequest.Info = nextTaskInfo()
-					response := wasimoff.Task_Wasip1_Response{}
-					taskctx := context.WithValue(r.Context(), ctxkeyRequest{}, request)
-					taskQueue <- provider.NewAsyncTask(taskctx, taskrequest, &response, done)
-					// log.Printf("Task submit: %s :: %#v\n", wreq.Info.TaskID(), wreq.Task.Args)
+					go func(ctx context.Context, req transport.IncomingRequest, task *wasimoff.Task_Wasip1_Request) {
+						r := connect.NewRequest(task)
+						resp, err := rpc.RunWasip1(ctx, r)
+						if err != nil {
+							request.Respond(ctx, nil, err)
+						} else {
+							request.Respond(ctx, resp.Msg, nil)
+						}
+					}(r.Context(), request, taskrequest)
 					continue
 
 				case *wasimoff.Task_Pyodide_Request:
-					// assemble the task for internal dispatcher queue
-					taskrequest.Info = nextTaskInfo()
-					response := wasimoff.Task_Pyodide_Response{}
-					taskctx := context.WithValue(r.Context(), ctxkeyRequest{}, request)
-					taskQueue <- provider.NewAsyncTask(taskctx, taskrequest, &response, done)
-					// log.Printf("Task submit: %s :: %#v\n", wreq.Info.TaskID(), wreq.Task.Args)
+					go func(ctx context.Context, req transport.IncomingRequest, task *wasimoff.Task_Pyodide_Request) {
+						r := connect.NewRequest(task)
+						resp, err := rpc.RunPyodide(ctx, r)
+						if err != nil {
+							request.Respond(ctx, nil, err)
+						} else {
+							request.Respond(ctx, resp.Msg, nil)
+						}
+					}(r.Context(), request, taskrequest)
 					continue
 
 				default: // unexpected message type

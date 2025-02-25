@@ -124,28 +124,28 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
     })();
 
     // list files in storage
-    case isMessage(request, wasimoff.FileListingRequestSchema): return <Promise<wasimoff.FileListingResponse>>(async () => {
+    case isMessage(request, wasimoff.Filesystem_Listing_RequestSchema): return <Promise<wasimoff.Filesystem_Listing_Response>>(async () => {
       if (this.storage === undefined) throw "cannot access storage yet";
       const files = (await this.storage.filesystem.list());
-      return create(wasimoff.FileListingResponseSchema, { files });
+      return create(wasimoff.Filesystem_Listing_ResponseSchema, { files });
     })();
 
     // probe for a specific file in storage
-    case isMessage(request, wasimoff.FileProbeRequestSchema): return <Promise<wasimoff.FileProbeResponse>>(async () => {
+    case isMessage(request, wasimoff.Filesystem_Probe_RequestSchema): return <Promise<wasimoff.Filesystem_Probe_Response>>(async () => {
       if (this.storage === undefined) throw "cannot access storage yet";
       let ok = await this.storage.filesystem.get(request.file) !== undefined;
-      return create(wasimoff.FileProbeResponseSchema, { ok });
+      return create(wasimoff.Filesystem_Probe_ResponseSchema, { ok });
     })();
 
     // binaries uploaded from the broker inside an rpc
-    case isMessage(request, wasimoff.FileUploadRequestSchema): return <Promise<wasimoff.FileUploadResponse>>(async () => {
+    case isMessage(request, wasimoff.Filesystem_Upload_RequestSchema): return <Promise<wasimoff.Filesystem_Upload_Response>>(async () => {
       if (request.upload === undefined) throw "empty upload";
       if (this.storage === undefined) throw "cannot access storage yet";
       let { blob, media, ref } = request.upload;
       // overwrite name with computed digest
       if (!isRef(ref)) { ref = await getRef(blob); };
       await this.storage.filesystem.put(ref, new File([blob], ref, { type: media }));
-      return create(wasimoff.FileUploadResponseSchema, { });
+      return create(wasimoff.Filesystem_Upload_ResponseSchema, { });
     })();
 
     default:

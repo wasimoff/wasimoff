@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file proto/v1/messages.proto.
  */
 export const file_proto_v1_messages: GenFile = /*@__PURE__*/
-  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyLVCAoEVGFzaxo7CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkaRQoDUW9TEhAKCHByaW9yaXR5GAEgASgIEiwKCGRlYWRsaW5lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBokCgZDYW5jZWwSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJGoIECgZXYXNpcDEaiAEKB1JlcXVlc3QSKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESIgoDcW9zGAIgASgLMhUud2FzaW1vZmYudjEuVGFzay5Rb1MSLwoGcGFyYW1zGAMgASgLMh8ud2FzaW1vZmYudjEuVGFzay5XYXNpcDEuUGFyYW1zGowBCgZQYXJhbXMSIQoGYmluYXJ5GAEgASgLMhEud2FzaW1vZmYudjEuRmlsZRIMCgRhcmdzGAIgAygJEgwKBGVudnMYAyADKAkSDQoFc3RkaW4YBCABKAwSIQoGcm9vdGZzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRIRCglhcnRpZmFjdHMYBiADKAkafgoIUmVzcG9uc2USKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESDwoFZXJyb3IYAiABKAlIABItCgJvaxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLk91dHB1dEgAQggKBnJlc3VsdBpeCgZPdXRwdXQSDgoGc3RhdHVzGAEgASgFEg4KBnN0ZG91dBgCIAEoDBIOCgZzdGRlcnIYAyABKAwSJAoJYXJ0aWZhY3RzGAQgASgLMhEud2FzaW1vZmYudjEuRmlsZRqdAwoHUHlvZGlkZRqJAQoHUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIwCgZwYXJhbXMYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGjoKBlBhcmFtcxIOCgZzY3JpcHQYASABKAkSEAoIcGFja2FnZXMYByADKAkSDgoGcGlja2xlGAggASgMGn8KCFJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg8KBWVycm9yGAIgASgJSAASLgoCb2sYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0GkkKBk91dHB1dBIOCgZwaWNrbGUYASABKAwSDgoGc3Rkb3V0GAIgASgMEg4KBnN0ZGVychgDIAEoDBIPCgd2ZXJzaW9uGAQgASgJIjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiFAoSRmlsZUxpc3RpbmdSZXF1ZXN0IiQKE0ZpbGVMaXN0aW5nUmVzcG9uc2USDQoFZmlsZXMYASADKAkiIAoQRmlsZVByb2JlUmVxdWVzdBIMCgRmaWxlGAEgASgJIh8KEUZpbGVQcm9iZVJlc3BvbnNlEgoKAm9rGAEgASgIIjYKEUZpbGVVcGxvYWRSZXF1ZXN0EiEKBnVwbG9hZBgBIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUiIQoSRmlsZVVwbG9hZFJlc3BvbnNlEgsKA2VychgBIAEoCSIjChNGaWxlRG93bmxvYWRSZXF1ZXN0EgwKBGZpbGUYASABKAkiSAoURmlsZURvd25sb2FkUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSKZAgoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRowCg1Qcm92aWRlckhlbGxvEgwKBG5hbWUYASABKAkSEQoJdXNlcmFnZW50GAIgASgJGjcKEVByb3ZpZGVyUmVzb3VyY2VzEhMKC2NvbmN1cnJlbmN5GAEgASgNEg0KBXRhc2tzGAIgASgNGiAKC0NsdXN0ZXJJbmZvEhEKCXByb3ZpZGVycxgBIAEoDRosCgpUaHJvdWdocHV0Eg8KB292ZXJhbGwYASABKAISDQoFeW91cnMYAiABKAIaMgoQRmlsZVN5c3RlbVVwZGF0ZRINCgVhZGRlZBgBIAMoCRIPCgdyZW1vdmVkGAIgAygJIp8DCgZDbGllbnQalAMKA0pvYhpwCg1XYXNpcDFSZXF1ZXN0Ei8KBnBhcmVudBgBIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxIuCgV0YXNrcxgCIAMoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxpRCg5XYXNpcDFSZXNwb25zZRINCgVlcnJvchgBIAEoCRIwCgV0YXNrcxgCIAMoCzIhLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlGnMKDlB5b2RpZGVSZXF1ZXN0EjAKBnBhcmVudBgBIAEoCzIgLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5QYXJhbXMSLwoFdGFza3MYAiADKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGlMKD1B5b2RpZGVSZXNwb25zZRINCgVlcnJvchgBIAEoCRIxCgV0YXNrcxgCIAMoCzIiLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXNwb25zZSISChBKb2JTcGVjaWZpY2F0aW9uKlwKC1N1YnByb3RvY29sEgsKB1VOS05PV04QABIhCh13YXNpbW9mZl9wcm92aWRlcl92MV9wcm90b2J1ZhABEh0KGXdhc2ltb2ZmX3Byb3ZpZGVyX3YxX2pzb24QAjK1AQoIV2FzaW1vZmYSUgoJUnVuV2FzaXAxEiAud2FzaW1vZmYudjEuVGFzay5XYXNpcDEuUmVxdWVzdBohLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlIgASVQoKUnVuUHlvZGlkZRIhLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXF1ZXN0GiIud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlJlc3BvbnNlIgBCHlocd2FzaW1vZmYvcHJvdG8vdjE7d2FzaW1vZmZ2MWIIZWRpdGlvbnNw6Ac", [file_google_protobuf_any, file_google_protobuf_timestamp]);
+  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyLVCAoEVGFzaxo7CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkaRQoDUW9TEhAKCHByaW9yaXR5GAEgASgIEiwKCGRlYWRsaW5lGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBokCgZDYW5jZWwSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJGoIECgZXYXNpcDEaiAEKB1JlcXVlc3QSKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESIgoDcW9zGAIgASgLMhUud2FzaW1vZmYudjEuVGFzay5Rb1MSLwoGcGFyYW1zGAMgASgLMh8ud2FzaW1vZmYudjEuVGFzay5XYXNpcDEuUGFyYW1zGowBCgZQYXJhbXMSIQoGYmluYXJ5GAEgASgLMhEud2FzaW1vZmYudjEuRmlsZRIMCgRhcmdzGAIgAygJEgwKBGVudnMYAyADKAkSDQoFc3RkaW4YBCABKAwSIQoGcm9vdGZzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRIRCglhcnRpZmFjdHMYBiADKAkafgoIUmVzcG9uc2USKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESDwoFZXJyb3IYAiABKAlIABItCgJvaxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLk91dHB1dEgAQggKBnJlc3VsdBpeCgZPdXRwdXQSDgoGc3RhdHVzGAEgASgFEg4KBnN0ZG91dBgCIAEoDBIOCgZzdGRlcnIYAyABKAwSJAoJYXJ0aWZhY3RzGAQgASgLMhEud2FzaW1vZmYudjEuRmlsZRqdAwoHUHlvZGlkZRqJAQoHUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIwCgZwYXJhbXMYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGjoKBlBhcmFtcxIOCgZzY3JpcHQYASABKAkSEAoIcGFja2FnZXMYByADKAkSDgoGcGlja2xlGAggASgMGn8KCFJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg8KBWVycm9yGAIgASgJSAASLgoCb2sYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0GkkKBk91dHB1dBIOCgZwaWNrbGUYASABKAwSDgoGc3Rkb3V0GAIgASgMEg4KBnN0ZGVychgDIAEoDBIPCgd2ZXJzaW9uGAQgASgJIjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiqwIKCkZpbGVzeXN0ZW0aLwoHTGlzdGluZxoJCgdSZXF1ZXN0GhkKCFJlc3BvbnNlEg0KBWZpbGVzGAEgAygJGjgKBVByb2JlGhcKB1JlcXVlc3QSDAoEZmlsZRgBIAEoCRoWCghSZXNwb25zZRIKCgJvaxgBIAEoCBpPCgZVcGxvYWQaLAoHUmVxdWVzdBIhCgZ1cGxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlGhcKCFJlc3BvbnNlEgsKA3JlZhgBIAEoCRphCghEb3dubG9hZBoXCgdSZXF1ZXN0EgwKBGZpbGUYASABKAkaPAoIUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSKZAgoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRowCg1Qcm92aWRlckhlbGxvEgwKBG5hbWUYASABKAkSEQoJdXNlcmFnZW50GAIgASgJGjcKEVByb3ZpZGVyUmVzb3VyY2VzEhMKC2NvbmN1cnJlbmN5GAEgASgNEg0KBXRhc2tzGAIgASgNGiAKC0NsdXN0ZXJJbmZvEhEKCXByb3ZpZGVycxgBIAEoDRosCgpUaHJvdWdocHV0Eg8KB292ZXJhbGwYASABKAISDQoFeW91cnMYAiABKAIaMgoQRmlsZVN5c3RlbVVwZGF0ZRINCgVhZGRlZBgBIAMoCRIPCgdyZW1vdmVkGAIgAygJIp8DCgZDbGllbnQalAMKA0pvYhpwCg1XYXNpcDFSZXF1ZXN0Ei8KBnBhcmVudBgBIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxIuCgV0YXNrcxgCIAMoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxpRCg5XYXNpcDFSZXNwb25zZRINCgVlcnJvchgBIAEoCRIwCgV0YXNrcxgCIAMoCzIhLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlGnMKDlB5b2RpZGVSZXF1ZXN0EjAKBnBhcmVudBgBIAEoCzIgLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5QYXJhbXMSLwoFdGFza3MYAiADKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGlMKD1B5b2RpZGVSZXNwb25zZRINCgVlcnJvchgBIAEoCRIxCgV0YXNrcxgCIAMoCzIiLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXNwb25zZSISChBKb2JTcGVjaWZpY2F0aW9uKlwKC1N1YnByb3RvY29sEgsKB1VOS05PV04QABIhCh13YXNpbW9mZl9wcm92aWRlcl92MV9wcm90b2J1ZhABEh0KGXdhc2ltb2ZmX3Byb3ZpZGVyX3YxX2pzb24QAjKSAgoIV2FzaW1vZmYSUgoJUnVuV2FzaXAxEiAud2FzaW1vZmYudjEuVGFzay5XYXNpcDEuUmVxdWVzdBohLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlIgASVQoKUnVuUHlvZGlkZRIhLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXF1ZXN0GiIud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlJlc3BvbnNlIgASWwoGVXBsb2FkEiYud2FzaW1vZmYudjEuRmlsZXN5c3RlbS5VcGxvYWQuUmVxdWVzdBonLndhc2ltb2ZmLnYxLkZpbGVzeXN0ZW0uVXBsb2FkLlJlc3BvbnNlIgBCHlocd2FzaW1vZmYvcHJvdG8vdjE7d2FzaW1vZmZ2MWIIZWRpdGlvbnNw6Ac", [file_google_protobuf_any, file_google_protobuf_timestamp]);
 
 /**
  * Envelope is a generic message wrapper with a sequence counter and message type.
@@ -241,7 +241,7 @@ export const Task_QoSSchema: GenMessage<Task_QoS, Task_QoSJson> = /*@__PURE__*/
   messageDesc(file_proto_v1_messages, 1, 1);
 
 /**
- * Event to terminate a running task on Provider.
+ * Request to terminate a running task on Provider.
  *
  * @generated from message wasimoff.v1.Task.Cancel
  */
@@ -847,32 +847,70 @@ export const FileSchema: GenMessage<File, FileJson> = /*@__PURE__*/
   messageDesc(file_proto_v1_messages, 2);
 
 /**
- * FileListing asks for a listing of all available files on Provider
- *
- * empty
- *
- * @generated from message wasimoff.v1.FileListingRequest
+ * @generated from message wasimoff.v1.Filesystem
  */
-export type FileListingRequest = Message<"wasimoff.v1.FileListingRequest"> & {
+export type Filesystem = Message<"wasimoff.v1.Filesystem"> & {
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileListingRequest.
+ * JSON type for the message wasimoff.v1.Filesystem.
  */
-export type FileListingRequestJson = {
+export type FilesystemJson = {
 };
 
 /**
- * Describes the message wasimoff.v1.FileListingRequest.
- * Use `create(FileListingRequestSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.
+ * Use `create(FilesystemSchema)` to create a new message.
  */
-export const FileListingRequestSchema: GenMessage<FileListingRequest, FileListingRequestJson> = /*@__PURE__*/
+export const FilesystemSchema: GenMessage<Filesystem, FilesystemJson> = /*@__PURE__*/
   messageDesc(file_proto_v1_messages, 3);
 
 /**
- * @generated from message wasimoff.v1.FileListingResponse
+ * Listing asks for a listing of all available files on Provider
+ *
+ * @generated from message wasimoff.v1.Filesystem.Listing
  */
-export type FileListingResponse = Message<"wasimoff.v1.FileListingResponse"> & {
+export type Filesystem_Listing = Message<"wasimoff.v1.Filesystem.Listing"> & {
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Filesystem.Listing.
+ */
+export type Filesystem_ListingJson = {
+};
+
+/**
+ * Describes the message wasimoff.v1.Filesystem.Listing.
+ * Use `create(Filesystem_ListingSchema)` to create a new message.
+ */
+export const Filesystem_ListingSchema: GenMessage<Filesystem_Listing, Filesystem_ListingJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 0);
+
+/**
+ * empty
+ *
+ * @generated from message wasimoff.v1.Filesystem.Listing.Request
+ */
+export type Filesystem_Listing_Request = Message<"wasimoff.v1.Filesystem.Listing.Request"> & {
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Filesystem.Listing.Request.
+ */
+export type Filesystem_Listing_RequestJson = {
+};
+
+/**
+ * Describes the message wasimoff.v1.Filesystem.Listing.Request.
+ * Use `create(Filesystem_Listing_RequestSchema)` to create a new message.
+ */
+export const Filesystem_Listing_RequestSchema: GenMessage<Filesystem_Listing_Request, Filesystem_Listing_RequestJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 0, 0);
+
+/**
+ * @generated from message wasimoff.v1.Filesystem.Listing.Response
+ */
+export type Filesystem_Listing_Response = Message<"wasimoff.v1.Filesystem.Listing.Response"> & {
   /**
    * @generated from field: repeated string files = 1;
    */
@@ -880,9 +918,9 @@ export type FileListingResponse = Message<"wasimoff.v1.FileListingResponse"> & {
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileListingResponse.
+ * JSON type for the message wasimoff.v1.Filesystem.Listing.Response.
  */
-export type FileListingResponseJson = {
+export type Filesystem_Listing_ResponseJson = {
   /**
    * @generated from field: repeated string files = 1;
    */
@@ -890,18 +928,37 @@ export type FileListingResponseJson = {
 };
 
 /**
- * Describes the message wasimoff.v1.FileListingResponse.
- * Use `create(FileListingResponseSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.Listing.Response.
+ * Use `create(Filesystem_Listing_ResponseSchema)` to create a new message.
  */
-export const FileListingResponseSchema: GenMessage<FileListingResponse, FileListingResponseJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 4);
+export const Filesystem_Listing_ResponseSchema: GenMessage<Filesystem_Listing_Response, Filesystem_Listing_ResponseJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 0, 1);
 
 /**
- * FileProbe checks if a certain file exists on provider
+ * Probe checks if a certain file exists on Provider
  *
- * @generated from message wasimoff.v1.FileProbeRequest
+ * @generated from message wasimoff.v1.Filesystem.Probe
  */
-export type FileProbeRequest = Message<"wasimoff.v1.FileProbeRequest"> & {
+export type Filesystem_Probe = Message<"wasimoff.v1.Filesystem.Probe"> & {
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Filesystem.Probe.
+ */
+export type Filesystem_ProbeJson = {
+};
+
+/**
+ * Describes the message wasimoff.v1.Filesystem.Probe.
+ * Use `create(Filesystem_ProbeSchema)` to create a new message.
+ */
+export const Filesystem_ProbeSchema: GenMessage<Filesystem_Probe, Filesystem_ProbeJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 1);
+
+/**
+ * @generated from message wasimoff.v1.Filesystem.Probe.Request
+ */
+export type Filesystem_Probe_Request = Message<"wasimoff.v1.Filesystem.Probe.Request"> & {
   /**
    * @generated from field: string file = 1;
    */
@@ -909,9 +966,9 @@ export type FileProbeRequest = Message<"wasimoff.v1.FileProbeRequest"> & {
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileProbeRequest.
+ * JSON type for the message wasimoff.v1.Filesystem.Probe.Request.
  */
-export type FileProbeRequestJson = {
+export type Filesystem_Probe_RequestJson = {
   /**
    * @generated from field: string file = 1;
    */
@@ -919,16 +976,16 @@ export type FileProbeRequestJson = {
 };
 
 /**
- * Describes the message wasimoff.v1.FileProbeRequest.
- * Use `create(FileProbeRequestSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.Probe.Request.
+ * Use `create(Filesystem_Probe_RequestSchema)` to create a new message.
  */
-export const FileProbeRequestSchema: GenMessage<FileProbeRequest, FileProbeRequestJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 5);
+export const Filesystem_Probe_RequestSchema: GenMessage<Filesystem_Probe_Request, Filesystem_Probe_RequestJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 1, 0);
 
 /**
- * @generated from message wasimoff.v1.FileProbeResponse
+ * @generated from message wasimoff.v1.Filesystem.Probe.Response
  */
-export type FileProbeResponse = Message<"wasimoff.v1.FileProbeResponse"> & {
+export type Filesystem_Probe_Response = Message<"wasimoff.v1.Filesystem.Probe.Response"> & {
   /**
    * @generated from field: bool ok = 1;
    */
@@ -936,9 +993,9 @@ export type FileProbeResponse = Message<"wasimoff.v1.FileProbeResponse"> & {
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileProbeResponse.
+ * JSON type for the message wasimoff.v1.Filesystem.Probe.Response.
  */
-export type FileProbeResponseJson = {
+export type Filesystem_Probe_ResponseJson = {
   /**
    * @generated from field: bool ok = 1;
    */
@@ -946,18 +1003,37 @@ export type FileProbeResponseJson = {
 };
 
 /**
- * Describes the message wasimoff.v1.FileProbeResponse.
- * Use `create(FileProbeResponseSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.Probe.Response.
+ * Use `create(Filesystem_Probe_ResponseSchema)` to create a new message.
  */
-export const FileProbeResponseSchema: GenMessage<FileProbeResponse, FileProbeResponseJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 6);
+export const Filesystem_Probe_ResponseSchema: GenMessage<Filesystem_Probe_Response, Filesystem_Probe_ResponseJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 1, 1);
 
 /**
- * FileUpload pushes a file to the Provider.
+ * Upload pushes a file to the other peer.
  *
- * @generated from message wasimoff.v1.FileUploadRequest
+ * @generated from message wasimoff.v1.Filesystem.Upload
  */
-export type FileUploadRequest = Message<"wasimoff.v1.FileUploadRequest"> & {
+export type Filesystem_Upload = Message<"wasimoff.v1.Filesystem.Upload"> & {
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Filesystem.Upload.
+ */
+export type Filesystem_UploadJson = {
+};
+
+/**
+ * Describes the message wasimoff.v1.Filesystem.Upload.
+ * Use `create(Filesystem_UploadSchema)` to create a new message.
+ */
+export const Filesystem_UploadSchema: GenMessage<Filesystem_Upload, Filesystem_UploadJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 2);
+
+/**
+ * @generated from message wasimoff.v1.Filesystem.Upload.Request
+ */
+export type Filesystem_Upload_Request = Message<"wasimoff.v1.Filesystem.Upload.Request"> & {
   /**
    * @generated from field: wasimoff.v1.File upload = 1;
    */
@@ -965,9 +1041,9 @@ export type FileUploadRequest = Message<"wasimoff.v1.FileUploadRequest"> & {
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileUploadRequest.
+ * JSON type for the message wasimoff.v1.Filesystem.Upload.Request.
  */
-export type FileUploadRequestJson = {
+export type Filesystem_Upload_RequestJson = {
   /**
    * @generated from field: wasimoff.v1.File upload = 1;
    */
@@ -975,45 +1051,64 @@ export type FileUploadRequestJson = {
 };
 
 /**
- * Describes the message wasimoff.v1.FileUploadRequest.
- * Use `create(FileUploadRequestSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.Upload.Request.
+ * Use `create(Filesystem_Upload_RequestSchema)` to create a new message.
  */
-export const FileUploadRequestSchema: GenMessage<FileUploadRequest, FileUploadRequestJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 7);
+export const Filesystem_Upload_RequestSchema: GenMessage<Filesystem_Upload_Request, Filesystem_Upload_RequestJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 2, 0);
 
 /**
- * @generated from message wasimoff.v1.FileUploadResponse
+ * @generated from message wasimoff.v1.Filesystem.Upload.Response
  */
-export type FileUploadResponse = Message<"wasimoff.v1.FileUploadResponse"> & {
+export type Filesystem_Upload_Response = Message<"wasimoff.v1.Filesystem.Upload.Response"> & {
   /**
-   * @generated from field: string err = 1;
+   * @generated from field: string ref = 1;
    */
-  err: string;
+  ref: string;
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileUploadResponse.
+ * JSON type for the message wasimoff.v1.Filesystem.Upload.Response.
  */
-export type FileUploadResponseJson = {
+export type Filesystem_Upload_ResponseJson = {
   /**
-   * @generated from field: string err = 1;
+   * @generated from field: string ref = 1;
    */
-  err?: string;
+  ref?: string;
 };
 
 /**
- * Describes the message wasimoff.v1.FileUploadResponse.
- * Use `create(FileUploadResponseSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.Upload.Response.
+ * Use `create(Filesystem_Upload_ResponseSchema)` to create a new message.
  */
-export const FileUploadResponseSchema: GenMessage<FileUploadResponse, FileUploadResponseJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 8);
+export const Filesystem_Upload_ResponseSchema: GenMessage<Filesystem_Upload_Response, Filesystem_Upload_ResponseJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 2, 1);
 
 /**
- * FileDownload can be sent by the Provider to request a file download.
+ * Download can request a file download from the other peer.
  *
- * @generated from message wasimoff.v1.FileDownloadRequest
+ * @generated from message wasimoff.v1.Filesystem.Download
  */
-export type FileDownloadRequest = Message<"wasimoff.v1.FileDownloadRequest"> & {
+export type Filesystem_Download = Message<"wasimoff.v1.Filesystem.Download"> & {
+};
+
+/**
+ * JSON type for the message wasimoff.v1.Filesystem.Download.
+ */
+export type Filesystem_DownloadJson = {
+};
+
+/**
+ * Describes the message wasimoff.v1.Filesystem.Download.
+ * Use `create(Filesystem_DownloadSchema)` to create a new message.
+ */
+export const Filesystem_DownloadSchema: GenMessage<Filesystem_Download, Filesystem_DownloadJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 3);
+
+/**
+ * @generated from message wasimoff.v1.Filesystem.Download.Request
+ */
+export type Filesystem_Download_Request = Message<"wasimoff.v1.Filesystem.Download.Request"> & {
   /**
    * @generated from field: string file = 1;
    */
@@ -1021,9 +1116,9 @@ export type FileDownloadRequest = Message<"wasimoff.v1.FileDownloadRequest"> & {
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileDownloadRequest.
+ * JSON type for the message wasimoff.v1.Filesystem.Download.Request.
  */
-export type FileDownloadRequestJson = {
+export type Filesystem_Download_RequestJson = {
   /**
    * @generated from field: string file = 1;
    */
@@ -1031,16 +1126,16 @@ export type FileDownloadRequestJson = {
 };
 
 /**
- * Describes the message wasimoff.v1.FileDownloadRequest.
- * Use `create(FileDownloadRequestSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.Download.Request.
+ * Use `create(Filesystem_Download_RequestSchema)` to create a new message.
  */
-export const FileDownloadRequestSchema: GenMessage<FileDownloadRequest, FileDownloadRequestJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 9);
+export const Filesystem_Download_RequestSchema: GenMessage<Filesystem_Download_Request, Filesystem_Download_RequestJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 3, 0);
 
 /**
- * @generated from message wasimoff.v1.FileDownloadResponse
+ * @generated from message wasimoff.v1.Filesystem.Download.Response
  */
-export type FileDownloadResponse = Message<"wasimoff.v1.FileDownloadResponse"> & {
+export type Filesystem_Download_Response = Message<"wasimoff.v1.Filesystem.Download.Response"> & {
   /**
    * @generated from field: wasimoff.v1.File download = 1;
    */
@@ -1053,9 +1148,9 @@ export type FileDownloadResponse = Message<"wasimoff.v1.FileDownloadResponse"> &
 };
 
 /**
- * JSON type for the message wasimoff.v1.FileDownloadResponse.
+ * JSON type for the message wasimoff.v1.Filesystem.Download.Response.
  */
-export type FileDownloadResponseJson = {
+export type Filesystem_Download_ResponseJson = {
   /**
    * @generated from field: wasimoff.v1.File download = 1;
    */
@@ -1068,11 +1163,11 @@ export type FileDownloadResponseJson = {
 };
 
 /**
- * Describes the message wasimoff.v1.FileDownloadResponse.
- * Use `create(FileDownloadResponseSchema)` to create a new message.
+ * Describes the message wasimoff.v1.Filesystem.Download.Response.
+ * Use `create(Filesystem_Download_ResponseSchema)` to create a new message.
  */
-export const FileDownloadResponseSchema: GenMessage<FileDownloadResponse, FileDownloadResponseJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 10);
+export const Filesystem_Download_ResponseSchema: GenMessage<Filesystem_Download_Response, Filesystem_Download_ResponseJson> = /*@__PURE__*/
+  messageDesc(file_proto_v1_messages, 3, 3, 1);
 
 /**
  * @generated from message wasimoff.v1.Event
@@ -1091,7 +1186,7 @@ export type EventJson = {
  * Use `create(EventSchema)` to create a new message.
  */
 export const EventSchema: GenMessage<Event, EventJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 11);
+  messageDesc(file_proto_v1_messages, 4);
 
 /**
  * GenericMessage is just a generic piece of text for logging
@@ -1120,7 +1215,7 @@ export type Event_GenericMessageJson = {
  * Use `create(Event_GenericMessageSchema)` to create a new message.
  */
 export const Event_GenericMessageSchema: GenMessage<Event_GenericMessage, Event_GenericMessageJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 11, 0);
+  messageDesc(file_proto_v1_messages, 4, 0);
 
 /**
  * ProviderHello is sent once at the beginning to identify the Provider
@@ -1163,7 +1258,7 @@ export type Event_ProviderHelloJson = {
  * Use `create(Event_ProviderHelloSchema)` to create a new message.
  */
 export const Event_ProviderHelloSchema: GenMessage<Event_ProviderHello, Event_ProviderHelloJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 11, 1);
+  messageDesc(file_proto_v1_messages, 4, 1);
 
 /**
  * ProviderResources is information about the available resources in Worker pool
@@ -1206,7 +1301,7 @@ export type Event_ProviderResourcesJson = {
  * Use `create(Event_ProviderResourcesSchema)` to create a new message.
  */
 export const Event_ProviderResourcesSchema: GenMessage<Event_ProviderResources, Event_ProviderResourcesJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 11, 2);
+  messageDesc(file_proto_v1_messages, 4, 2);
 
 /**
  * ClusterInfo contains information about all connected Providers
@@ -1237,7 +1332,7 @@ export type Event_ClusterInfoJson = {
  * Use `create(Event_ClusterInfoSchema)` to create a new message.
  */
 export const Event_ClusterInfoSchema: GenMessage<Event_ClusterInfo, Event_ClusterInfoJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 11, 3);
+  messageDesc(file_proto_v1_messages, 4, 3);
 
 /**
  * Throughput contains information about overall cluster throughput
@@ -1280,7 +1375,7 @@ export type Event_ThroughputJson = {
  * Use `create(Event_ThroughputSchema)` to create a new message.
  */
 export const Event_ThroughputSchema: GenMessage<Event_Throughput, Event_ThroughputJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 11, 4);
+  messageDesc(file_proto_v1_messages, 4, 4);
 
 /**
  * FileSystemUpdate notifies the Broker about changed files on the Provider.
@@ -1319,7 +1414,7 @@ export type Event_FileSystemUpdateJson = {
  * Use `create(Event_FileSystemUpdateSchema)` to create a new message.
  */
 export const Event_FileSystemUpdateSchema: GenMessage<Event_FileSystemUpdate, Event_FileSystemUpdateJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 11, 5);
+  messageDesc(file_proto_v1_messages, 4, 5);
 
 /**
  * @generated from message wasimoff.v1.Client
@@ -1338,7 +1433,7 @@ export type ClientJson = {
  * Use `create(ClientSchema)` to create a new message.
  */
 export const ClientSchema: GenMessage<Client, ClientJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 12);
+  messageDesc(file_proto_v1_messages, 5);
 
 /**
  * Jobs specify a simple parent-inheritance structure for each task format, so
@@ -1364,7 +1459,7 @@ export type Client_JobJson = {
  * Use `create(Client_JobSchema)` to create a new message.
  */
 export const Client_JobSchema: GenMessage<Client_Job, Client_JobJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 12, 0);
+  messageDesc(file_proto_v1_messages, 5, 0);
 
 /**
  * @generated from message wasimoff.v1.Client.Job.Wasip1Request
@@ -1401,7 +1496,7 @@ export type Client_Job_Wasip1RequestJson = {
  * Use `create(Client_Job_Wasip1RequestSchema)` to create a new message.
  */
 export const Client_Job_Wasip1RequestSchema: GenMessage<Client_Job_Wasip1Request, Client_Job_Wasip1RequestJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 12, 0, 0);
+  messageDesc(file_proto_v1_messages, 5, 0, 0);
 
 /**
  * @generated from message wasimoff.v1.Client.Job.Wasip1Response
@@ -1438,7 +1533,7 @@ export type Client_Job_Wasip1ResponseJson = {
  * Use `create(Client_Job_Wasip1ResponseSchema)` to create a new message.
  */
 export const Client_Job_Wasip1ResponseSchema: GenMessage<Client_Job_Wasip1Response, Client_Job_Wasip1ResponseJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 12, 0, 1);
+  messageDesc(file_proto_v1_messages, 5, 0, 1);
 
 /**
  * @generated from message wasimoff.v1.Client.Job.PyodideRequest
@@ -1475,7 +1570,7 @@ export type Client_Job_PyodideRequestJson = {
  * Use `create(Client_Job_PyodideRequestSchema)` to create a new message.
  */
 export const Client_Job_PyodideRequestSchema: GenMessage<Client_Job_PyodideRequest, Client_Job_PyodideRequestJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 12, 0, 2);
+  messageDesc(file_proto_v1_messages, 5, 0, 2);
 
 /**
  * @generated from message wasimoff.v1.Client.Job.PyodideResponse
@@ -1512,7 +1607,7 @@ export type Client_Job_PyodideResponseJson = {
  * Use `create(Client_Job_PyodideResponseSchema)` to create a new message.
  */
 export const Client_Job_PyodideResponseSchema: GenMessage<Client_Job_PyodideResponse, Client_Job_PyodideResponseJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 12, 0, 3);
+  messageDesc(file_proto_v1_messages, 5, 0, 3);
 
 /**
  * Job specifications are serialized versions of a group of tasks. These can
@@ -1534,7 +1629,7 @@ export type JobSpecificationJson = {
  * Use `create(JobSpecificationSchema)` to create a new message.
  */
 export const JobSpecificationSchema: GenMessage<JobSpecification, JobSpecificationJson> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 13);
+  messageDesc(file_proto_v1_messages, 6);
 
 /**
  * Subprotocol is used to identify the concrete encoding on the wire.
@@ -1598,6 +1693,16 @@ export const Wasimoff: GenService<{
     methodKind: "unary";
     input: typeof Task_Pyodide_RequestSchema;
     output: typeof Task_Pyodide_ResponseSchema;
+  },
+  /**
+   * upload a file to the broker
+   *
+   * @generated from rpc wasimoff.v1.Wasimoff.Upload
+   */
+  upload: {
+    methodKind: "unary";
+    input: typeof Filesystem_Upload_RequestSchema;
+    output: typeof Filesystem_Upload_ResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_proto_v1_messages, 0);

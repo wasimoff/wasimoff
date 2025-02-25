@@ -74,7 +74,7 @@ message Task {
     // TODO
   }
 
-  // Event to terminate a running task on Provider.
+  // Request to terminate a running task on Provider.
   message Cancel {
     string id = 1; // unique identifier of the task
     string reason = 2; // freeform reason for logging
@@ -175,6 +175,9 @@ service Wasimoff {
   // offload a Python task in Pyodide
   rpc RunPyodide(Task.Pyodide.Request) returns (Task.Pyodide.Response) {}
 
+  // upload a file to the broker
+  rpc Upload(Filesystem.Upload.Request) returns (Filesystem.Upload.Response) {}
+
 }
 
 
@@ -189,38 +192,53 @@ message File {
   bytes blob = 3; // the actual file contents
 }
 
-// FileListing asks for a listing of all available files on Provider
-message FileListingRequest {
-  // empty
-}
-message FileListingResponse {
-  repeated string files = 1;
+message Filesystem {
+
+  // Listing asks for a listing of all available files on Provider
+  message Listing {
+    message Request {
+      // empty
+    }
+    message Response {
+      repeated string files = 1;
+    }
+  }
+
+  // Probe checks if a certain file exists on Provider
+  message Probe {
+    message Request {
+      string file = 1;
+    }
+    message Response {
+      bool ok = 1;
+    }
+  }
+
+  // Upload pushes a file to the other peer.
+  message Upload {
+    message Request {
+      File upload = 1;
+    }
+    message Response {
+      string ref = 1;
+    }
+  }
+
+  // Download can request a file download from the other peer.
+  message Download {
+    message Request {
+      string file = 1;
+    }
+    message Response {
+      File download = 1;
+      string err = 2;
+    }
+  }
+
 }
 
-// FileProbe checks if a certain file exists on provider
-message FileProbeRequest {
-  string file = 1;
-}
-message FileProbeResponse {
-  bool ok = 1;
-}
 
-// FileUpload pushes a file to the Provider.
-message FileUploadRequest {
-  File upload = 1;
-}
-message FileUploadResponse {
-  string err = 1;
-}
 
-// FileDownload can be sent by the Provider to request a file download.
-message FileDownloadRequest {
-  string file = 1;
-}
-message FileDownloadResponse {
-  File download = 1;
-  string err = 2;
-}
 
 
 // ---> event messages

@@ -7,9 +7,9 @@ plugins:
     opt: [ paths=source_relative ]
 
   # # generate connectrpc for clients
-  # - local: protoc-gen-connect-go
-  #   out: ./
-  #   opt: [ paths=source_relative ]
+  - local: protoc-gen-connect-go
+    out: ./
+    opt: [ paths=source_relative ]
 
   # generate typescript for provider
   # need to run 'yarn install' in webprovider first

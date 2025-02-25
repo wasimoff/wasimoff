@@ -9,6 +9,7 @@ import (
 	"wasimoff/broker/net/server"
 	"wasimoff/broker/provider"
 	"wasimoff/broker/scheduler"
+	"wasimoff/proto/v1/wasimoffv1connect"
 )
 
 func main() {
@@ -43,8 +44,16 @@ func main() {
 	// client offloading request handler
 	mux.HandleFunc("/api/client/run", scheduler.ExecHandler(store, &selector, conf.Benchmode))
 	log.Printf("Client API at %s/api/client/run", broker.Addr())
-	mux.HandleFunc("/api/client/ws", scheduler.ClientSocketHandler(store))
+
+	// connectrpc endpoint for clients
+	rpcserver := &scheduler.ConnectRpcServer{
+		Store: store,
+	}
+	mux.HandleFunc("/api/client/ws", scheduler.ClientSocketHandler(rpcserver))
 	log.Printf("Client socket: %s/api/client/ws", broker.Addr())
+	path, handler := wasimoffv1connect.NewWasimoffHandler(rpcserver)
+	mux.Handle("/api/client"+path, http.StripPrefix("/api/client", handler))
+	log.Printf("ConnectRPC: %s%s", broker.Addr(), path)
 
 	// health message
 	mux.HandleFunc("/healthz", server.Healthz())
