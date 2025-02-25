@@ -34,7 +34,7 @@ func main() {
 	// selector := scheduler.NewAnyFreeSelector(store)
 
 	// provider endpoint
-	mux.HandleFunc("/api/provider/ws", provider.WebSocketHandler(store, conf.AllowedOrigins))
+	mux.HandleFunc("GET /api/provider/ws", provider.WebSocketHandler(store, conf.AllowedOrigins))
 	log.Printf("Provider socket: %s/api/provider/ws", broker.Addr())
 
 	// create a queue for the tasks and start the dispatcher
@@ -46,7 +46,7 @@ func main() {
 	// client endpoints
 	rpc := &client.ConnectRpcServer{Store: store}
 	// -- websocket
-	mux.HandleFunc("/api/client/ws", client.ClientSocketHandler(rpc))
+	mux.HandleFunc("GET /api/client/ws", client.ClientSocketHandler(rpc))
 	log.Printf("Client socket: %s/api/client/ws", broker.Addr())
 	// -- connectrpc
 	path, handler := wasimoffv1connect.NewTasksHandler(rpc)
@@ -54,11 +54,12 @@ func main() {
 	log.Printf("Client RPC: %s%s", broker.Addr(), "/api/client"+path)
 
 	// storage: serve files from and upload into store storage
-	mux.Handle("/api/storage/{filename}", store.Storage)
+	mux.Handle("GET /api/storage/{filename}", store.Storage)
+	mux.HandleFunc("POST /api/storage/upload", store.Storage.Upload())
 	log.Printf("Upload at %s/api/storage/upload", broker.Addr())
 
 	// health message
-	mux.HandleFunc("/healthz", server.Healthz())
+	mux.HandleFunc("GET /healthz", server.Healthz())
 
 	// pprof endpoint for debugging
 	if conf.Debug {

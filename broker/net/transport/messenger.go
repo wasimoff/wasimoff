@@ -8,8 +8,6 @@ package transport
 // Copyright 2009 The Go Authors. All rights reserved.
 // Modified 2024 Anton Semjonov
 
-// TODO: handling of incoming requests (case pb.Envelope_Request) is not implemented yet
-
 import (
 	"context"
 	"crypto/rand"

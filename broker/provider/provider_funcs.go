@@ -3,40 +3,28 @@ package provider
 import (
 	"context"
 	"fmt"
-	"log"
 	"wasimoff/broker/storage"
 	wasimoff "wasimoff/proto/v1"
 )
-
-// TODO: make this a main.go config, via WASIMOFF_DEBUG as well?
-const debuglog = false
-
-// TODO: rewrite using new log/slog package and slog.Debug()
-func printdbg(format string, v ...any) {
-	if debuglog {
-		log.Printf(format, v...)
-	}
-}
 
 // ----- execute -----
 
 // run is the internal detail, which executes a task on the Provider without semaphore guards
 func (p *Provider) run(ctx context.Context, args wasimoff.Task_Request, result wasimoff.Task_Response) (err error) {
-	addr := p.Get(Address)
-	task := args.GetInfo().GetId()
-	printdbg("scheduled >> %s >> %s", task, addr)
+	// addr := p.Get(Address)
+	// task := args.GetInfo().GetId()
+	// log.Printf(">>> schedule %s >> %s", task, addr)
 	if err := p.messenger.RequestSync(ctx, args, result); err != nil {
-		printdbg("ERROR!    << %s << %s", task, addr)
+		// log.Printf("ERROR! <<<<< %s << %s", task, addr)
 		return fmt.Errorf("provider.run failed: %w", err)
 	}
-	// TODO: add a safeguard that result contains correct type matching args?
-	printdbg("finished  << %s << %s", task, addr)
+	// log.Printf("<<< finished %s << %s", task, addr)
 	return
 }
 
 // Run will run a task on a Provider synchronously, respecting limiter.
 func (p *Provider) Run(ctx context.Context, args wasimoff.Task_Request, result wasimoff.Task_Response) error {
-	p.limiter.Acquire(context.TODO(), 1)
+	p.limiter.Acquire(ctx, 1)
 	defer p.limiter.Release(1)
 	return p.run(ctx, args, result)
 }

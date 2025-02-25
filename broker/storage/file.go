@@ -9,7 +9,7 @@ import (
 	"slices"
 )
 
-// TODO: should probably use a library to detect media type from bytes
+// TODO: use a library to redetect media type from bytes
 // e.g. https://pkg.go.dev/github.com/gabriel-vasile/mimetype
 
 // File is a binary object stored in the ProviderStorage. It should be

@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"wasimoff/broker/net/transport"
-	"wasimoff/broker/provider"
 	wasimoff "wasimoff/proto/v1"
 
 	"connectrpc.com/connect"
@@ -31,10 +30,6 @@ func ClientSocketHandler(rpc *ConnectRpcServer) http.HandlerFunc {
 		}
 		messenger := transport.NewMessengerInterface(wst)
 		log.Printf("[%s] New Client socket", addr)
-
-		// channel for finished requests
-		// TODO: limit task creation with an equally-sized ticket channel
-		done := make(chan *provider.AsyncTask, 32)
 
 		defer log.Printf("[%s] Client socket closed", addr)
 		for {
@@ -85,27 +80,13 @@ func ClientSocketHandler(rpc *ConnectRpcServer) http.HandlerFunc {
 					continue
 
 				default: // unexpected message type
-					request.Respond(r.Context(), nil, fmt.Errorf("expecting only Task_*_Request messages on this socket"))
+					request.Respond(r.Context(), nil, fmt.Errorf("expecting only Task_Request messages on this socket"))
 					continue
 
 				}
-
-			// respond with finished results
-			case task := <-done:
-				request, ok := task.Context.Value(ctxkeyRequest{}).(transport.IncomingRequest)
-				if !ok {
-					log.Fatalf("ClientSocketHandler: couldn't get incoming request from context")
-				}
-
-				// pass through both internal and response errors directly
-				request.Respond(r.Context(), task.Response, task.Error)
-				log.Printf("Task respond: %s :: %#v\n", task.Request.GetInfo().GetId(), prototext.Format(task.Response))
 
 			}
 		}
 
 	}
 }
-
-// typed key to store original request in a context
-type ctxkeyRequest struct{}

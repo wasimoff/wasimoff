@@ -12,7 +12,7 @@ import (
 // The UploadHandler returns a HTTP handler, which takes the POSTed file
 // and inserts it into the provider storage, where workers can fetch their
 // binaries and zip files from.
-func (fs *FileStorage) upload() http.HandlerFunc {
+func (fs *FileStorage) Upload() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// if there's something in err upon return, we should log that
@@ -66,13 +66,6 @@ func (fs *FileStorage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	filename := r.PathValue("filename")
 	if filename == "" {
 		http.Error(w, "path pattern not found", http.StatusInternalServerError)
-		return
-	}
-
-	// maybe delegate to upload handler
-	// TODO: check and disallow other methods when not uploading
-	if r.Method == http.MethodPost && filename == "upload" {
-		fs.upload()(w, r)
 		return
 	}
 

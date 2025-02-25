@@ -50,7 +50,7 @@ func Dispatcher(selector Scheduler, concurrency int) {
 				}
 
 				// schedule the task with a provider and release a ticket
-				err = selector.Schedule(context.TODO(), task)
+				err = selector.Schedule(task.Context, task)
 				tickets <- struct{}{}
 
 				// oops, scheduling error

@@ -57,7 +57,7 @@ func (s *ProviderStore) transmitter() {
 	// broadcast events from channel
 	for event := range s.Broadcast {
 		s.Range(func(_ string, p *Provider) bool {
-			p.messenger.SendEvent(context.TODO(), event)
+			p.messenger.SendEvent(context.Background(), event)
 			return true
 		})
 	}

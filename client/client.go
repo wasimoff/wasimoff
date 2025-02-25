@@ -65,7 +65,7 @@ func main() {
 
 	// execute an ad-hoc command, as if you were to run it locally
 	case cmdExec:
-		envs := []string{} // TODO: read os.Environ?
+		envs := []string{}
 		args := flag.Args()
 		Execute(args, envs)
 
@@ -254,7 +254,7 @@ func runWasip1JobOnRpc(job *wasimoff.Task_Wasip1_JobRequest) *wasimoff.Task_Wasi
 func runWasip1JobOnWebSocket(job *wasimoff.Task_Wasip1_JobRequest) *wasimoff.Task_Wasip1_JobResponse {
 
 	// open a websocket to the broker
-	socket, err := transport.DialWebSocketTransport(context.TODO(), brokerUrl+"/api/client/ws")
+	socket, err := transport.DialWebSocketTransport(context.Background(), brokerUrl+"/api/client/ws")
 	if err != nil {
 		log.Printf("[WebSocket] ERR: dial: %s", err)
 	}
@@ -275,7 +275,7 @@ func runWasip1JobOnWebSocket(job *wasimoff.Task_Wasip1_JobRequest) *wasimoff.Tas
 		}
 
 		// store index in context
-		ctx := context.WithValue(context.TODO(), ctxJobIndex{}, i)
+		ctx := context.WithValue(context.Background(), ctxJobIndex{}, i)
 
 		// assemble wrapped task and fire it off
 		tr := &wasimoff.Task_Wasip1_Request{
