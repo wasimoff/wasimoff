@@ -1,4 +1,4 @@
-package scheduler
+package client
 
 import (
 	"context"
@@ -6,13 +6,15 @@ import (
 	"log"
 	"time"
 	"wasimoff/broker/provider"
+	"wasimoff/broker/scheduler"
 	wasimoff "wasimoff/proto/v1"
 
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )
 
-func TspBench(store *provider.ProviderStore, parallel int) {
+// Continuously schedule 'tsp-rand-10' tasks internally.
+func BenchmodeTspFlood(store *provider.ProviderStore, parallel int) {
 
 	if parallel <= 0 {
 		return
@@ -56,7 +58,7 @@ func TspBench(store *provider.ProviderStore, parallel int) {
 	// loop forever with incrementing index
 	for i := 0; ; i++ {
 		<-tickets
-		TaskQueue <- provider.NewAsyncTask(
+		scheduler.TaskQueue <- provider.NewAsyncTask(
 			context.Background(),
 			&wasimoff.Task_Wasip1_Request{
 				Info: &wasimoff.Task_Metadata{
@@ -73,7 +75,8 @@ func TspBench(store *provider.ProviderStore, parallel int) {
 	}
 }
 
-func pytest(parallel int) {
+// Continuously schedule 'pyodide' tasks internally.
+func BenchmodePyodideTest(parallel int) {
 
 	// use "tickets" to limit the number of concurrent tasks in-flight
 	tickets := make(chan struct{}, parallel)
@@ -102,7 +105,7 @@ func pytest(parallel int) {
 	// loop forever with incrementing index
 	for i := 0; ; i++ {
 		<-tickets
-		TaskQueue <- provider.NewAsyncTask(
+		scheduler.TaskQueue <- provider.NewAsyncTask(
 			context.Background(),
 			&wasimoff.Task_Pyodide_Request{
 				Info: &wasimoff.Task_Metadata{

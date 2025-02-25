@@ -87,8 +87,8 @@ func main() {
 }
 
 // open wasimoff + connectrpc client connection
-func ConnectRpcClient() wasimoffv1connect.WasimoffClient {
-	return wasimoffv1connect.NewWasimoffClient(http.DefaultClient, brokerUrl+"/api/client")
+func ConnectRpcClient() wasimoffv1connect.TasksClient {
+	return wasimoffv1connect.NewTasksClient(http.DefaultClient, brokerUrl+"/api/client")
 }
 
 // upload a local file to the Broker

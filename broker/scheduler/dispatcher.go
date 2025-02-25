@@ -8,6 +8,9 @@ import (
 	"wasimoff/broker/provider"
 )
 
+// reuseable task queue for HTTP handler and websocket
+var TaskQueue = make(chan *provider.AsyncTask, 2048)
+
 // Scheduler is a generic interface which must be fulfilled by a concrete scheduler,
 // i.e. the type that selects suitable providers given task information and submits the task.
 type Scheduler interface {
@@ -18,16 +21,18 @@ type Scheduler interface {
 }
 
 // The Dispatcher takes a task queue and a provider selector strategy and then
-// decides which task to send to which provider for computation.
-func Dispatcher(selector Scheduler, queue chan *provider.AsyncTask) {
+// decides which task to send to which provider for computation. Additionally,
+// limit the number of concurrently scheduling tasks (this does not mean running,
+// in-flight tasks but those that are currently "looking for a slot").
+func Dispatcher(selector Scheduler, concurrency int) {
 
 	// use ticketing to limit simultaneous schedules
-	tickets := make(chan struct{}, 8)
+	tickets := make(chan struct{}, concurrency)
 	for len(tickets) < cap(tickets) {
 		tickets <- struct{}{}
 	}
 
-	for task := range queue {
+	for task := range TaskQueue {
 		<-tickets // get a ticket
 
 		// each task is handled in a separate goroutine

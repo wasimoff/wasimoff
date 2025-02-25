@@ -9,6 +9,7 @@ import (
 	"wasimoff/broker/net/server"
 	"wasimoff/broker/provider"
 	"wasimoff/broker/scheduler"
+	"wasimoff/broker/scheduler/client"
 	"wasimoff/proto/v1/wasimoffv1connect"
 )
 
@@ -19,7 +20,7 @@ func main() {
 	conf := GetConfiguration()
 	log.Printf("%#v", &conf)
 
-	// create a new broker on a new http handler
+	// create a new http server for the broker
 	mux := http.NewServeMux()
 	broker, err := server.NewServer(mux, conf.HttpListen, conf.HttpCert, conf.HttpKey)
 	if err != nil {
@@ -32,29 +33,29 @@ func main() {
 	// selector := scheduler.NewRoundRobinSelector(store)
 	// selector := scheduler.NewAnyFreeSelector(store)
 
-	// provider transports
+	// provider endpoint
 	mux.HandleFunc("/api/provider/ws", provider.WebSocketHandler(store, conf.AllowedOrigins))
 	log.Printf("Provider socket: %s/api/provider/ws", broker.Addr())
 
-	// storage: serve files from and upload into store storage
-	mux.Handle("/api/storage/{filename}", store.Storage)
-	log.Printf("Storage at %s/api/storage/...", broker.Addr())
-
 	// create a queue for the tasks and start the dispatcher
-	go scheduler.Dispatcher(&selector, scheduler.TaskQueue)
+	go scheduler.Dispatcher(&selector, 32)
 
 	// maybe start the "benchmode" load generation
-	go scheduler.TspBench(store, conf.Benchmode)
+	go client.BenchmodeTspFlood(store, conf.Benchmode)
 
-	// connectrpc endpoint for clients
-	rpcserver := &scheduler.ConnectRpcServer{
-		Store: store,
-	}
-	path, handler := wasimoffv1connect.NewWasimoffHandler(rpcserver)
-	mux.Handle("/api/client"+path, http.StripPrefix("/api/client", handler))
-	log.Printf("ConnectRPC: %s%s", broker.Addr(), "/api/client"+path)
-	mux.HandleFunc("/api/client/ws", scheduler.ClientSocketHandler(rpcserver))
+	// client endpoints
+	rpc := &client.ConnectRpcServer{Store: store}
+	// -- websocket
+	mux.HandleFunc("/api/client/ws", client.ClientSocketHandler(rpc))
 	log.Printf("Client socket: %s/api/client/ws", broker.Addr())
+	// -- connectrpc
+	path, handler := wasimoffv1connect.NewTasksHandler(rpc)
+	mux.Handle("/api/client"+path, http.StripPrefix("/api/client", handler))
+	log.Printf("Client RPC: %s%s", broker.Addr(), "/api/client"+path)
+
+	// storage: serve files from and upload into store storage
+	mux.Handle("/api/storage/{filename}", store.Storage)
+	log.Printf("Upload at %s/api/storage/upload", broker.Addr())
 
 	// health message
 	mux.HandleFunc("/healthz", server.Healthz())

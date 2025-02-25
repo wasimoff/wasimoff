@@ -12,20 +12,11 @@ option go_package = "wasimoff/proto/v1;wasimoffv1";
 // option features.(pb.go).api_level = API_OPAQUE;
 
 
-// ---------- identifiers for codecs on the wire ---------- //
-
-// Subprotocol is used to identify the concrete encoding on the wire.
-enum Subprotocol {
-  UNKNOWN = 0;
-  wasimoff_provider_v1_protobuf = 1; // binary messages with Protobuf encoding
-  wasimoff_provider_v1_json     = 2; // text messages with JSON encoding
-}
-
-
 // ---------- "topmost" wrapped message format ---------- //
 
 // Envelope is a generic message wrapper with a sequence counter and message type.
-// The payload contains a { Request, Response, Event }.
+// The payload can contain a { Request, Response, Event }. When an Error is present
+// on a Response, it indicates that the Request failed badly internally.
 message Envelope {
 
   // The sequence number is incremented for each message but Request and Event
@@ -42,18 +33,16 @@ message Envelope {
   string error = 3;
 
   // The payload itself. Needs to be (un)packed with `anypb`.
+  // The Any payload can take literally any message and there is no Protobuf-enforced
+  // typing between the MessageType and the payload. Therefore you should make sure
+  // to name the Request and Result pairs absolutely clearly. Avoid using a generic
+  // response message for different requests, even if their fields are identical.
   google.protobuf.Any payload = 4;
 
 }
 
 
-// ---------- individual message definitions ---------- //
-
-// The Any payload can take literally any message and there is no Protobuf-enforced
-// typing between the MessageType and the payload. Therefore you should make sure
-// to name the Request and Result pairs absolutely clearly. Avoid using a generic
-// response message for different requests, even if their fields are identical.
-
+// ---------- task offloading requests ---------- //
 
 // The task message contains parameters to instantiate a task of a certain format
 // and return the output upon successful execution. The Request and Response herein
@@ -79,6 +68,7 @@ message Task {
     string id = 1; // unique identifier of the task
     string reason = 2; // freeform reason for logging
   }
+
 
   //  WebAssembly System Interface (WASI), preview1
   // ===============================================
@@ -193,8 +183,8 @@ message Task {
       }
     }
 
-    // Group result of a Wasip1 Job.
-    message Wasip1Response {
+    // Group result of a Pyodide Job.
+    message JobResponse {
       Metadata info = 1;
       string error = 2;
       repeated Response tasks = 3;
@@ -204,8 +194,8 @@ message Task {
 
 }
 
-// The Wasimoff service defines RPC interfaces for clients connecting to a Broker.
-service Wasimoff {
+// The Client service defines RPC interfaces for clients connecting to a Broker.
+service Tasks {
 
   // offload a WebAssembly WASI preview 1 tasks
   rpc RunWasip1(Task.Wasip1.Request) returns (Task.Wasip1.Response) {}
@@ -221,7 +211,7 @@ service Wasimoff {
 }
 
 
-// ---> filesystem
+// ---------- filesystem ---------- //
 
 // File is a file reference with optional mime-type. The ref could be a plain
 // filename, a prefixed hash digest or a URL to fetch from. When stored, a hash
@@ -277,11 +267,7 @@ message Filesystem {
 
 }
 
-
-
-
-
-// ---> event messages
+// ---------- event messages ---------- //
 
 message Event {
 
@@ -319,4 +305,14 @@ message Event {
     repeated string removed = 2;
   }
 
+}
+
+
+// ---------- identifiers for websocket codecs ---------- //
+
+// Subprotocol is used to identify the concrete encoding on the wire.
+enum Subprotocol {
+  UNKNOWN = 0;
+  wasimoff_provider_v1_protobuf = 1; // binary messages with Protobuf encoding
+  wasimoff_provider_v1_json     = 2; // text messages with JSON encoding
 }

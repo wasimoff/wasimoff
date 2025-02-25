@@ -1,19 +1,17 @@
-package scheduler
+package client
 
 import (
 	"context"
 	"fmt"
 	"sync/atomic"
 	"wasimoff/broker/provider"
+	"wasimoff/broker/scheduler"
 	"wasimoff/broker/storage"
 	wasimoff "wasimoff/proto/v1"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/proto"
 )
-
-// reuseable task queue for HTTP handler and websocket
-var TaskQueue = make(chan *provider.AsyncTask, 2048)
 
 // This ConnectRPC server implements the Wasimoff service from messages.proto, to
 // be used with the Connect handler, which automatically creates correct routes and
@@ -83,7 +81,7 @@ func (s *ConnectRpcServer) RunWasip1(
 	// dispatch
 	response := &wasimoff.Task_Wasip1_Response{}
 	done := make(chan *provider.AsyncTask, 1)
-	TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
+	scheduler.TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
 	call := <-done
 
 	if call.Error != nil {
@@ -108,7 +106,7 @@ func (s *ConnectRpcServer) RunWasip1Job(
 	job.ClientAddr = req.Peer().Addr
 
 	// compute all the tasks of a request
-	results := dispatchJob(ctx, s.Store, &job, TaskQueue)
+	results := dispatchJob(ctx, s.Store, &job, scheduler.TaskQueue)
 
 	if results.Error != nil {
 		return nil, fmt.Errorf(*results.Error)
@@ -136,7 +134,7 @@ func (s *ConnectRpcServer) RunPyodide(
 	// dispatch
 	response := &wasimoff.Task_Pyodide_Response{}
 	done := make(chan *provider.AsyncTask, 1)
-	TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
+	scheduler.TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
 	call := <-done
 
 	if call.Error != nil {
