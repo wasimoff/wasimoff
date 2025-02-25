@@ -49,8 +49,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
         }
       }
 
-      console.debug("%c[RPCHandler]", "color: orange;", task);
-
+      console.debug(...rpcHandlerPrefix, info.id, task);
       try {
         // execute the module in a worker
         let run = await this.pool.runWasip1(info.id, {
@@ -90,7 +89,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
       if (task.script === undefined)
         throw "pyodide.script cannot be undefined";
 
-      console.debug("%c[RPCHandler]", "color: orange;", task);
+      console.debug(...rpcHandlerPrefix, info.id, task);
       try {
 
         let run = await this.pool.runPyodide(info.id, task);
@@ -154,3 +153,5 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
 
   };
 };
+
+const rpcHandlerPrefix = [ "%c[RPCHandler]", "color: orange;" ];

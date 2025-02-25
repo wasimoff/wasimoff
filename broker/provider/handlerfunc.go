@@ -80,7 +80,7 @@ func (p *Provider) eventTransmitter() {
 				return // channel is closing, quit
 			}
 			// log.Printf("[%s] Request %d: %s", p.messenger.Addr(), request.Seq, prototext.Format(request.Request))
-			request.Respond(p.lifetime.Context, nil, fmt.Errorf("requests not supported on client socket"))
+			request.Respond(p.lifetime.Context, nil, fmt.Errorf("requests not supported on provider socket"))
 
 		// handle incoming events
 		case event, ok := <-p.messenger.Events():
