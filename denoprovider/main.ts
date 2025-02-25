@@ -37,9 +37,10 @@ await provider.sendInfo(workers, "deno", `${navigator.userAgent} (${Deno.build.t
 // log received messages
 (async () => {
   for await (const event of provider.messenger!.events) {
-    const typename = event.$typeName;
+    const typename: string = event.$typeName;
     delete event.$typeName;
-    console.log(`%c[${typename}]`, "color: green;", JSON.stringify(event));
+    if (!typename.endsWith("Throughput"))
+      console.log(`%c[${typename}]`, "color: green;", JSON.stringify(event));
   };
 })();
 
