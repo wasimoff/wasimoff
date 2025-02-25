@@ -96,9 +96,9 @@ func (s *ConnectRpcServer) RunWasip1(
 
 func (s *ConnectRpcServer) RunWasip1Job(
 	ctx context.Context,
-	req *connect.Request[wasimoff.Client_Job_Wasip1Request],
+	req *connect.Request[wasimoff.Task_Wasip1_JobRequest],
 ) (
-	*connect.Response[wasimoff.Client_Job_Wasip1Response],
+	*connect.Response[wasimoff.Task_Wasip1_JobResponse],
 	error,
 ) {
 

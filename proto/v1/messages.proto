@@ -84,15 +84,7 @@ message Task {
   // ===============================================
   message Wasip1 {
 
-    // Offload a Wasip1 task.
-    message Request {
-      Metadata info = 1;
-      QoS qos = 2;
-      Params params = 3;
-    }
-
-    // Contains necessary references and execution arguments to instantiate a single
-    // WebAssembly task in a WASI preview 1 environment on the Provider.
+    // Parameters to instantiate a WebAssembly WASI preview 1 task.
     message Params {
       File binary = 1;
       repeated string args = 2;
@@ -100,15 +92,6 @@ message Task {
       bytes stdin = 4;
       File rootfs = 5;
       repeated string artifacts = 6;
-    }
-
-    // Wrap a Wasip1.Output in a result, which can be an Error or OK.
-    message Response {
-      Metadata info = 1;
-      oneof result {
-        string error = 2;
-        Output ok = 3;
-      }
     }
 
     // The result of an execution from a Wasip1.Params message. It should only be
@@ -120,6 +103,40 @@ message Task {
       File artifacts = 4;
     }
 
+    // -------
+
+    // Offload a Wasip1 task.
+    message Request {
+      Metadata info = 1;
+      QoS qos = 2;
+      Params params = 3;
+    }
+
+    // Offload a job (group of Wasip1 tasks).
+    // Tasks will inherit unset values from the parent.
+    message JobRequest {
+      Metadata info = 1;
+      QoS qos = 2;
+      Params parent = 3;
+      repeated Params tasks = 4;
+    }
+
+    // Response for a single Wasip1 task, which can be an Error or OK.
+    message Response {
+      Metadata info = 1;
+      oneof result {
+        string error = 2;
+        Output ok = 3;
+      }
+    }
+
+    // Group result of a Wasip1 Job.
+    message JobResponse {
+      Metadata info = 1;
+      string error = 2;
+      repeated Response tasks = 3;
+    }
+
   }
 
 
@@ -127,13 +144,7 @@ message Task {
   // ========================
   message Pyodide {
 
-    // Offload a Pyodide task.
-    message Request {
-      Metadata info = 1;
-      QoS qos = 2;
-      Params params = 3;
-    }
-
+    // Parameters to instantiate a Pyodide task.
     message Params {
       string script = 1;
       repeated string packages = 7;
@@ -145,7 +156,35 @@ message Task {
       // repeated string artifacts = 6; // TODO
     }
 
-    // Wrap a Pyodide.Output in a result, which can be an Error or OK.
+    // The result of an execution from a Pyodide.Params message. It should only be
+    // returned if the Pyodide interpreter was started successfully at all.
+    message Output {
+      bytes pickle = 1;
+      bytes stdout = 2;
+      bytes stderr = 3;
+      string version = 4;
+      // File artifacts = 4;
+    }
+
+    // -------
+
+    // Offload a Pyodide task.
+    message Request {
+      Metadata info = 1;
+      QoS qos = 2;
+      Params params = 3;
+    }
+
+    // Offload a job (group of Pyodide tasks).
+    // Tasks will inherit unset values from the parent.
+    message JobRequest {
+      Metadata info = 1;
+      QoS qos = 2;
+      Params parent = 3;
+      repeated Params tasks = 4;
+    }
+
+    // Response for a single Pyodide task, which can be an Error or OK.
     message Response {
       Metadata info = 1;
       oneof result {
@@ -154,12 +193,11 @@ message Task {
       }
     }
 
-    message Output {
-      bytes pickle = 1;
-      bytes stdout = 2;
-      bytes stderr = 3;
-      string version = 4;
-      // File artifacts = 4;
+    // Group result of a Wasip1 Job.
+    message Wasip1Response {
+      Metadata info = 1;
+      string error = 2;
+      repeated Response tasks = 3;
     }
 
   }
@@ -171,11 +209,11 @@ service Wasimoff {
 
   // offload a WebAssembly WASI preview 1 tasks
   rpc RunWasip1(Task.Wasip1.Request) returns (Task.Wasip1.Response) {}
-  rpc RunWasip1Job(Client.Job.Wasip1Request) returns (Client.Job.Wasip1Response) {}
+  rpc RunWasip1Job(Task.Wasip1.JobRequest) returns (Task.Wasip1.JobResponse) {}
 
   // offload a Python task in Pyodide
   rpc RunPyodide(Task.Pyodide.Request) returns (Task.Pyodide.Response) {}
-  // rpc RunPyodideJob(Client.Job.PyodideRequest) returns (Client.Job.PyodideResponse) {}
+  // rpc RunPyodideJob(Task.Pyodide.JobRequest) returns (Task.Pyodide.JobResponse) {}
 
   // upload a file to the broker
   rpc Upload(Filesystem.Upload.Request) returns (Filesystem.Upload.Response) {}
@@ -280,57 +318,5 @@ message Event {
     repeated string added = 1;
     repeated string removed = 2;
   }
-
-}
-
-
-// ---------- client interface ---------- //
-
-// The client interface specifies the messages that the offloading clients
-// are expected to send. As a first step, they should just formalize the
-// ad-hoc JSON structs that are already used, so at least the Broker can
-// use pbjson to parse messages.
-
-// These client requests will arrive on predefined routes, so a normal RPC
-// library could be used and no Envelope wrapping is necessary.
-
-message Client {
-
-  // Jobs specify a simple parent-inheritance structure for each task format, so
-  // multiple similar tasks can be sent efficiently in a single HTTP request.
-  // There is no magic involved though: anything in the parent gets entirely
-  // replaced by the corresponding fields in a task specification. Thus, at least
-  // one task must always be present, even if just an empty { } with all
-  // parameters inherited from the parent.
-  message Job {
-
-    message Wasip1Request {
-      Task.Wasip1.Params parent = 1;
-      repeated Task.Wasip1.Params tasks = 2;
-    }
-
-    message Wasip1Response {
-      string error = 1;
-      repeated Task.Wasip1.Response tasks = 2;
-    }
-
-    message PyodideRequest {
-      Task.Pyodide.Params parent = 1;
-      repeated Task.Pyodide.Params tasks = 2;
-    }
-
-    message PyodideResponse {
-      string error = 1;
-      repeated Task.Pyodide.Response tasks = 2;
-    }
-
-  }
-
-}
-
-// Job specifications are serialized versions of a group of tasks. These can
-// be ingested by the Client CLI and sent to a Broker.
-message JobSpecification {
-
 
 }

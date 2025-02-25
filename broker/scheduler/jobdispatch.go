@@ -18,7 +18,7 @@ import (
 type OffloadingJob struct {
 	JobID      string // used to track all tasks of this request
 	ClientAddr string // remote address of the requesting client
-	JobSpec    *wasimoff.Client_Job_Wasip1Request
+	JobSpec    *wasimoff.Task_Wasip1_JobRequest
 }
 
 // dispatchJob takes a run configuration, generates individual tasks from it,
@@ -29,7 +29,7 @@ func dispatchJob(
 	store *provider.ProviderStore,
 	job *OffloadingJob,
 	queue chan *provider.AsyncTask,
-) *wasimoff.Client_Job_Wasip1Response {
+) *wasimoff.Task_Wasip1_JobResponse {
 
 	// go through all the *pb.Files in parent and tasks to resolve names from storage
 	errs := []error{}
@@ -42,7 +42,7 @@ func dispatchJob(
 		errs = append(errs, store.Storage.ResolvePbFile(task.Rootfs))
 	}
 	if err := errors.Join(errs...); err != nil {
-		return &wasimoff.Client_Job_Wasip1Response{
+		return &wasimoff.Task_Wasip1_JobResponse{
 			Error: proto.String(err.Error()),
 		}
 	}
@@ -85,7 +85,7 @@ func dispatchJob(
 	}
 
 	// collect the task responses
-	jobResponse := &wasimoff.Client_Job_Wasip1Response{
+	jobResponse := &wasimoff.Task_Wasip1_JobResponse{
 		Tasks: make([]*wasimoff.Task_Wasip1_Response, len(pending)),
 	}
 	for i, task := range pending {

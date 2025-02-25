@@ -193,13 +193,13 @@ func RunWasip1Job(config string) {
 	}
 
 	// decode with protojson and report any errors locally
-	job := &wasimoff.Client_Job_Wasip1Request{}
+	job := &wasimoff.Task_Wasip1_JobRequest{}
 	if err = protojson.Unmarshal(buf, job); err != nil {
 		log.Fatal("unmarshal job: ", err)
 	}
 
 	// run the job
-	var results *wasimoff.Client_Job_Wasip1Response
+	var results *wasimoff.Task_Wasip1_JobResponse
 	if websock {
 		results = runWasip1JobOnWebSocket(job)
 	} else {
@@ -230,7 +230,7 @@ func RunWasip1Job(config string) {
 }
 
 // run a prepared job configuration from proto message
-func runWasip1JobOnRpc(job *wasimoff.Client_Job_Wasip1Request) *wasimoff.Client_Job_Wasip1Response {
+func runWasip1JobOnRpc(job *wasimoff.Task_Wasip1_JobRequest) *wasimoff.Task_Wasip1_JobResponse {
 
 	// connect the rpc client
 	client := ConnectRpcClient()
@@ -251,7 +251,7 @@ func runWasip1JobOnRpc(job *wasimoff.Client_Job_Wasip1Request) *wasimoff.Client_
 }
 
 // alternatively, run a job by sending each task over websocket
-func runWasip1JobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) *wasimoff.Client_Job_Wasip1Response {
+func runWasip1JobOnWebSocket(job *wasimoff.Task_Wasip1_JobRequest) *wasimoff.Task_Wasip1_JobResponse {
 
 	// open a websocket to the broker
 	socket, err := transport.DialWebSocketTransport(context.TODO(), brokerUrl+"/api/client/ws")
@@ -311,7 +311,7 @@ func runWasip1JobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) *wasimoff.C
 	}
 
 	// return the results
-	return &wasimoff.Client_Job_Wasip1Response{
+	return &wasimoff.Task_Wasip1_JobResponse{
 		Tasks: responses,
 	}
 }

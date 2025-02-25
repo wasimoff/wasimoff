@@ -2,7 +2,7 @@ package wasimoffv1
 
 // Additional helpers on the generated types.
 
-// Fill any nil (!) task parameters from a parent task specification.
+// Fill any unset (nil) task parameters from a parent task specification.
 func (wt *Task_Wasip1_Params) InheritNil(parent *Task_Wasip1_Params) *Task_Wasip1_Params {
 	if parent == nil {
 		// nothing to do when parent is nil
@@ -43,10 +43,3 @@ func (tr *Task_Wasip1_Request) GetRequiredFiles() (files []string) {
 
 	return files
 }
-
-// // Check if the Result is OK or if it it the error type.
-// func (r *Task_Wasip1_Response) OK() bool {
-// 	_, ok := tr.Result.(*Task_Wasip1_Response_Error)
-// 	// if the above assertion is ok, it *was* an error and this function should return false
-// 	return !ok
-// }
