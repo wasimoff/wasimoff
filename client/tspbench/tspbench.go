@@ -10,6 +10,7 @@ import (
 	"wasimoff/broker/net/transport"
 	wasimoff "wasimoff/proto/v1"
 
+	"github.com/paulbellamy/ratecounter"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	// open a websocket to the broker
-	messenger, err := transport.DialWasimoff(context.TODO(), broker)
+	messenger, err := transport.DialWasimoff(context.Background(), broker)
 	if err != nil {
 		log.Fatalf("ERR: %s", err)
 	}
@@ -36,6 +37,7 @@ func main() {
 		Binary: &wasimoff.File{Ref: proto.String("tsp.wasm")},
 		Args:   []string{"tsp.wasm", "rand", fmt.Sprintf("%d", tspn)},
 	}
+	request := &wasimoff.Task_Wasip1_Request{Params: task}
 
 	// use "tickets" to limit the number of concurrent tasks in-flight
 	tickets := make(chan struct{}, parallel)
@@ -45,20 +47,23 @@ func main() {
 
 	// count completed requests
 	counter := atomic.Uint64{}
+	ratecounter := ratecounter.NewRateCounter(5 * time.Second)
 
 	for {
 		<-tickets
 		go func() {
 
-			result := &wasimoff.Task_Wasip1_Result{}
-			err := messenger.RequestSync(context.TODO(), task, result)
+			response := &wasimoff.Task_Wasip1_Response{}
+			err := messenger.RequestSync(context.Background(), request, response)
 			if err != nil {
+				log.Println(err)
 				time.Sleep(time.Second)
+			} else {
+				ratecounter.Incr(1)
+				counter.Add(1)
 			}
-
 			tickets <- struct{}{}
-			c := counter.Add(1)
-			fmt.Printf("\rrequests: %12d", c)
+			fmt.Printf("\rrequests: %12d (%d req/s)", counter.Load(), ratecounter.Rate()/5)
 
 		}()
 	}
