@@ -14,17 +14,26 @@ import (
 	"strings"
 	"wasimoff/broker/net/transport"
 	wasimoff "wasimoff/proto/v1"
+	"wasimoff/proto/v1/wasimoffv1connect"
 
+	"connectrpc.com/connect"
 	"github.com/gabriel-vasile/mimetype"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
-var (
+var ( // config flags
 	brokerUrl = "http://localhost:4080" // default broker base URL
 	verbose   = false                   // be more verbose
 	readstdin = false                   // read stdin for exec
 	websock   = false                   // use websocket to send tasks
+)
+
+var ( // command flags, pick one
+	cmdUpload     = ""    // upload this file
+	cmdExec       = false // execute cmdline
+	cmdRunWasip1  = ""    // run wasip1 job
+	cmdRunPyodide = ""    // run python file
 )
 
 func init() {
@@ -38,43 +47,48 @@ func main() {
 
 	// commandline parser
 	flag.StringVar(&brokerUrl, "broker", brokerUrl, "URL to the Broker to use")
-	upload := flag.String("upload", "", "Upload a file (wasm or zip) to the Broker and receive its ref")
-	exec := flag.Bool("exec", false, "Execute an uploaded binary by passing all non-flag args")
-	run := flag.String("run", "", "Run a prepared JSON job file")
-	runpy := flag.String("runpy", "", "Run a Python script file with Pyodide")
+	flag.StringVar(&cmdUpload, "upload", "", "Upload a file (wasm or zip) to the Broker and receive its ref")
+	flag.BoolVar(&cmdExec, "exec", false, "Execute an uploaded binary by passing all non-flag args")
+	flag.StringVar(&cmdRunWasip1, "run", "", "Run a prepared JSON job file")
+	flag.StringVar(&cmdRunPyodide, "runpy", "", "Run a Python script file with Pyodide")
 	flag.BoolVar(&verbose, "verbose", verbose, "Be more verbose and print raw messages for -exec")
 	flag.BoolVar(&readstdin, "stdin", readstdin, "Read and send stdin when using -exec (not streamed)")
-	flag.BoolVar(&websock, "ws", websock, "Use a WebSocket to send tasks")
+	flag.BoolVar(&websock, "ws", websock, "Use a WebSocket to send -run job")
 	flag.Parse()
 
 	switch true {
 
 	// upload a file, optionally take another argument as name alias
-	case *upload != "":
+	case cmdUpload != "":
 		alias := flag.Arg(0)
-		UploadFile(*upload, alias)
+		UploadFile(cmdUpload, alias)
 
 	// execute an ad-hoc command, as if you were to run it locally
-	case *exec:
+	case cmdExec:
 		envs := []string{} // TODO: read os.Environ?
 		args := flag.Args()
 		Execute(args, envs)
 
 	// execute a prepared JSON job
-	case *run != "":
-		RunJsonFile(*run)
+	case cmdRunWasip1 != "":
+		RunWasip1Job(cmdRunWasip1)
 
 	// execute a python script task
-	case *runpy != "":
-		RunPythonScript(*runpy)
+	case cmdRunPyodide != "":
+		RunPythonScript(cmdRunPyodide)
 
 	// no command specified
 	default:
-		fmt.Fprintln(os.Stderr, "ERR: at least one of -upload, -exec or -run must be used")
+		fmt.Fprintln(os.Stderr, "ERR: at least one of -upload, -exec, -run, -runpy must be used")
 		flag.Usage()
 		os.Exit(2)
 	}
 
+}
+
+// open wasimoff + connectrpc client connection
+func ConnectRpcClient() wasimoffv1connect.WasimoffClient {
+	return wasimoffv1connect.NewWasimoffClient(http.DefaultClient, brokerUrl+"/api/client")
 }
 
 // upload a local file to the Broker
@@ -113,21 +127,23 @@ func UploadFile(filename, name string) {
 
 }
 
-// execute an ad-hoc command by constructing configuration
+// execute an ad-hoc command line
 func Execute(args, envs []string) {
 	if len(args) == 0 {
 		log.Fatal("need at least one argument")
 	}
 
-	// construct an ad-hoc job
-	job := &wasimoff.Client_Job_Wasip1Request{
-		Tasks: []*wasimoff.Task_Wasip1_Params{{
+	// connect the client
+	client := ConnectRpcClient()
+
+	// prepare the request
+	request := &wasimoff.Task_Wasip1_Request{
+		Params: &wasimoff.Task_Wasip1_Params{
 			Binary: &wasimoff.File{Ref: proto.String(args[0])},
 			Args:   args,
 			Envs:   envs,
-		}},
+		},
 	}
-
 	// optionally read stdin
 	if readstdin {
 		stdin, err := io.ReadAll(os.Stdin)
@@ -135,38 +151,40 @@ func Execute(args, envs []string) {
 			fmt.Fprintln(os.Stderr, "ERR: failed reading stdin:", err)
 			os.Exit(1)
 		}
-		job.Tasks[0].Stdin = stdin
+		request.Params.Stdin = stdin
 	}
 
-	// dump as JSON and run the job
-	if verbose {
-		js, _ := protojson.Marshal(job)
-		log.Println("run:", string(js))
-	}
-	results := RunJob(job)
+	// make the request
+	maybeDumpJson("[RunWasip1] run:", request)
+	response, err := client.RunWasip1(
+		context.Background(),
+		connect.NewRequest(request),
+	)
 
-	// there should be exactly one result, print it
-	task := results[0]
-	if task.GetError() != "" {
-		fmt.Fprintln(os.Stderr, "ERR:", task.GetError())
+	// print the result
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[RunWasip1] ERR: %s\n", err.Error())
 		os.Exit(1)
 	} else {
-		r := task.GetOk()
-		if verbose {
-			js, _ := protojson.Marshal(r)
-			log.Println("result:", string(js))
+		r := response.Msg
+		if r.GetError() != "" {
+			fmt.Fprintf(os.Stderr, "[RunWasip1] FAIL: %s\n", r.GetError())
+			os.Exit(1)
+		} else {
+			ok := r.GetOk()
+			maybeDumpJson("[RunWasip1] result:", ok)
+			if len(ok.GetStderr()) != 0 {
+				fmt.Fprintf(os.Stderr, "\033[31m%s\033[0m\n", string(ok.GetStderr()))
+			}
+			fmt.Fprintln(os.Stdout, string(ok.GetStdout()))
+			os.Exit(int(ok.GetStatus()))
 		}
-		if len(r.GetStderr()) != 0 {
-			fmt.Fprintf(os.Stderr, "\033[31m%s\033[0m", string(r.GetStderr()))
-		}
-		fmt.Fprint(os.Stdout, string(r.GetStdout()))
-		os.Exit(int(r.GetStatus()))
 	}
 
 }
 
 // run a prepared job configuration from file
-func RunJsonFile(config string) {
+func RunWasip1Job(config string) {
 
 	// read the file
 	buf, err := os.ReadFile(config)
@@ -181,15 +199,24 @@ func RunJsonFile(config string) {
 	}
 
 	// run the job
-	results := RunJob(job)
+	var results *wasimoff.Client_Job_Wasip1Response
+	if websock {
+		results = runWasip1JobOnWebSocket(job)
+	} else {
+		results = runWasip1JobOnRpc(job)
+	}
 
 	// print all task results
-	for i, task := range results {
+	if results.GetError() != "" {
+		fmt.Fprintf(os.Stderr, "[RunWasip1Job] FAIL: %s\n", results.GetError())
+		os.Exit(1)
+	}
+	for i, task := range results.GetTasks() {
 		if task.GetError() != "" {
-			fmt.Fprintf(os.Stderr, "[task %d FAIL] %s\n", i, task.GetError())
+			fmt.Fprintf(os.Stderr, "[task %d] FAIL: %s\n", i, task.GetError())
 		} else {
 			r := task.GetOk()
-			fmt.Fprintf(os.Stderr, "[task %d => exit:%d]\n", i, *r.Status)
+			fmt.Fprintf(os.Stderr, "[task %d] exit:%d\n", i, *r.Status)
 			if r.Artifacts != nil {
 				fmt.Fprintf(os.Stderr, "artifact: %s\n", base64.StdEncoding.EncodeToString(r.Artifacts.GetBlob()))
 			}
@@ -203,58 +230,33 @@ func RunJsonFile(config string) {
 }
 
 // run a prepared job configuration from proto message
-func RunJob(job *wasimoff.Client_Job_Wasip1Request) []*wasimoff.Task_Wasip1_Response {
+func runWasip1JobOnRpc(job *wasimoff.Client_Job_Wasip1Request) *wasimoff.Client_Job_Wasip1Response {
 
-	// short-circuit to alternative function, when we should be using websocket
-	if websock {
-		return RunJobOnWebSocket(job)
-	}
+	// connect the rpc client
+	client := ConnectRpcClient()
 
-	// (re)marshal as binary
-	jobpb, err := proto.Marshal(job)
+	// make the request
+	response, err := client.RunWasip1Job(
+		context.Background(),
+		connect.NewRequest(job),
+	)
+
+	// print failure or return response
 	if err != nil {
-		log.Fatal("can't remarshal: ", err)
-	}
-
-	// send the request
-	resp, err := http.Post(
-		brokerUrl+"/api/client/wasimoff.v1.Wasimoff/RunWasip1Job", "application/proto", bytes.NewBuffer(jobpb))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer resp.Body.Close()
-
-	// wait and read the full response
-	body, _ := io.ReadAll(resp.Body)
-	response := &wasimoff.Client_Job_Wasip1Response{}
-	if err := proto.Unmarshal(body, response); err != nil {
-		log.Println("can't unmarshal response: ", err)
-		fmt.Fprintln(os.Stderr, string(body))
+		fmt.Fprintf(os.Stderr, "[RunWasip1Job] ERR: %s\n", err.Error())
 		os.Exit(1)
 	}
+	return response.Msg
 
-	// print error if HTTP status isn't OK
-	if resp.StatusCode != http.StatusOK {
-		log.Print("http error:", resp.Status)
-		fmt.Fprintln(os.Stderr, string(body))
-		os.Exit(1)
-	}
-
-	// print overall failures
-	if response.Error != nil {
-		log.Fatal("job failed: ", response.GetError())
-	}
-
-	return response.GetTasks()
 }
 
 // alternatively, run a job by sending each task over websocket
-func RunJobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) []*wasimoff.Task_Wasip1_Response {
+func runWasip1JobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) *wasimoff.Client_Job_Wasip1Response {
 
 	// open a websocket to the broker
 	socket, err := transport.DialWebSocketTransport(context.TODO(), brokerUrl+"/api/client/ws")
 	if err != nil {
-		log.Printf("ERR: opening websocket: %s", err)
+		log.Printf("[WebSocket] ERR: dial: %s", err)
 	}
 	// wrap it in a messenger for RPC
 	messenger := transport.NewMessengerInterface(socket)
@@ -269,7 +271,7 @@ func RunJobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) []*wasimoff.Task_
 	for i, task := range job.GetTasks() {
 		task.InheritNil(job.Parent)
 		if verbose {
-			log.Printf("websocket: submit task %d", i)
+			log.Printf("[WebSocket] submit task %d", i)
 		}
 
 		// store index in context
@@ -288,7 +290,7 @@ func RunJobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) []*wasimoff.Task_
 		ntasks -= 1
 		i := call.Context.Value(ctxJobIndex{}).(int)
 		if verbose {
-			log.Printf("websocket: received result %d: err=%v", i, call.Error)
+			log.Printf("[WebSocket] received result %d: err=%v", i, call.Error)
 		}
 
 		if call.Error != nil {
@@ -308,7 +310,10 @@ func RunJobOnWebSocket(job *wasimoff.Client_Job_Wasip1Request) []*wasimoff.Task_
 		}
 	}
 
-	return responses
+	// return the results
+	return &wasimoff.Client_Job_Wasip1Response{
+		Tasks: responses,
+	}
 }
 
 // run a python script from file
@@ -321,50 +326,52 @@ func RunPythonScript(script string) {
 	}
 	script = string(buf)
 
+	// open wasimoff client connection
+	client := ConnectRpcClient()
+
 	// prepare a request using this file
 	request := &wasimoff.Task_Pyodide_Request{
 		Params: &wasimoff.Task_Pyodide_Params{
 			Script: &script,
 		},
 	}
-	if verbose {
-		// dump as JSON
-		js, _ := protojson.Marshal(request)
-		log.Println("run:", string(js))
-	}
 
-	// open a websocket to the broker
-	socket, err := transport.DialWebSocketTransport(context.TODO(), brokerUrl+"/api/client/ws")
+	// make the request
+	maybeDumpJson("[RunPyodide] run:", request)
+	response, err := client.RunPyodide(
+		context.Background(),
+		connect.NewRequest(request),
+	)
+
+	// print task result
 	if err != nil {
-		log.Printf("ERR: opening websocket: %s", err)
-	}
-	// wrap it in a messenger for RPC
-	messenger := transport.NewMessengerInterface(socket)
-	defer messenger.Close(nil)
-
-	// send the request
-	response := &wasimoff.Task_Pyodide_Response{}
-	messenger.RequestSync(context.TODO(), request, response)
-
-	// print all task results
-	if response.GetError() != "" {
-		fmt.Fprintf(os.Stderr, "[task py FAIL] %s\n", response.GetError())
+		fmt.Fprintf(os.Stderr, "[RunPyodide ERR] %s\n", err.Error())
+		os.Exit(1)
 	} else {
-		if response.GetError() != "" {
-			fmt.Fprintf(os.Stderr, "[task py FAIL] %s\n", response.GetError())
-			return
-		}
-		r := response.GetOk()
-		fmt.Fprintf(os.Stderr, "# Pyodide v%s: https://pyodide.org/en/%s/usage/packages-in-pyodide.html\n", r.GetVersion(), r.GetVersion())
-		if len(r.GetStderr()) != 0 {
-			fmt.Fprintf(os.Stderr, "\033[31m%s\033[0m\n", string(r.GetStderr()))
-		}
-		fmt.Fprintln(os.Stdout, string(r.GetStdout()))
-		if r.Pickle != nil {
-			fmt.Fprintf(os.Stderr, "\nresult pickle: %s\n", base64.StdEncoding.EncodeToString(r.GetPickle()))
+		r := response.Msg
+		if r.GetError() != "" {
+			fmt.Fprintf(os.Stderr, "[RunPyodide FAIL] %s\n", r.GetError())
+			os.Exit(1)
+		} else {
+			ok := r.GetOk()
+			fmt.Fprintf(os.Stderr, "# Pyodide v%s: https://pyodide.org/en/%s/usage/packages-in-pyodide.html\n", ok.GetVersion(), ok.GetVersion())
+			if len(ok.GetStderr()) != 0 {
+				fmt.Fprintf(os.Stderr, "\033[31m%s\033[0m\n", string(ok.GetStderr()))
+			}
+			fmt.Fprintln(os.Stdout, string(ok.GetStdout()))
+			if ok.Pickle != nil {
+				fmt.Fprintf(os.Stderr, "\nresult pickle: %s\n", base64.StdEncoding.EncodeToString(ok.GetPickle()))
+			}
 		}
 	}
 
+}
+
+func maybeDumpJson(pre string, m proto.Message) {
+	if verbose {
+		js, _ := protojson.Marshal(m)
+		log.Println(pre, string(js))
+	}
 }
 
 // typed key to store index in context

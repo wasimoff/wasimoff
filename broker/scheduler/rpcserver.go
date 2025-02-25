@@ -3,14 +3,12 @@ package scheduler
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync/atomic"
 	"wasimoff/broker/provider"
 	"wasimoff/broker/storage"
 	wasimoff "wasimoff/proto/v1"
 
 	"connectrpc.com/connect"
-	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -81,7 +79,6 @@ func (s *ConnectRpcServer) RunWasip1(
 		Id:        proto.String(fmt.Sprintf("connect/%d/wasip1", s.taskSeq.Add(1))),
 		Requester: proto.String(req.Peer().Addr),
 	}
-	log.Println("Run Wasip1", prototext.Format(r.Info))
 
 	// dispatch
 	response := &wasimoff.Task_Wasip1_Response{}
@@ -109,8 +106,6 @@ func (s *ConnectRpcServer) RunWasip1Job(
 	// amend the job with information about client
 	job.JobID = fmt.Sprintf("%05d", s.jobSeq.Add(1))
 	job.ClientAddr = req.Peer().Addr
-	log.Printf("RunWasip1Job [%s] from %q: %d tasks\n",
-		job.JobID, job.ClientAddr, len(job.JobSpec.Tasks))
 
 	// compute all the tasks of a request
 	results := dispatchJob(ctx, s.Store, &job, TaskQueue)
