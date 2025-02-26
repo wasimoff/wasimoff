@@ -42,6 +42,7 @@ func Dispatcher(selector Scheduler, concurrency int) {
 
 			retries := 10
 			var err error
+			errs := make([]error, 0, 10)
 			for i := 0; i < retries; i++ {
 
 				// when retrying, we need to reacquire a ticket
@@ -56,7 +57,7 @@ func Dispatcher(selector Scheduler, concurrency int) {
 				// oops, scheduling error
 				if err != nil {
 					log.Printf("RETRY: selector.Schedule %s failed (%d)", task.Request.GetInfo().GetId(), i)
-					task.Error = nil
+					errs = append(errs, err)
 					continue // retry
 				}
 
@@ -68,8 +69,9 @@ func Dispatcher(selector Scheduler, concurrency int) {
 					if errors.Is(result.Error, context.Canceled) {
 						break
 					}
-					log.Printf("RETRY: task %s failed (%d): %v", task.Request.GetInfo().GetId(), i, task.Error)
-					task.Error = nil
+					log.Printf("RETRY: task %s failed (%d): %v", task.Request.GetInfo().GetId(), i, result.Error)
+					err = result.Error
+					errs = append(errs, err)
 					continue // retry
 				}
 
@@ -80,7 +82,7 @@ func Dispatcher(selector Scheduler, concurrency int) {
 
 			// still erroneous after retries, give up
 			if err != nil {
-				task.Error = err
+				task.Error = errors.Join(errs...)
 			} else {
 				// otherwise signal completion to measure throughput
 				selector.RateTick()
