@@ -49,7 +49,7 @@ export class WasiWorkerPool {
     let index = this.nextindex++;
     console.info(...logprefix, "spawn Worker", index);
     const worker = new Worker(new URL("./wasiworker.ts", import.meta.url), { type: "module" });
-    const link = await construct<typeof WasiWorker>(worker, index);
+    const link = await construct<typeof WasiWorker>(worker, index); // TODO: use Pyodide dist on Broker
 
     // append to pool and enqueue available for work
     const wrapped = { index, worker, link, busy: false };

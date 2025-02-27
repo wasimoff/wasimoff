@@ -9,7 +9,7 @@ import { ZipReader, Uint8ArrayReader, Uint8ArrayWriter, ZipWriter } from "@zip.j
 import { expose, workerReady } from "./comlink.ts";
 import { Inode } from "@bjorn3/browser_wasi_shim";
 import { Directory } from "@bjorn3/browser_wasi_shim";
-import { loadPyodide } from "pyodide";
+import { loadPyodide, version as pyversion } from "pyodide";
 
 
 /** Web Worker which runs WebAssembly modules with a WASI shim in a quasi threadpool. */
@@ -18,6 +18,7 @@ export class WasiWorker {
   constructor(
     private readonly index: number,
     private readonly verbose: boolean = false,
+    private readonly pydist: string = `https://cdn.jsdelivr.net/pyodide/v${pyversion}/full/`,
   ) { };
 
   // colorful console logging prefix
@@ -125,7 +126,14 @@ export class WasiWorker {
         fullStdLib: false, // probably a little faster
         checkAPIVersion: true, // must be this exact version
         packages: task.packages, // preload some packages explicitly
+        // if we are a browser, set indexURL to the Pyodide dist URL
+        indexURL: ("Deno" in globalThis) ? undefined : this.pydist,
       });
+      // if in Deno, you can quasi-set the indexURL by overwriting cdnUrl of the PackageManager
+      if ("Deno" in globalThis && "_api" in py) {
+        //! this needs a fully-qualified URL but it can be a local filesystem path, too
+        ((py._api as any).setCdnUrl as (url: string) => void)(this.pydist);
+      }
       console.debug(...this.logprefix, "loading took", performance.now() - t0, "ms");
 
       // setup the io buffers

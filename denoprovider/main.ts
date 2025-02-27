@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-env --allow-read --allow-net
+#!/usr/bin/env -S deno run --allow-env --allow-read --allow-write --allow-net --no-prompt
 
 import { parseArgs } from "@std/cli/parse-args";
 import { WasimoffProvider } from "@wasimoff/worker/provider.ts";
