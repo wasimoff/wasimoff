@@ -4,13 +4,20 @@ REVISION := $(shell printf 'r%s-g%s' "$$(git rev-list --count HEAD)" "$$(git des
 .DEFAULT_GOAL := buf
 
 # build docker containers for broker and deno providers
-.PHONY: broker provider
+.PHONY: broker provider push
 broker:
 	docker build --target wasimoff -t ansemjo/wasimoff:$@-$(REVISION) .
 	docker tag ansemjo/wasimoff:$@-$(REVISION) ansemjo/wasimoff:$@
 provider:
 	docker build --target provider -t ansemjo/wasimoff:$@-$(REVISION) .
 	docker tag ansemjo/wasimoff:$@-$(REVISION) ansemjo/wasimoff:$@
+
+# push the built containers
+push:
+	docker push ansemjo/wasimoff:broker-$(REVISION)
+	docker push ansemjo/wasimoff:broker
+	docker push ansemjo/wasimoff:provider-$(REVISION)
+	docker push ansemjo/wasimoff:provider
 
 # build the client binary
 .PHONY: client
