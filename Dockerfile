@@ -34,8 +34,10 @@ WORKDIR /app
 RUN ["deno", "cache", "main.ts"]
 
 # launch configuration
-ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", \
-  "--allow-env", "--allow-read=/app,/webprovider", "--allow-net", "main.ts"]
+ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", "--allow-env", "--allow-net", \
+  "--allow-read=/app,/webprovider,/deno-dir/npm/registry.npmjs.org/pyodide/", \
+  "--allow-write=/deno-dir/npm/registry.npmjs.org/pyodide/", \
+  "main.ts"]
 
 
 # ---> combine broker and frontend dist in default container
