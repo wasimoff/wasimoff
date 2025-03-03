@@ -1,3 +1,4 @@
 /wasimoff
 **/venv/
 **/.venv/
+**/__pycache__/

@@ -152,6 +152,16 @@ export class WasiWorker {
         return more.length;
       }});
 
+      // load the pickle, if given
+      if (task.pickle !== undefined) {
+        console.log(...this.logprefix, "loading from pickle");
+        await py.loadPackage("cloudpickle");
+        let txt = py.runPython("import cloudpickle as cp; pickle = cp.loads(bytes(pickle)); p = pickle; str(pickle)", {
+          globals: new Map([[ "pickle", py.toPy(task.pickle) ]]) as any,
+        });
+        console.log(...this.logprefix, txt);
+      };
+
       // run the script
       await py.loadPackagesFromImports(task.script);
       let ret = py.runPython(task.script);
@@ -230,6 +240,8 @@ export type PyodideTaskParams = {
   script: string;
   /** Preload known packages more efficiently during instantiation. */
   packages: string[];
+  /** Unpickle something into a variable called 'pickle'. */
+  pickle?: Uint8Array;
 };
 
 /** Result of a Pyodide task. */
@@ -331,6 +343,7 @@ async function compressArtifacts(dir: PreopenDirectory, artifacts: string[]): Pr
 // -------------------- patches --------------------
 
 import { wasi } from "@bjorn3/browser_wasi_shim";
+import { PyProxy } from "pyodide/ffi";
 
 // Workaround for https://github.com/bjorn3/browser_wasi_shim/issues/14
 // from: https://gist.github.com/igrep/0cf42131477422ebba45107031cd964c
