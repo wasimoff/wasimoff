@@ -134,14 +134,18 @@ class Task(_message.Message):
     class Pyodide(_message.Message):
         __slots__ = ()
         class Params(_message.Message):
-            __slots__ = ("script", "packages", "pickle")
-            SCRIPT_FIELD_NUMBER: _ClassVar[int]
+            __slots__ = ("packages", "script", "pickle", "envs", "stdin")
             PACKAGES_FIELD_NUMBER: _ClassVar[int]
+            SCRIPT_FIELD_NUMBER: _ClassVar[int]
             PICKLE_FIELD_NUMBER: _ClassVar[int]
-            script: str
+            ENVS_FIELD_NUMBER: _ClassVar[int]
+            STDIN_FIELD_NUMBER: _ClassVar[int]
             packages: _containers.RepeatedScalarFieldContainer[str]
+            script: str
             pickle: bytes
-            def __init__(self, script: _Optional[str] = ..., packages: _Optional[_Iterable[str]] = ..., pickle: _Optional[bytes] = ...) -> None: ...
+            envs: _containers.RepeatedScalarFieldContainer[str]
+            stdin: bytes
+            def __init__(self, packages: _Optional[_Iterable[str]] = ..., script: _Optional[str] = ..., pickle: _Optional[bytes] = ..., envs: _Optional[_Iterable[str]] = ..., stdin: _Optional[bytes] = ...) -> None: ...
         class Output(_message.Message):
             __slots__ = ("pickle", "stdout", "stderr", "version")
             PICKLE_FIELD_NUMBER: _ClassVar[int]

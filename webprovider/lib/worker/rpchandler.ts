@@ -2,6 +2,7 @@ import { create, isMessage, Message as ProtoMessage } from "@bufbuild/protobuf";
 import * as wasimoff from "@wasimoff/proto/v1/messages_pb.ts";
 import { getRef, isRef } from "@wasimoff/storage/index.ts";
 import { WasimoffProvider } from "./provider.ts";
+import { PyodideTaskParams, Wasip1TaskParams } from "./wasiworker.ts";
 
 // Handle incoming RemoteProcedureCalls on the Messenger iterable. Moved into a
 // separate file for better readability and separation of concerns in a way.
@@ -59,7 +60,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
           stdin: task.stdin,
           rootfs: rootfs,
           artifacts: task.artifacts,
-        });
+        } as Wasip1TaskParams);
         // send back the result
         return create(wasimoff.Task_Wasip1_ResponseSchema, {
           result: { case: "ok", value: {
@@ -85,9 +86,14 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
       let { info, params } = request;
       if (info === undefined || params === undefined)
         throw "info and params cannot be undefined";
-      let task = params;
-      if (task.script === undefined)
-        throw "pyodide.script cannot be undefined";
+      if (params.run.case === undefined)
+        throw "pyodide.run cannot be undefined";
+      let task: PyodideTaskParams = {
+        packages: params.packages,
+        run: params.run.value,
+        envs: params.envs,
+        stdin: params.stdin,
+      };
 
       console.debug(...rpcHandlerPrefix, info.id, task);
       try {

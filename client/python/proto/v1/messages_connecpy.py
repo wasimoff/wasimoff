@@ -12,7 +12,7 @@ from connecpy.server import ConnecpyServer
 from connecpy.client import ConnecpyClient
 from connecpy.context import ClientContext, ServiceContext
 
-import python.proto.v1.messages_pb2 as _pb2
+import proto.v1.messages_pb2 as _pb2
 
 from google.protobuf import symbol_database
 

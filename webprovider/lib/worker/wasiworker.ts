@@ -118,23 +118,36 @@ export class WasiWorker {
   public async runPyodide(id: string, task: PyodideTaskParams): Promise<PyodideTaskResult> {
     try {
 
+      // preprocess environment variables by splitting on '='
+      const envs = task.envs?.reduce((map, env) => {
+        const idx = env.indexOf("=");
+        if (idx === -1) throw `malformed env variable: {env}`;
+        map[env.slice(0, idx)] = env.slice(idx + 1);
+        return map;
+      }, { } as { [k: string]: string });
+
+      // remove duplicates from packages to load
+      // const pkgs = [ ... new Set([ ...task.packages, "cloudpickle" ]) ];
+      // console.log(...this.logprefix, { task: task.packages, pkgs });
+
       // load a fresh pyodide instance to avoid polluting context between tasks
-      console.log(...this.logprefix, "loading Pyodide for", id);
+      console.log(...this.logprefix, "Loading Pyodide runtime for", id);
       let t0 = performance.now();
       const py = await loadPyodide({
         jsglobals: new Map(), // do not pollute worker context
         fullStdLib: false, // probably a little faster
         checkAPIVersion: true, // must be this exact version
-        packages: task.packages, // preload some packages explicitly
+        packages: [ ...task.packages, "cloudpickle" ], // preload some packages explicitly
         // if we are a browser, set indexURL to the Pyodide dist URL
         indexURL: ("Deno" in globalThis) ? undefined : this.pydist,
+        env: envs,
       });
       // if in Deno, you can quasi-set the indexURL by overwriting cdnUrl of the PackageManager
       if ("Deno" in globalThis && "_api" in py) {
         //! this needs a fully-qualified URL but it can be a local filesystem path, too
         ((py._api as any).setCdnUrl as (url: string) => void)(this.pydist);
       }
-      console.debug(...this.logprefix, "loading took", performance.now() - t0, "ms");
+      console.debug(...this.logprefix, "loading took", (performance.now() - t0).toFixed(), "ms");
 
       // setup the io buffers
       let stdout = new Uint8Array();
@@ -151,29 +164,46 @@ export class WasiWorker {
         stderr = larger;
         return more.length;
       }});
+      // stdin reader of raw bytes
+      if (task.stdin !== undefined) {
+        let offset = 0;
+        py.setStdin({ read: (buf: Uint8Array) => {
+          let slice = task.stdin!.slice(offset, offset + buf.length);
+          offset += slice.length;
+          buf.set(slice, 0);
+          return slice.length;
+        }})
+      } else {
+        // if no stdin buffer is given, configure reads to throw errors
+        py.setStdin({ error: true });
+      }
 
-      // load the pickle, if given
-      if (task.pickle !== undefined) {
-        console.log(...this.logprefix, "loading from pickle");
-        await py.loadPackage("cloudpickle");
-        let txt = py.runPython("import cloudpickle as cp; pickle = cp.loads(bytes(pickle)); p = pickle; str(pickle)", {
-          globals: new Map([[ "pickle", py.toPy(task.pickle) ]]) as any,
+      // variable to hold the return value of either execution
+      let ret: any = undefined;
+
+      if (typeof task.run === "string") {
+        // execute a plaintext script
+        await py.loadPackagesFromImports(task.run);
+        ret = py.runPython(task.run);
+      }
+
+      else {
+        // input is a pickled [ func, args, kwargs ] list, deserialize and execute it
+        ret = py.runPython("import cloudpickle as cp; func, args, kwargs = cp.loads(bytes(taskpickle)); func(*args, **kwargs)", {
+          locals: new Map([[ "taskpickle", py.toPy(task.run) ]]) as any,
         });
-        console.log(...this.logprefix, txt);
-      };
+      }
 
-      // run the script
-      await py.loadPackagesFromImports(task.script);
-      let ret = py.runPython(task.script);
+      // prepare result for serialization
       let result: PyodideTaskResult = {
         stdout, stderr, version: py.version,
       };
 
       // maybe pickle the last line result
       if (ret !== undefined) {
-        console.debug(...this.logprefix, "Pickling the result ...");
-        await py.loadPackage("cloudpickle");
-        let r = py.runPython("import cloudpickle as cp; cp.dumps(ret)", { locals: new Map([["ret", ret]]) as any });
+        let r = py.runPython("import cloudpickle as cp; cp.dumps(ret)", {
+          locals: new Map([["ret", py.toPy(ret) ]]) as any
+        });
         if (r.type !== "bytes") throw "couldn't pickle the execution result";
         result.pickle = r.toJs();
         try {
@@ -236,12 +266,14 @@ export type Wasip1TaskResult = {
 
 /** Parameters for a Pyodide task. */
 export type PyodideTaskParams = {
-  /** The Python script to execute. Last statement may be pickled back. */
-  script: string;
   /** Preload known packages more efficiently during instantiation. */
   packages: string[];
-  /** Unpickle something into a variable called 'pickle'. */
-  pickle?: Uint8Array;
+  /** The Python script or pickled function to execute. Last statement may be pickled back. */
+  run: string | Uint8Array;
+  /** Environment variables to set for the interpreter. */
+  envs?: string[];
+  /** Put something on `stdin`, instead of erroring on reads. */
+  stdin?: Uint8Array;
 };
 
 /** Result of a Pyodide task. */
@@ -343,7 +375,6 @@ async function compressArtifacts(dir: PreopenDirectory, artifacts: string[]): Pr
 // -------------------- patches --------------------
 
 import { wasi } from "@bjorn3/browser_wasi_shim";
-import { PyProxy } from "pyodide/ffi";
 
 // Workaround for https://github.com/bjorn3/browser_wasi_shim/issues/14
 // from: https://gist.github.com/igrep/0cf42131477422ebba45107031cd964c

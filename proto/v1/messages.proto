@@ -136,12 +136,13 @@ message Task {
 
     // Parameters to instantiate a Pyodide task.
     message Params {
-      string script = 1;
-      repeated string packages = 7;
-      bytes pickle = 8;
-      // repeated string args = 2; // TODO
-      // repeated string envs = 3; // TODO
-      // bytes stdin = 4; // TODO
+      repeated string packages = 1; // preloaded packages
+      oneof run {
+        string script = 2; // plaintext script
+        bytes pickle = 3;  // serialized [ func, [args], {kwargs} ]
+      }
+      repeated string envs = 4; // environment as ENV=var strings
+      bytes stdin = 5; // buffer for stdin, reading errors if none
       // File rootfs = 5; // TODO
       // repeated string artifacts = 6; // TODO
     }

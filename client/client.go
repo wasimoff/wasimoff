@@ -332,7 +332,9 @@ func RunPythonScript(script string) {
 	// prepare a request using this file
 	request := &wasimoff.Task_Pyodide_Request{
 		Params: &wasimoff.Task_Pyodide_Params{
-			Script: &script,
+			Run: &wasimoff.Task_Pyodide_Params_Script{
+				Script: script,
+			},
 		},
 	}
 

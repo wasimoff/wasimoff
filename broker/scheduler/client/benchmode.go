@@ -112,7 +112,9 @@ func BenchmodePyodideTest(parallel int) {
 					Id: proto.String(fmt.Sprintf("pytest/%d", i)),
 				},
 				Params: &wasimoff.Task_Pyodide_Params{
-					Script:   proto.String("import numpy as np; mat = np.random.rand(5,5); print(mat); mat.mean()"),
+					Run: &wasimoff.Task_Pyodide_Params_Script{
+						Script: "import numpy as np; mat = np.random.rand(5,5); print(mat); mat.mean()",
+					},
 					Packages: []string{"numpy"},
 				},
 			},
