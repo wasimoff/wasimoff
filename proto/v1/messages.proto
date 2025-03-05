@@ -143,8 +143,8 @@ message Task {
       }
       repeated string envs = 4; // environment as ENV=var strings
       bytes stdin = 5; // buffer for stdin, reading errors if none
-      // File rootfs = 5; // TODO
-      // repeated string artifacts = 6; // TODO
+      File rootfs = 6; // zip file to unpack
+      repeated string artifacts = 7; // files to pack and send back afterwards
     }
 
     // The result of an execution from a Pyodide.Params message. It should only be
@@ -154,7 +154,7 @@ message Task {
       bytes stdout = 2;
       bytes stderr = 3;
       string version = 4;
-      // File artifacts = 4;
+      File artifacts = 5;
     }
 
     // -------

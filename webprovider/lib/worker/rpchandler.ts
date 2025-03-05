@@ -35,21 +35,6 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
         throw new Error("binary: neither blob nor ref were given");
       };
 
-      // get rootfs archive
-      let rootfs: Uint8Array | undefined;
-      if (task.rootfs !== undefined) {
-        if (task.rootfs.blob.length !== 0) {
-          rootfs = task.rootfs.blob;
-        } else if (task.rootfs.ref !== "") {
-          if (this.storage === undefined) throw "cannot access storage yet";
-          let z = await this.storage.getZipArchive(task.rootfs.ref);
-          if (z === undefined) throw "zip not found in storage";
-          else rootfs = new Uint8Array(z);
-        } else {
-          throw new Error("rootfs: neither blob nor ref were given");
-        }
-      }
-
       console.debug(...rpcHandlerPrefix, info.id, task);
       try {
         // execute the module in a worker
@@ -58,7 +43,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
           argv: task.args,
           envs: task.envs,
           stdin: task.stdin,
-          rootfs: rootfs,
+          rootfs: await getRootfsZip(this, task.rootfs),
           artifacts: task.artifacts,
         } as Wasip1TaskParams);
         // send back the result
@@ -93,6 +78,8 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
         run: params.run.value,
         envs: params.envs,
         stdin: params.stdin,
+        rootfs: await getRootfsZip(this, params.rootfs),
+        artifacts: params.artifacts,
       };
 
       console.debug(...rpcHandlerPrefix, info.id, task);
@@ -105,6 +92,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
             stdout: run.stdout,
             stderr: run.stderr,
             version: run.version,
+            artifacts: run.artifacts ? { blob: run.artifacts } : undefined,
           }},
         });
 
@@ -161,3 +149,21 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
 };
 
 const rpcHandlerPrefix = [ "%c[RPCHandler]", "color: orange;" ];
+
+// get rootfs archive from the optional argument in a task
+async function getRootfsZip(that: WasimoffProvider, file?: wasimoff.File): Promise<Uint8Array | undefined> {
+  if (file !== undefined) {
+    if (file.blob.length !== 0) {
+      // a direct blob was given
+      return file.blob;
+    } else if (file.ref !== "") {
+      // file is a reference, fetch it
+      if (that.storage === undefined) throw "cannot access storage yet";
+      const z = await that.storage.getZipArchive(file.ref);
+      if (z === undefined) throw "zip not found in storage";
+      return new Uint8Array(z);
+    } else {
+      throw new Error("rootfs: neither blob nor ref were given");
+    }
+  };
+};

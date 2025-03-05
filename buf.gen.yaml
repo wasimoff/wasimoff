@@ -12,8 +12,8 @@ plugins:
     opt: [ paths=source_relative ]
 
   # generate python code for clients
-  - local: protoc-gen-connecpy
-    out: client/python/
+  - protoc_builtin: python
+    out: ./
 
   # generate typescript for provider
   # need to run 'yarn install' in webprovider first

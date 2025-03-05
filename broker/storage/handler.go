@@ -79,6 +79,8 @@ func (fs *FileStorage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// put known content-type in a header and serve the file
 	w.Header().Add("content-type", file.Media)
 	w.Header().Add("x-wasimoff-ref", file.Ref())
+	// TODO: reuse the same config from websocket config
+	w.Header().Add("access-control-allow-origin", "*")
 	http.ServeContent(w, r, "", zerotime, bytes.NewReader(file.Bytes))
 
 }

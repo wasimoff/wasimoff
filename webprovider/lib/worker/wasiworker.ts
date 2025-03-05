@@ -9,7 +9,7 @@ import { ZipReader, Uint8ArrayReader, Uint8ArrayWriter, ZipWriter } from "@zip.j
 import { expose, workerReady } from "./comlink.ts";
 import { Inode } from "@bjorn3/browser_wasi_shim";
 import { Directory } from "@bjorn3/browser_wasi_shim";
-import { loadPyodide, version as pyversion } from "pyodide";
+import { loadPyodide, version as pyversion, type PyodideInterface } from "pyodide";
 
 
 /** Web Worker which runs WebAssembly modules with a WASI shim in a quasi threadpool. */
@@ -178,6 +178,11 @@ export class WasiWorker {
         py.setStdin({ error: true });
       }
 
+      // optionally unpack the rootfs to /mnt
+      if (task.rootfs !== undefined) {
+        py.unpackArchive(task.rootfs, "zip", { extractDir: "/mnt" });
+      }
+
       // variable to hold the return value of either execution
       let ret: any = undefined;
 
@@ -211,7 +216,13 @@ export class WasiWorker {
           r.destroy();
           ret.destroy();
         } catch { };
-      }
+      };
+
+      // maybe pack some artifacts
+      if (task.artifacts !== undefined && task.artifacts.length > 0) {
+        result.artifacts = await compressArtifactsEmscripten(py.FS, task.artifacts);
+      };
+
       return result;
 
     } catch (err) {
@@ -274,6 +285,10 @@ export type PyodideTaskParams = {
   envs?: string[];
   /** Put something on `stdin`, instead of erroring on reads. */
   stdin?: Uint8Array;
+  /** Load files for mounted filesystem /mnt from a zip archive. */
+  rootfs?: Uint8Array;
+  /** Send back a zip archive with artifacts after successful execution. */
+  artifacts?: string[];
 };
 
 /** Result of a Pyodide task. */
@@ -286,6 +301,8 @@ export type PyodideTaskResult = {
   pickle?: Uint8Array;
   /** Pyodide version, might be important to unpickle. */
   version: string;
+  /** Packed artifacts that were requested. */
+  artifacts?: Uint8Array;
 };
 
 
@@ -362,8 +379,24 @@ async function compressArtifacts(dir: PreopenDirectory, artifacts: string[]): Pr
     if (entry instanceof File) {
       return zip.add(filename, new Uint8ArrayReader(entry.data), { useWebWorkers: false });
     } else {
+      // TODO: this is pretty simplistic and won't add directories recursively
       return zip.add(filename, undefined, { directory: true, useWebWorkers: false });
     };
+  }));
+
+  // finish the file and return its contents
+  return await zip.close();
+};
+
+/** Pack requested artifacts with a ZipWriter to send back (Emscripten FS). */
+async function compressArtifactsEmscripten(fs: PyodideInterface["FS"], artifacts: string[]): Promise<Uint8Array> {
+  let zip = new ZipWriter(new Uint8ArrayWriter());
+
+  // add all requested files
+  // TODO: this is pretty simplistic and won't add directories at all
+  await Promise.all(artifacts.map(filename => {
+    let file = fs.readFile(filename);
+    return zip.add(filename, new Uint8ArrayReader(file), { useWebWorkers: false });
   }));
 
   // finish the file and return its contents

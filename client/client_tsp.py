@@ -2,7 +2,12 @@
 # https://www.python-httpx.org/quickstart/
 
 import httpx
-from python.proto.v1.messages_pb2 import Task
+
+# import the protobuf definitions from parent directory
+import sys, os
+parent = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, parent)
+from proto.v1.messages_pb2 import Task
 
 # build the request
 req = Task.Wasip1.Request()
