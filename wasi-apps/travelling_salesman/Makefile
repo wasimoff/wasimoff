@@ -9,7 +9,7 @@ static: tsp.static
 # copy binaries from build directories
 tsp: target/release/tsp
 	cp -f $< $@
-tsp.wasm: target/wasm32-wasi/release/tsp.opt.wasm
+tsp.wasm: target/wasm32-wasip1/release/tsp.opt.wasm
 	cp -f $< $@
 tsp.static: target/x86_64-unknown-linux-musl/release/tsp
 	cp -f $< $@
@@ -19,11 +19,11 @@ target/release/tsp: src/main.rs
 	cargo build --release
 
 # webassembly binary
-target/wasm32-wasi/release/tsp.wasm: src/main.rs
-	cargo build --target wasm32-wasi --release
+target/wasm32-wasip1/release/tsp.wasm: src/main.rs
+	cargo build --target wasm32-wasip1 --release
 
 # optimize wasm binary
-target/wasm32-wasi/release/tsp.opt.wasm: target/wasm32-wasi/release/tsp.wasm
+target/wasm32-wasip1/release/tsp.opt.wasm: target/wasm32-wasip1/release/tsp.wasm
 	wasm-opt -Oz -c $< -o $@
 
 # native for another target, e.g. static musl

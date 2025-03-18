@@ -7,7 +7,7 @@ I decided to use WASI as the "system interface" for my WebAssembly tasks, as I w
 * it has relatively easily useable standard input, output and error
 * and it can even provide a filesystem
 
-There's lots more extensions in the works but this is the minimal useful set for me. Targeting WASI also allows me to easily use languages like Rust and Go (TinyGo), which include `wasm32-wasi` as a build target, *without* resorting to things like `#![no_std]` programming.
+There's lots more extensions in the works but this is the minimal useful set for me. Targeting WASI also allows me to easily use languages like Rust and Go (TinyGo), which include `wasm32-wasip1` as a build target, *without* resorting to things like `#![no_std]` programming.
 
 ### tl;dr:
 
