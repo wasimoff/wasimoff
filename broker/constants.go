@@ -2,9 +2,9 @@ package main
 
 import "fmt"
 
-// Print a figlet "wasmoff" banner.
+// Print a figlet "wasimoff" banner.
 // figlet -f small wasimoff | sed -e 's/\\/\\\\/g' -e 's/.*/log.Println("&")/'
-func banner() {
+func printBanner() {
 	fmt.Println("                  _            __  __ ")
 	fmt.Println("  __ __ ____ _ __(_)_ __  ___ / _|/ _|")
 	fmt.Println("  \\ V  V / _` (_-< | '  \\/ _ \\  _|  _|")

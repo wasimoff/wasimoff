@@ -14,7 +14,8 @@ import (
 )
 
 func main() {
-	banner()
+	printBanner()
+	printVersion()
 
 	// use configuration from environment variables
 	conf := GetConfiguration()
