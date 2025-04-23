@@ -117,7 +117,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
       // doing it manually here is more responsive, because
       // each spawn updates the workers ref
       let capacity = await $pool.value.capacity;
-      while (await $pool.value.spawn() < capacity);
+      while (await $pool.value.length < capacity) await $pool.value.spawn();
     };
   };
 

@@ -30,7 +30,7 @@ watch(() => wasimoff.$provider, async (provider) => {
     // terminal.success(`Opened in-memory storage.`);
 
     // add at least one worker immediately
-    if (workers.value.length === 0) await $pool.value?.scale(1);
+    // if (workers.value.length === 0) await $pool.value?.scale(1);
 
     // maybe autoconnect to the broker
     if (conf.autoconnect) await connect();
@@ -101,7 +101,7 @@ async function fillWorkers() {
   try {
     // await $pool.value.fill();
     let max = await $pool.value.capacity;
-    while (await $pool.value.spawn() < max);
+    while (await $pool.value.length < max) await $pool.value.spawn();
     terminal.success(`Filled pool to capacity with ${workers.value.length} runners.`);
   } catch (err) { terminal.error(err as string); };
 };
