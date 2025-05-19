@@ -12,6 +12,9 @@ if (!window.isSecureContext) {
   terminal.warn("WARNING: application running in an insecure context!")
 }
 
+// @ts-ignore: defined in vite plugin
+const version = VERSION || "unknown";
+
 </script>
 
 <template>
@@ -41,6 +44,7 @@ if (!window.isSecureContext) {
         <span>github.com/wasimoff</span>
       </a>
     </div>
+    build: {{ version }}
   </div>
 
 </template>
