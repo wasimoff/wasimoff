@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -8,25 +8,14 @@ import (
 
 // Go toolchain version, main module path and Git information from build metadata.
 type VersionInfo struct {
-	Go     string
-	Path   string
-	Commit string
+	GoVersion string `json:"go"`
+	Package   string `json:"package"`
+	Revision  string `json:"revision"`
 }
 
-type vcsInfo struct {
-	revision string
-	modified string
-}
-
-var version VersionInfo = VersionInfo{}
-
-func printVersion() {
-	fmt.Printf("   %s (%s) %s\n", version.Path, version.Commit, version.Go)
-	fmt.Println()
-}
+var Version VersionInfo = VersionInfo{}
 
 func init() {
-
 	// read build information from binary
 	// https://pkg.go.dev/runtime/debug#ReadBuildInfo
 	info, ok := debug.ReadBuildInfo()
@@ -35,23 +24,24 @@ func init() {
 	}
 
 	// get basic go build information
-	version.Go = info.GoVersion
-	version.Path = info.Path
+	Version.GoVersion = info.GoVersion
+	Version.Package = info.Path
+	Version.Revision = "devel"
 
 	// try to get the git revision from buildsettings
 	// https://pkg.go.dev/runtime/debug#BuildSetting
-	version.Commit = "devel"
-	vcs := vcsInfo{}
+	revision := ""
+	dirtymarker := ""
 	for _, setting := range info.Settings {
 		if setting.Key == "vcs.revision" {
-			vcs.revision = setting.Value
+			revision = setting.Value
 		}
-		if setting.Key == "vcs.modified" {
-			vcs.modified = "-dirty"
+		if setting.Key == "vcs.modified" && setting.Value == "true" {
+			dirtymarker = "-dirty"
 		}
 	}
-	if vcs.revision != "" {
-		version.Commit = fmt.Sprintf("%.*s%s", 7, vcs.revision, vcs.modified)
+	if revision != "" {
+		Version.Revision = fmt.Sprintf("%.*s%s", 7, revision, dirtymarker)
 	}
 
 }

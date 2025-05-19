@@ -1,10 +1,12 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"wasimoff/broker/config"
 	"wasimoff/broker/net/server/cert"
 )
 
@@ -80,5 +82,13 @@ func Healthz() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK\n"))
+	}
+}
+
+// Version returns a simple HandlerFunc returning a JSON with version information
+func Version() func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("content-type", "application/json")
+		json.NewEncoder(w).Encode(config.Version)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
+	"wasimoff/broker/config"
 	"wasimoff/broker/metrics"
 	"wasimoff/broker/net/server"
 	"wasimoff/broker/provider"
@@ -18,7 +19,7 @@ func main() {
 	printVersion()
 
 	// use configuration from environment variables
-	conf := GetConfiguration()
+	conf := config.GetConfiguration()
 	log.Printf("%#v", &conf)
 
 	// create a new http server for the broker
@@ -59,8 +60,9 @@ func main() {
 	mux.HandleFunc("POST /api/storage/upload", store.Storage.Upload())
 	log.Printf("Upload at %s/api/storage/upload", broker.Addr())
 
-	// health message
+	// health and version message
 	mux.HandleFunc("GET /healthz", server.Healthz())
+	mux.HandleFunc("GET /api/version", server.Version())
 
 	// pprof endpoint for debugging
 	if conf.Debug {
