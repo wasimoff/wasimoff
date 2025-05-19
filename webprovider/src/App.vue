@@ -13,7 +13,7 @@ if (!window.isSecureContext) {
 }
 
 // @ts-ignore: defined in vite plugin
-const version = VERSION || "unknown";
+const version = VERSION;
 
 </script>
 
