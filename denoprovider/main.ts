@@ -44,6 +44,24 @@ await provider.sendInfo(workers, "deno", `${navigator.userAgent} (${Deno.build.t
   };
 })();
 
+// register signal handlers for clean exits
+let forcequit = false; // force immediate on second signal
+Deno.addSignalListener("SIGINT", async () => {
+  if (forcequit) {
+    console.error(" kill")
+    await provider.disconnect();
+    Deno.exit(1);
+  };
+  console.log(" shutdown (send signal again to force immediate exit)");
+  forcequit = true;
+  // wait to finish all current tasks, then quit
+  await provider.pool.scale(0);
+  // TODO: short timeout to allow outgoing messages, should be a flush
+  await new Promise(r => setTimeout(r, 20));
+  await provider.disconnect();
+  Deno.exit(0);
+});
+
 // start handling requests
 await provider.handlerequests();
 
