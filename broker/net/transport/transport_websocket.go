@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	wasimoff "wasimoff/proto/v1"
+	wasimoff "wasi.team/proto/v1"
 
 	"github.com/coder/websocket"
 	"google.golang.org/protobuf/encoding/protojson"

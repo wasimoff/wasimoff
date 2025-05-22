@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 	"slices"
-	"wasimoff/broker/net/transport"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/net/transport"
+	wasimoff "wasi.team/proto/v1"
 )
 
 // WebSocketHandler returns a http.HandlerFunc to be used on a route that shall serve

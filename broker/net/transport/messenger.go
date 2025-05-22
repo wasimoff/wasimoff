@@ -18,7 +18,7 @@ import (
 	"reflect"
 	"sync"
 	"sync/atomic"
-	wasimoff "wasimoff/proto/v1"
+	wasimoff "wasi.team/proto/v1"
 
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/anypb"

@@ -5,7 +5,7 @@ import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 
 package wasimoff.v1;
-option go_package = "wasimoff/proto/v1;wasimoffv1";
+option go_package = "wasi.team/proto/v1;wasimoffv1";
 
 // enable the new opaque api: https://protobuf.dev/reference/go/opaque-faq/
 // import "google/protobuf/go_features.proto";

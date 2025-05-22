@@ -3,8 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
-	"wasimoff/broker/storage"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/storage"
+	wasimoff "wasi.team/proto/v1"
 )
 
 // ----- execute -----

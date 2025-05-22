@@ -4,7 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"iter"
-	wasimoff "wasimoff/proto/v1"
+
+	wasimoff "wasi.team/proto/v1"
 )
 
 type AbstractFileStorage interface {

@@ -12,9 +12,10 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"wasimoff/broker/net/transport"
-	wasimoff "wasimoff/proto/v1"
-	"wasimoff/proto/v1/wasimoffv1connect"
+
+	"wasi.team/broker/net/transport"
+	wasimoff "wasi.team/proto/v1"
+	"wasi.team/proto/v1/wasimoffv1connect"
 
 	"connectrpc.com/connect"
 	"github.com/gabriel-vasile/mimetype"

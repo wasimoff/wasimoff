@@ -1,4 +1,4 @@
-module wasimoff/client
+module wasi.team/client
 
 go 1.23.3
 

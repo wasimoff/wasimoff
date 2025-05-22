@@ -5,13 +5,14 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os"
-	"wasimoff/broker/config"
-	"wasimoff/broker/metrics"
-	"wasimoff/broker/net/server"
-	"wasimoff/broker/provider"
-	"wasimoff/broker/scheduler"
-	"wasimoff/broker/scheduler/client"
-	"wasimoff/proto/v1/wasimoffv1connect"
+
+	"wasi.team/broker/config"
+	"wasi.team/broker/metrics"
+	"wasi.team/broker/net/server"
+	"wasi.team/broker/provider"
+	"wasi.team/broker/scheduler"
+	"wasi.team/broker/scheduler/client"
+	"wasi.team/proto/v1/wasimoffv1connect"
 )
 
 func main() {

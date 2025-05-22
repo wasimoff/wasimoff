@@ -1,3 +1,3 @@
-module wasimoff/proto
+module wasi.team/proto
 
 go 1.24.0

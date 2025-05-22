@@ -3,8 +3,8 @@ package scheduler
 import (
 	"context"
 	"time"
-	"wasimoff/broker/provider"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/provider"
+	wasimoff "wasi.team/proto/v1"
 )
 
 // The SimpleMatchSelector is another simple implementation of a ProviderSelector,

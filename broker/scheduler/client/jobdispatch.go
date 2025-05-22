@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"wasimoff/broker/provider"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/provider"
+	wasimoff "wasi.team/proto/v1"
 
 	"google.golang.org/protobuf/proto"
 )

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"wasimoff/broker/config"
-	"wasimoff/broker/net/server/cert"
+	"wasi.team/broker/config"
+	"wasi.team/broker/net/server/cert"
 )
 
 // This Server is a simple wrapper for a http.Server server with optional TLS.

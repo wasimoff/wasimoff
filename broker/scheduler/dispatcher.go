@@ -5,7 +5,8 @@ import (
 	"errors"
 	"log"
 	"reflect"
-	"wasimoff/broker/provider"
+
+	"wasi.team/broker/provider"
 )
 
 // reuseable task queue for HTTP handler and websocket

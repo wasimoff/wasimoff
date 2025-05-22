@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 	"time"
-	"wasimoff/broker/metrics"
-	"wasimoff/broker/storage"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/metrics"
+	"wasi.team/broker/storage"
+	wasimoff "wasi.team/proto/v1"
 
 	"github.com/paulbellamy/ratecounter"
 	"github.com/puzpuzpuz/xsync"

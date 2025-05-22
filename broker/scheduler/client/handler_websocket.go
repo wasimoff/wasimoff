@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"wasimoff/broker/net/transport"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/net/transport"
+	wasimoff "wasi.team/proto/v1"
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/encoding/prototext"

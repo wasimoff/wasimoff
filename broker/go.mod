@@ -1,4 +1,4 @@
-module wasimoff/broker
+module wasi.team/broker
 
 go 1.23
 

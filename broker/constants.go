@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"wasimoff/broker/config"
+
+	"wasi.team/broker/config"
 )
 
 // Print a figlet "wasimoff" banner.

@@ -3,7 +3,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
-	"wasimoff/broker/provider"
+	"wasi.team/broker/provider"
 )
 
 // The AnyFreeSelector is probably the simplest implementation of a ProviderSelector,

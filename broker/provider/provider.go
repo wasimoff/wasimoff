@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"wasimoff/broker/net/transport"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/net/transport"
+	wasimoff "wasi.team/proto/v1"
 
 	"github.com/marusama/semaphore/v2"
 	"google.golang.org/protobuf/proto"

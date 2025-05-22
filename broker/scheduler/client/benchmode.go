@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"time"
-	"wasimoff/broker/provider"
-	"wasimoff/broker/scheduler"
-	wasimoff "wasimoff/proto/v1"
+	"wasi.team/broker/provider"
+	"wasi.team/broker/scheduler"
+	wasimoff "wasi.team/proto/v1"
 
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"

@@ -7,8 +7,9 @@ import (
 	"log"
 	"sync/atomic"
 	"time"
-	"wasimoff/broker/net/transport"
-	wasimoff "wasimoff/proto/v1"
+
+	"wasi.team/broker/net/transport"
+	wasimoff "wasi.team/proto/v1"
 
 	"github.com/paulbellamy/ratecounter"
 	"google.golang.org/protobuf/proto"

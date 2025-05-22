@@ -10,7 +10,7 @@ import (
 	errors "errors"
 	http "net/http"
 	strings "strings"
-	v1 "wasimoff/proto/v1"
+	v1 "wasi.team/proto/v1"
 )
 
 // This is a compile-time assertion to ensure that this generated file and the connect package are

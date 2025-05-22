@@ -3,7 +3,7 @@ package provider
 import (
 	"context"
 	"log"
-	wasimoff "wasimoff/proto/v1"
+	wasimoff "wasi.team/proto/v1"
 )
 
 // AsyncTask is an individual parametrized task from an offloading job that

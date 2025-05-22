@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	wasimoff "wasimoff/proto/v1"
+	wasimoff "wasi.team/proto/v1"
 )
 
 // Transport is an abstract connection interface which handles message-based
