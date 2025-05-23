@@ -250,7 +250,9 @@ export class WasimoffProvider {
 
 
 // detect if we're running in a worker and expose the comlink interface
-if (self.constructor.name === "DedicatedWorkerGlobalScope" && self instanceof DedicatedWorkerGlobalScope) {
+if (typeof self !== "undefined"
+  && self.constructor.name === "DedicatedWorkerGlobalScope"
+  && self instanceof DedicatedWorkerGlobalScope) {
 
   // in a "normal" Worker
   // locks should be handled externally, before the Worker is even started

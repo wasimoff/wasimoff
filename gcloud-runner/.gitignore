@@ -28,3 +28,4 @@ coverage
 *.sw?
 
 public/*.wasm
+main.js

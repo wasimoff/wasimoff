@@ -6,7 +6,7 @@ export {};
 
 import { WASI, File, OpenFile, PreopenDirectory, Fd, strace } from "@bjorn3/browser_wasi_shim";
 import { ZipReader, Uint8ArrayReader, Uint8ArrayWriter, ZipWriter } from "@zip.js/zip.js";
-import { expose, workerReady } from "./comlink.ts";
+import { expose, workerReady } from "./comlink";
 import { Inode } from "@bjorn3/browser_wasi_shim";
 import { Directory } from "@bjorn3/browser_wasi_shim";
 import { loadPyodide, version as pyversion, type PyodideInterface } from "pyodide";
@@ -23,7 +23,6 @@ export class WasiWorker {
 
   // colorful console logging prefix
   private get logprefix() { return [ `%c[Worker ${this.index}]`, "color: #f03a5f;" ]; }
-
 
   /** Run a WebAssembly module with a WASI shim with commandline arguments, environment
    * variables etc. The binary can be either a precompiled module or raw bytes. */
@@ -235,7 +234,9 @@ export class WasiWorker {
 }; // WasiWorker
 
 // only expose if we're actually started in a worker and not just being imported
-if (self.constructor.name === "DedicatedWorkerGlobalScope" && self.postMessage !== undefined) {
+if (typeof self !== "undefined"
+  && self.constructor.name === "DedicatedWorkerGlobalScope"
+  && self.postMessage !== undefined) {
   expose(WasiWorker, self);
   postMessage(workerReady);
 };
