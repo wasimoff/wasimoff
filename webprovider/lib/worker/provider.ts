@@ -2,15 +2,15 @@
 declare var self: DedicatedWorkerGlobalScope | SharedWorkerGlobalScope;
 export {};
 
-import { ProviderStorage } from "@wasimoff/storage/index.ts";
-import { Messenger, WebSocketTransport } from "@wasimoff/transport/index.ts";
-import { WasiWorkerPool } from "./workerpool.ts";
+import { ProviderStorage } from "@wasimoff/storage/index";
+import { Messenger, WebSocketTransport } from "@wasimoff/transport/index";
+import { WasiWorkerPool } from "./workerpool";
 import { create, Message } from "@bufbuild/protobuf";
 import { Event_FileSystemUpdateSchema, Event_ProviderHelloSchema, Event_ProviderResourcesSchema }
-  from "@wasimoff/proto/v1/messages_pb.ts";
-import { rpchandler } from "@wasimoff/worker/rpchandler.ts";
-import { expose, proxy as comlinkProxy, workerReady, transfer, proxy } from "./comlink.ts";
-import { Wasip1TaskParams } from "./wasiworker.ts";
+  from "@wasimoff/proto/v1/messages_pb";
+import { rpchandler } from "@wasimoff/worker/rpchandler";
+import { expose, proxy as comlinkProxy, workerReady, transfer, proxy } from "./comlink";
+import { Wasip1TaskParams } from "./wasiworker";
 
 /**
  *     Wasimoff Provider

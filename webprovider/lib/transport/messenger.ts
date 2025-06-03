@@ -1,8 +1,8 @@
 import { create, createRegistry, toBinary, Message as ProtoMessage } from "@bufbuild/protobuf";
 import { AnySchema, anyUnpack, type Any } from "@bufbuild/protobuf/wkt";
-import { Envelope_MessageType as MessageType, EnvelopeSchema, file_proto_v1_messages } from "@wasimoff/proto/v1/messages_pb.ts";
-import { type Transport } from "./index.ts";
-import { PushableAsyncIterable } from "@wasimoff/func/pushableiterable.ts";
+import { Envelope_MessageType as MessageType, EnvelopeSchema, file_proto_v1_messages } from "@wasimoff/proto/v1/messages_pb";
+import { type Transport } from "./index";
+import { PushableAsyncIterable } from "@wasimoff/func/pushableiterable";
 
 
 /** This interface is not technically needed. It's just there to

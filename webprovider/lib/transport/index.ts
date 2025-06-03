@@ -1,4 +1,4 @@
-import { type Envelope } from "@wasimoff/proto/v1/messages_pb.ts";
+import { type Envelope } from "@wasimoff/proto/v1/messages_pb";
 
 /** Transport abstracts away an underlying network connection and marshalling
  * protocol to the Broker or another resource consumer. On the surface, it is a
@@ -20,5 +20,5 @@ export interface Transport {
 
 }
 
-export { Messenger } from "./messenger.ts";
-export { WebSocketTransport } from "./websocket.ts";
+export { Messenger } from "./messenger";
+export { WebSocketTransport } from "./websocket";

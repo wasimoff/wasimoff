@@ -1,6 +1,6 @@
-import { construct, releaseProxy, type WrappedWorker } from "./comlink.ts";
-import { type WasiWorker, type Wasip1TaskParams, Wasip1TaskResult, PyodideTaskParams, PyodideTaskResult } from "./wasiworker.ts";
-import { Queue } from "@wasimoff/func/queue.ts";
+import { construct, releaseProxy, type WrappedWorker } from "./comlink";
+import { type WasiWorker, type Wasip1TaskParams, Wasip1TaskResult, PyodideTaskParams, PyodideTaskResult } from "./wasiworker";
+import { Queue } from "@wasimoff/func/queue";
 
 // colorful console logging prefix
 const logprefix = [ "%c[WasiWorkerPool]", "color: purple;" ] as const;

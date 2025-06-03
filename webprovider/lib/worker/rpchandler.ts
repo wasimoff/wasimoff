@@ -1,8 +1,8 @@
 import { create, isMessage, Message as ProtoMessage } from "@bufbuild/protobuf";
-import * as wasimoff from "@wasimoff/proto/v1/messages_pb.ts";
-import { getRef, isRef } from "@wasimoff/storage/index.ts";
-import { WasimoffProvider } from "./provider.ts";
-import { PyodideTaskParams, Wasip1TaskParams } from "./wasiworker.ts";
+import * as wasimoff from "@wasimoff/proto/v1/messages_pb";
+import { getRef, isRef, ProviderStorage } from "@wasimoff/storage/index";
+import { type WasimoffProvider } from "./provider";
+import { PyodideTaskParams, Wasip1TaskParams } from "./wasiworker";
 
 // Handle incoming RemoteProcedureCalls on the Messenger iterable. Moved into a
 // separate file for better readability and separation of concerns in a way.
@@ -43,7 +43,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
           argv: task.args,
           envs: task.envs,
           stdin: task.stdin,
-          rootfs: await getRootfsZip(this, task.rootfs),
+          rootfs: await getRootfsZip(this.storage, task.rootfs),
           artifacts: task.artifacts,
         } as Wasip1TaskParams);
         // send back the result
@@ -78,7 +78,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
         run: params.run.value,
         envs: params.envs,
         stdin: params.stdin,
-        rootfs: await getRootfsZip(this, params.rootfs),
+        rootfs: await getRootfsZip(this.storage, params.rootfs),
         artifacts: params.artifacts,
       };
 
@@ -109,7 +109,7 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
     case isMessage(request, wasimoff.Task_CancelSchema): return <Promise<wasimoff.Task_Cancel>>(async () => {
       const { id, reason } = request;
       if (id !== undefined) {
-        console.warn(...WasimoffProvider.logprefix, `cancelling task '${id}': ${reason}`);
+        console.warn(`cancelling task '${id}': ${reason}`);
         await this.pool.cancel(id);
       } else {
         throw "missing the task id to cancel!";
@@ -151,15 +151,15 @@ export async function rpchandler(this: WasimoffProvider, request: ProtoMessage):
 const rpcHandlerPrefix = [ "%c[RPCHandler]", "color: orange;" ];
 
 // get rootfs archive from the optional argument in a task
-async function getRootfsZip(that: WasimoffProvider, file?: wasimoff.File): Promise<Uint8Array | undefined> {
+export async function getRootfsZip(storage?: ProviderStorage, file?: wasimoff.File): Promise<Uint8Array | undefined> {
   if (file !== undefined) {
     if (file.blob.length !== 0) {
       // a direct blob was given
       return file.blob;
     } else if (file.ref !== "") {
       // file is a reference, fetch it
-      if (that.storage === undefined) throw "cannot access storage yet";
-      const z = await that.storage.getZipArchive(file.ref);
+      if (storage === undefined) throw "cannot access storage yet";
+      const z = await storage.getZipArchive(file.ref);
       if (z === undefined) throw "zip not found in storage";
       return new Uint8Array(z);
     } else {

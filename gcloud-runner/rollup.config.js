@@ -3,7 +3,6 @@ import replace from "@rollup/plugin-replace";
 
 // execute a command but silently return undefined on errors
 import { execSync } from "child_process";
-import { log } from "console";
 function tryExec(command) {
   try {
     return execSync(command, {
@@ -26,7 +25,7 @@ export default {
     format: "es",
   },
   onLog(level, log, handler) {
-    // keep warnings about unresolved imports
+    // keep warnings about unresolved imports as warnings
     if (log.code === "UNRESOLVED_IMPORT") return handler("warn", log);
     // turn all other warnings into errors
     if (level === "warn") return handler("error", log);
@@ -42,13 +41,4 @@ export default {
       },
     }),
   ],
-  // external: [ 
-  //   // /^@bufbuild\/*/,
-  //   /^@google-cloud\//,
-  //   /^@bufbuild\//,
-  //   /^@bjorn3\//,
-  //   /^@zip\.js\//,
-  //   /^pyodide/,
-  //   /^comlink/,
-  // ],
 };

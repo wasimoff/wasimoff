@@ -5,8 +5,8 @@
   "scripts": {
     "build": "rollup --config",
     "start": "functions-framework --target=wasimoff",
-    "deploy": "$npm_execpath build && gcloud run deploy wasimoff-runner --source=. --platform managed --no-allow-unauthenticated --function=wasimoff --min=0",
-    "serve": "$npm_execpath build && $npm_execpath start"
+    "deploy": "$npm_execpath build && ./gcloud_deploy.sh",
+    "dev": "$npm_execpath build && $npm_execpath start"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "^6.0.2",

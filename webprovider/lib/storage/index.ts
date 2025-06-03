@@ -1,5 +1,5 @@
 import { LRUCache } from "lru-cache";
-import { MemoryFileSystem } from "./memory.ts";
+import { MemoryFileSystem } from "./memory";
 
 const logprefix = [ "%c[ProviderStorage]", "color: purple;" ];
 
@@ -118,7 +118,7 @@ export interface ProviderStorageFileSystem {
 
 /** Return the SHA-256 digest of a file. This can be used to check for an exact match
  * without actually transferring the file's contents. */
-export async function digest(buf: ArrayBuffer): Promise<Uint8Array> {
+export async function digest(buf: Uint8Array | ArrayBuffer): Promise<Uint8Array> {
   if (crypto.subtle) return new Uint8Array(await crypto.subtle.digest("SHA-256", buf));
   else return new Uint8Array(32); // will always re-transfer
 }
@@ -128,7 +128,7 @@ export function isRef(filename: string): boolean {
   return filename.match(/^sha256:[0-9a-f]{64}$/i) !== null;
 }
 
-export async function getRef(buf: ArrayBuffer): Promise<string> {
+export async function getRef(buf: Uint8Array | ArrayBuffer): Promise<string> {
   if (!crypto.subtle) throw "cannot compute digest in an insecure context";
   let hash = await digest(buf);
   let hex = [...hash].map(d => d.toString(16).padStart(2, "0")).join("");

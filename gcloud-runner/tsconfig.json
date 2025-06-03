@@ -1,6 +1,6 @@
 {
 
-  "include": [ "main.ts", "src/**/*.ts" ],
+  "include": [ "main.ts" ],
   "exclude": [ "node_modules" ],
 
   "compilerOptions": {
@@ -24,7 +24,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
 
   },
 

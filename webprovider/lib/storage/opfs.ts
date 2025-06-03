@@ -1,4 +1,4 @@
-import { ProviderStorageFileSystem } from "./index.ts";
+import { ProviderStorageFileSystem } from "./index";
 
 const logprefix = [ "%c[OriginPrivateFileSystem]", "color: purple;" ];
 
