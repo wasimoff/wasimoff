@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  packages: write
+
 jobs:
 
   container:
@@ -22,13 +25,13 @@ jobs:
           COUNT=$(git rev-list --count HEAD)
           ABBREV=$(git describe --always --abbrev --match '^$' --dirty)
 
-          echo "revcount=${COUNT}" >> $GITHUB_OUTPUT
-          echo "abbrev=${ABBREV}" >> $GITHUB_OUTPUT
-          echo "revision=r${COUNT}-g${ABBREV}" >> $GITHUB_OUTPUT
+          echo "revcount=${COUNT}" | tee -a $GITHUB_OUTPUT
+          echo "abbrev=${ABBREV}" | tee -a $GITHUB_OUTPUT
+          echo "revision=r${COUNT}-g${ABBREV}" | tee -a $GITHUB_OUTPUT
           
           # branch name and current date for metadata
-          echo "head=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "head=${GITHUB_REF#refs/heads/}" | tee -a $GITHUB_OUTPUT
+          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_OUTPUT
 
       - name: setup qemu
         uses: docker/setup-qemu-action@v3
