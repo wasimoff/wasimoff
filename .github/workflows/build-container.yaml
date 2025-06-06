@@ -53,6 +53,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: wasimoff
           platforms: linux/amd64,linux/arm64
           push: ${{ steps.meta.outputs.head == 'main' }}
           tags: ghcr.io/wasimoff/broker:latest,ghcr.io/wasimoff/broker:${{ steps.meta.outputs.revision }}
@@ -69,6 +70,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: provider
           platforms: linux/amd64,linux/arm64
           push: ${{ steps.meta.outputs.head == 'main' }}
           tags: ghcr.io/wasimoff/provider:latest,ghcr.io/wasimoff/provider:${{ steps.meta.outputs.revision }}
