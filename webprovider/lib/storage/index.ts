@@ -106,7 +106,6 @@ export class ProviderStorage {
 
   /** Get a WebAssembly module compiled from a stored executable. */
   async getWasmModule(filename: string): Promise<WebAssembly.Module | undefined> {
-    console.log("wasm cache", [ ...this.wasmCache.values() ]);
     return (await this.wasmCache.fetch(filename))?.module;
   };
 

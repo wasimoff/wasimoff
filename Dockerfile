@@ -30,10 +30,11 @@ COPY ./webprovider  /app/webprovider
 WORKDIR /app/deno
 
 # cache required dependencies
-RUN ["deno", "cache", "main.ts"]
+RUN ["deno", "cache", "--unstable-sloppy-imports", "main.ts"]
 
 # launch configuration
-ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", "--allow-env", "--allow-net", \
+ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", "--no-prompt", \
+  "--allow-env", "--allow-net", "--unstable-sloppy-imports", \
   "--allow-read=/app,/deno-dir/npm/registry.npmjs.org/pyodide/", \
   "--allow-write=/deno-dir/npm/registry.npmjs.org/pyodide/", \
   "main.ts"]
