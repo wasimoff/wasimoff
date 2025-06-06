@@ -22,7 +22,7 @@ func BenchmodeTspFlood(store *provider.ProviderStore, parallel int) {
 	}
 
 	// wait for required binary upload
-	bin := "tsp.wasm"
+	bin := "sha256:d2ee7b6b9507babe659f9fd9356221f989123b02f5bb7130bd95489351ce44ab"
 	args := []string{"tsp.wasm", "rand", "11"}
 	log.Printf("BENCHMODE: please upload %q binary", bin)
 	binary := wasimoff.File{Ref: &bin}
