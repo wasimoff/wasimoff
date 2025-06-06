@@ -3,7 +3,9 @@ import { MemoryFileSystem } from "./memory";
 
 const logprefix = [ "%c[ProviderStorage]", "color: purple;" ];
 
-const twentyfourhours = 24*60*60*1000; // in milliseconds
+// used for cache eviction policies
+const minutes = (n: number) => n * 60 * 1000; // in milliseconds
+const megabytes = (n: number) => n * 1024 * 1024; // in bytes
 
 /** ProviderStorage is an abstract interface to store and retrieve WebAssembly
  * executables and packed assets. It can for example be backed by a simple
@@ -19,23 +21,42 @@ export class ProviderStorage {
   public updates = new EventEmitter<{ added?: string[], removed?: string[] }>();
 
   // cache compiled webassembly modules
-  private wasmCache = new LRUCache<string, WebAssembly.Module>({
-    max: 10, ttl: twentyfourhours,
+  private wasmCache = new LRUCache<string, { size: number, module: WebAssembly.Module }>({
+
+    // eviction policy
+    ttl: minutes(30),
+    max: 64, // items
+    //? larger items can be fetched but won't be cached
+    maxSize: megabytes(128),
+    sizeCalculation: (item, _) => item.size,
+
     fetchMethod: async (filename) => {
       let file = await this.getFile(filename);
       if (file === undefined) return undefined;
-      return await WebAssembly.compile(await file.arrayBuffer());
+      let buf = await file.arrayBuffer();
+      return {
+        size: buf.byteLength,
+        module: await WebAssembly.compile(buf),
+      };
     },
+
   });
 
   // cache zip archives for rootfs
   private zipCache = new LRUCache<string, ArrayBuffer>({
-    max: 3, ttl: twentyfourhours,
+
+    // eviction policy
+    ttl: minutes(30),
+    max: 64, // items
+    maxSize: megabytes(128),
+    sizeCalculation: (item, _) => item.byteLength,
+
     fetchMethod: async (filename) => {
       let file = await this.getFile(filename);
       if (file === undefined) return undefined;
       return await file.arrayBuffer();
     },
+
   });
 
   constructor(path: string, origin: string) {
@@ -85,7 +106,8 @@ export class ProviderStorage {
 
   /** Get a WebAssembly module compiled from a stored executable. */
   async getWasmModule(filename: string): Promise<WebAssembly.Module | undefined> {
-    return this.wasmCache.fetch(filename);
+    console.log("wasm cache", [ ...this.wasmCache.values() ]);
+    return (await this.wasmCache.fetch(filename))?.module;
   };
 
   /** Get a ZIP archive for rootfs usage. */
