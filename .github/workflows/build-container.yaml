@@ -1,0 +1,77 @@
+name: build container images
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+
+  container:
+    name: build image 📦
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: prepare metadata
+        id: meta
+        shell: bash
+        run: |
+          # count revisions and get abbreviated commit hash
+          COUNT=$(git rev-list --count HEAD)
+          ABBREV=$(git describe --always --abbrev --match '^$' --dirty)
+
+          echo "revcount=${COUNT}" >> $GITHUB_OUTPUT
+          echo "abbrev=${ABBREV}" >> $GITHUB_OUTPUT
+          echo "revision=r${COUNT}-g${ABBREV}" >> $GITHUB_OUTPUT
+          
+          # branch name and current date for metadata
+          echo "head=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+          echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+
+      - name: setup qemu
+        uses: docker/setup-qemu-action@v3
+
+      - name: setup docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: login to ghcr.io
+        uses: docker/login-action@v3
+        if: ${{ steps.meta.outputs.head == 'main' }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "build and push: broker"
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ steps.meta.outputs.head == 'main' }}
+          tags: ghcr.io/wasimoff/broker:latest,ghcr.io/wasimoff/broker:${{ steps.meta.outputs.revision }}
+          labels: |
+            org.opencontainers.image.title=${{ github.event.repository.name }} Broker
+            org.opencontainers.image.description=${{ github.event.repository.description }}
+            org.opencontainers.image.url=${{ github.event.repository.html_url }}
+            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
+
+      - name: "build and push: provider"
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ steps.meta.outputs.head == 'main' }}
+          tags: ghcr.io/wasimoff/provider:latest,ghcr.io/wasimoff/provider:${{ steps.meta.outputs.revision }}
+          labels: |
+            org.opencontainers.image.title=${{ github.event.repository.name }} Provider
+            org.opencontainers.image.description=${{ github.event.repository.description }}
+            org.opencontainers.image.url=${{ github.event.repository.html_url }}
+            org.opencontainers.image.source=${{ github.event.repository.clone_url }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.created }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=${{ github.event.repository.license.spdx_id }}
