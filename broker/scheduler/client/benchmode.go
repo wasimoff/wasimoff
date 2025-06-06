@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"time"
+
 	"wasi.team/broker/provider"
 	"wasi.team/broker/scheduler"
 	wasimoff "wasi.team/proto/v1"
@@ -22,7 +23,7 @@ func BenchmodeTspFlood(store *provider.ProviderStore, parallel int) {
 
 	// wait for required binary upload
 	bin := "tsp.wasm"
-	args := []string{"tsp.wasm", "rand", "10"}
+	args := []string{"tsp.wasm", "rand", "11"}
 	log.Printf("BENCHMODE: please upload %q binary", bin)
 	binary := wasimoff.File{Ref: &bin}
 	for {
