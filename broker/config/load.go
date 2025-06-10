@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"slices"
@@ -21,12 +20,6 @@ func GetConfiguration() (conf Configuration) {
 		configuration = loadConfiguration()
 	}
 	return *configuration
-}
-
-// Load configuration immediately
-func init() {
-	fmt.Println("load.go init")
-	configuration = loadConfiguration()
 }
 
 // loadConfiguration checks if user requested help (-h/--help) and prints usage information
