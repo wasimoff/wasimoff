@@ -10,7 +10,7 @@ import (
 	"os"
 
 	"google.golang.org/api/idtoken"
-	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	wasimoffv1 "wasi.team/proto/v1"
 )
@@ -56,34 +56,34 @@ func main() {
 		request.Params.Stdin = stdin
 	}
 
-	// serialize the request json
-	json, err := protojson.Marshal(request)
+	// serialize the request
+	body, err := proto.Marshal(request)
 	if err != nil {
 		log.Fatalf("Failed to serialize Protobuf request: %s", err)
 	}
 	if *verbose {
-		fmt.Printf("\033[36;1mRequest --> \033[0;36m%s\033[0m\n", string(json))
+		fmt.Printf("\033[36;1mRequest --> \033[0;36m%s\033[0m\n", prototext.Format(request))
 	}
 
 	// do the request
-	resp, err := client.Post(*function, "application/json", bytes.NewBuffer(json))
+	resp, err := client.Post(*function, "application/proto", bytes.NewBuffer(body))
 	if err != nil {
 		log.Fatalf("Failed request: %s", err)
-	}
-	if resp.StatusCode != 200 {
-		log.Fatalf("Request failed: %s", resp.Status)
 	}
 	body, bodyerr := io.ReadAll(resp.Body)
 	if bodyerr != nil {
 		log.Fatalf("Failed to read response body: %v", err)
 	}
+	if resp.StatusCode != 200 {
+		log.Fatalf("Request failed: %s\n%s", resp.Status, string(body))
+	}
 	if *verbose {
-		fmt.Printf("\033[33;1m%s --> \033[0;33m%s\033[0m\n\n", resp.Status, string(body))
+		fmt.Printf("\033[33;1m%s --> \033[0;33m%q\033[0m\n\n", resp.Status, string(body))
 	}
 
 	// decode the response
 	response := &wasimoffv1.Task_Wasip1_Response{}
-	if err := protojson.Unmarshal(body, response); err != nil {
+	if err := proto.Unmarshal(body, response); err != nil {
 		log.Fatalf("Failed to decode body as Task_Wasip1_Response: %s", err)
 	} else {
 		ok := response.GetOk()

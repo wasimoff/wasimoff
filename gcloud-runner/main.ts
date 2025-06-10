@@ -6,9 +6,6 @@ import { getRootfsZip } from "@wasimoff/worker/rpchandler";
 import * as wasimoff from "@wasimoff/proto/v1/messages_pb";
 import * as pb from "@bufbuild/protobuf";
 
-// TODO: only used for memory usage info
-import os from "os";
-
 // defined git revision during rollup build
 const version: string = process.env.VERSION || "unknown";
 console.log("starting wasimoff-faas-runner, version", version);
@@ -21,14 +18,22 @@ const storage = new ProviderStorage(":memory:", "https://wasi.team");
 functions.http("wasimoff", async (req, res) => {
   try {
 
-    // make life simple and always assume json, which will already be parsed by middleware
-    if (req.header("content-type") !== "application/json")
-      throw new Error("only accepting JSON-encoded Task_Wasip1_Request");
+    // parse the incoming request
+    let request: wasimoff.Task_Wasip1_Request;
+    let content_type = req.header("content-type") as "application/json" | "application/proto";
+    switch (content_type) {
+      case "application/json":
+        request = pb.fromJson(wasimoff.Task_Wasip1_RequestSchema, req.body) as wasimoff.Task_Wasip1_Request;
+        break;
+      case "application/proto":
+        request = pb.fromBinary(wasimoff.Task_Wasip1_RequestSchema, req.body) as wasimoff.Task_Wasip1_Request;
+        break;
+      default:
+        throw new Error("only accepting Task_Wasip1_Request in JSON or Protobuf encoding");
+        break;
+    };
 
-    // always try to decode as a Task_Wasip1_Request for now
-    let request: wasimoff.Task_Wasip1_Request = pb.fromJson(wasimoff.Task_Wasip1_RequestSchema, req.body) as any;
-
-    // -------------- copied from rpchandler.ts from here on -------------- //
+    // mostly copied from rpchandler.ts from here on ...
 
     // deconstruct the request and check type
     let { info, params } = request;
@@ -52,8 +57,8 @@ functions.http("wasimoff", async (req, res) => {
     };
 
     // construct a new wasimoff worker and run the task
-    console.debug(info.id, task);
-    const runner = new WasiWorker(0, false); // TODO: counter?
+    // console.debug(info.id, task);
+    const runner = new WasiWorker(0, false);
     const result = await runner.runWasip1(info.id, {
       wasm: wasm,
       argv: task.args || [],
@@ -62,17 +67,7 @@ functions.http("wasimoff", async (req, res) => {
       rootfs: await getRootfsZip(storage, task.rootfs),
       artifacts: task.artifacts,
     } as Wasip1TaskParams);
-
-    // get some memory usage stats after execution
-    const total = os.totalmem();
-    const free = os.freemem();
-    const megabyte = (1024*1024);
-    const memory = {
-      used: Number(((total - free) / megabyte).toFixed(2)),
-      total: Number(((total) / megabyte).toFixed(2)),
-      percent: Number(((1 - (free / total)) * 100).toFixed(1)),
-    };
-    console.log(`memory usage after ${info.id}:`, memory);
+    printMemoryUsage();
 
     // format and send back the result protobuf
     const response = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
@@ -83,8 +78,19 @@ functions.http("wasimoff", async (req, res) => {
         artifacts: result.artifacts ? { blob: result.artifacts } : undefined,
       }},
     });
-    res.json(pb.toJson(wasimoff.Task_Wasip1_ResponseSchema, response));
-    return;
+    switch(content_type) {
+      case "application/json":
+        res.json(pb.toJson(wasimoff.Task_Wasip1_ResponseSchema, response));
+        break;
+      case "application/proto":
+        res.setHeader("content-type", content_type);
+        res.send(Buffer.from(pb.toBinary(wasimoff.Task_Wasip1_ResponseSchema, response)));
+        break;
+      default:
+        // this should never happen ..
+        throw new Error("unknown content-type to return");
+        break;
+    }
 
   } catch (error) {
     // format exceptions as WasiResponse.Error
@@ -98,3 +104,16 @@ functions.http("wasimoff", async (req, res) => {
   };
 });
 
+// print { used, total, percent } of memory
+import os from "os";
+function printMemoryUsage() {
+  const total = os.totalmem();
+  const free = os.freemem();
+  const megabyte = (1024*1024);
+  const memory = {
+    used: Number(((total - free) / megabyte).toFixed(2)),
+    total: Number(((total) / megabyte).toFixed(2)),
+    percent: Number(((1 - (free / total)) * 100).toFixed(1)),
+  };
+  console.log("memory:", memory);
+}
