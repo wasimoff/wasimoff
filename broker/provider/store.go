@@ -1,15 +1,22 @@
 package provider
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"time"
+
+	"wasi.team/broker/config"
 	"wasi.team/broker/metrics"
 	"wasi.team/broker/storage"
 	wasimoff "wasi.team/proto/v1"
 
 	"github.com/paulbellamy/ratecounter"
 	"github.com/puzpuzpuz/xsync"
+	"google.golang.org/api/idtoken"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -19,6 +26,11 @@ type ProviderStore struct {
 
 	// Providers are held in a sync.Map safe for concurrent access
 	providers *xsync.MapOf[string, *Provider]
+
+	// hold an authenticated client for cloud offloading
+	// check with CanCloudOffload()
+	cloudClient   *http.Client
+	cloudFunction string
 
 	// Storage holds the uploaded files in memory
 	Storage *storage.FileStorage
@@ -31,19 +43,35 @@ type ProviderStore struct {
 }
 
 // NewProviderStore properly initializes the fields in the store
-func NewProviderStore(storagepath string) *ProviderStore {
+func NewProviderStore(storagepath string, conf *config.Configuration) (*ProviderStore, error) {
+
 	store := ProviderStore{
 		providers:   xsync.NewMapOf[*Provider](),
 		Broadcast:   make(chan proto.Message, 10),
 		ratecounter: ratecounter.NewRateCounter(5 * time.Second),
 	}
+
+	// initialize file storage
 	if storagepath == "" || storagepath == ":memory:" {
 		store.Storage = storage.NewMemoryFileStorage()
 	} else {
 		store.Storage = storage.NewBoltFileStorage(storagepath)
 	}
+
+	// maybe initialize cloud client
+	if conf.CloudCredentials != "" && conf.CloudFunction != "" {
+		client, err := idtoken.NewClient(context.Background(), conf.CloudFunction, idtoken.WithCredentialsFile(conf.CloudCredentials))
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize GCP cloudclient: %w", err)
+		}
+		store.cloudClient = client
+		store.cloudFunction = conf.CloudFunction
+	}
+
+	// start broadcast transmitter
 	go store.transmitter()
-	return &store
+
+	return &store, nil
 }
 
 // ------------- broadcast events to everyone -------------
@@ -61,6 +89,65 @@ func (s *ProviderStore) transmitter() {
 			return true
 		})
 	}
+
+}
+
+// ------------- cloud offloading runner client -------------
+
+// check if cloudclient is available and the task can be offloaded
+func (s *ProviderStore) CanCloudOffload(task *AsyncTask) bool {
+	// client available?
+	if s.cloudClient == nil {
+		return false
+	}
+	// only Wasip1 tasks supported for now
+	if _, ok := task.Request.(*wasimoff.Task_Wasip1_Request); ok {
+		return true
+	}
+	// fallback to previous behaviour by default
+	return false
+}
+
+func (s *ProviderStore) cloud(ctx context.Context, request wasimoff.Task_Request, response wasimoff.Task_Response) error {
+	body, err := proto.Marshal(request)
+	if err != nil {
+		return fmt.Errorf("failed marshalling request: %w", err)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.cloudFunction, bytes.NewBuffer(body))
+	if err != nil {
+		return fmt.Errorf("failed to create POST request: %w", err)
+	}
+	req.Header.Set("content-type", "application/proto")
+	resp, err := s.cloudClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("cloud offloading request failed: %w", err)
+	}
+	defer resp.Body.Close()
+	body, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed reading response body: %w", err)
+	}
+	err = proto.Unmarshal(body, response)
+	if err != nil {
+		return fmt.Errorf("failed unmarshalling response: %w", err)
+	}
+	return nil
+}
+
+func (s *ProviderStore) CloudOffload(task *AsyncTask) error {
+
+	// get type-casted request
+	request, ok := task.Request.(*wasimoff.Task_Wasip1_Request)
+	if !ok {
+		return fmt.Errorf("only *wasimoff.Task_Wasip1_Request supported for CloudOffload")
+	}
+
+	err := s.cloud(task.Context, request, task.Response)
+	if err != nil {
+		return fmt.Errorf("cloud offload failed: %w", err)
+	}
+	task.Done()
+	return nil
 
 }
 

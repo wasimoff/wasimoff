@@ -2,7 +2,9 @@ package scheduler
 
 import (
 	"context"
+	"log"
 	"time"
+
 	"wasi.team/broker/provider"
 	wasimoff "wasi.team/proto/v1"
 )
@@ -58,6 +60,20 @@ func (s *SimpleMatchSelector) Schedule(ctx context.Context, task *provider.Async
 		providers, err := s.selectCandidates(task)
 		if err != nil {
 			return err
+		}
+
+		// while there are no providers, try to use cloud offloading
+		// TODO: cloud oddloading should also use a rate-limited interface with a semaphore
+		// TODO: ACCIDENTALLY SERIALIZED!
+		if len(providers) == 0 && s.store.CanCloudOffload(task) {
+			log.Println("no providers / cloud offloading:", task.Request.GetInfo().Id)
+			err := s.store.CloudOffload(task)
+			if err != nil {
+				log.Printf("WARNING: CloudOffload for task %s failed: %s", *task.Request.GetInfo().Id, err.Error())
+			} else {
+				log.Println("done:", task.Request.GetInfo().Id)
+				return nil
+			}
 		}
 
 		// wrap parent context in a short timeout

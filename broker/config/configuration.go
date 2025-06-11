@@ -3,6 +3,8 @@ package config
 // Prefix for envionment variable names, so HTTP_LISTEN becomes WASIMOFF_HTTP_LISTEN.
 const envprefix = "WASIMOFF"
 
+// TODO: this is getting complex .. it should really be a TOML
+
 // Configuration via environment variables with github.com/kelseyhightower/envconfig.
 type Configuration struct {
 
@@ -23,6 +25,11 @@ type Configuration struct {
 	// FILESTORAGE is a path to use for a persistent BoltDB database.
 	// An empty string will use an ephemeral in-memory map[string]*File.
 	FileStorage string `desc:"Use persistent BoltDB storage for files" default:":memory:"`
+
+	// CLOUD_CREDENTIALS and CLOUD_FUNCTION are used to enable offloading functions to
+	// the Google Cloud Run Function, using the given service account credentials JSON.
+	CloudCredentials string `desc:"Path to GCP service account credentials JSON" default:"./account.json" split_words:"true"`
+	CloudFunction    string `desc:"URL of the function to invoke for cloud offloading" split_words:"true"`
 
 	// BENCHMODE activates a mode where the Broker produces infinite workload by itself
 	Benchmode int `desc:"Benchmarking mode with n concurrent tasks" default:"0"`

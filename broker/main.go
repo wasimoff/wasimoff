@@ -31,7 +31,10 @@ func main() {
 	}
 
 	// create a provider store and scheduler
-	store := provider.NewProviderStore(conf.FileStorage)
+	store, err := provider.NewProviderStore(conf.FileStorage, &conf)
+	if err != nil {
+		log.Fatalf("failed to create provider store: %s", err)
+	}
 	selector := scheduler.NewSimpleMatchSelector(store)
 	// selector := scheduler.NewRoundRobinSelector(store)
 	// selector := scheduler.NewAnyFreeSelector(store)
