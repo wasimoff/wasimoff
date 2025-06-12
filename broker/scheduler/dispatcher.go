@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"log"
+	"math"
 	"reflect"
+	"time"
 
 	"wasi.team/broker/provider"
 )
@@ -44,10 +46,11 @@ func Dispatcher(selector Scheduler, concurrency int) {
 			retries := 10
 			var err error
 			errs := make([]error, 0, 10)
-			for i := 0; i < retries; i++ {
+			for i := 1; i <= retries; i++ {
 
-				// when retrying, we need to reacquire a ticket
-				if i > 0 {
+				// when retrying, we sleep and need to reacquire a ticket
+				if i > 1 {
+					time.Sleep(exponentialDelay(i))
 					<-tickets
 				}
 
@@ -57,7 +60,11 @@ func Dispatcher(selector Scheduler, concurrency int) {
 
 				// oops, scheduling error
 				if err != nil {
-					log.Printf("RETRY: selector.Schedule %s failed (%d)", task.Request.GetInfo().GetId(), i)
+					// don't retry, if the context was cancelled
+					if errors.Is(err, context.Canceled) {
+						break
+					}
+					log.Printf("RETRY: scheduling %s failed (%d/%d): %s", task.Request.GetInfo().GetId(), i, retries, err)
 					errs = append(errs, err)
 					continue // retry
 				}
@@ -70,7 +77,7 @@ func Dispatcher(selector Scheduler, concurrency int) {
 					if errors.Is(result.Error, context.Canceled) {
 						break
 					}
-					log.Printf("RETRY: task %s failed (%d): %v", task.Request.GetInfo().GetId(), i, result.Error)
+					log.Printf("RETRY: task %s failed (%d/%d): %v", task.Request.GetInfo().GetId(), i, retries, result.Error)
 					err = result.Error
 					errs = append(errs, err)
 					continue // retry
@@ -92,6 +99,14 @@ func Dispatcher(selector Scheduler, concurrency int) {
 
 		}(task)
 	}
+}
+
+// exponentialDelay gives a duration between 10ms and 1s for i=1..9
+func exponentialDelay(i int) time.Duration {
+	// fn(i) = a*e^(i/b) with a,b such that fn(2..10) = 10..1000
+	ms := 3.16228 * math.Exp(float64(i)/1.73718)
+	return time.Duration(ms * float64(time.Millisecond))
+
 }
 
 // dynamicSubmit uses `reflect.Select` to dynamically select a Provider to submit a task to.
