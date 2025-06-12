@@ -14,13 +14,23 @@ console.log("starting wasimoff-faas-runner, version", version);
 // TODO: get origin from env or implement proper url handling
 const storage = new ProviderStorage(":memory:", "https://wasi.team");
 
-/** Each request should be an offloading task, so either  */
+// initialize a single runner for this instance
+const runner = new WasiWorker(0);
+
+// request counter for readable logging
+let counter = 0;
+
+// request handler
 functions.http("wasimoff", async (req, res) => {
+  const i = `task[${counter++}]`;
+
+  let response: wasimoff.Task_Wasip1_Response | null = null;
+  let content_type = req.header("content-type") as "application/json" | "application/proto";
+
   try {
 
     // parse the incoming request
     let request: wasimoff.Task_Wasip1_Request;
-    let content_type = req.header("content-type") as "application/json" | "application/proto";
     switch (content_type) {
       case "application/json":
         request = pb.fromJson(wasimoff.Task_Wasip1_RequestSchema, req.body) as wasimoff.Task_Wasip1_Request;
@@ -56,10 +66,8 @@ functions.http("wasimoff", async (req, res) => {
       throw new Error("binary: neither blob nor ref were given");
     };
 
-    // construct a new wasimoff worker and run the task
-    // console.debug(info.id, task);
-    const runner = new WasiWorker(0, false);
-    const result = await runner.runWasip1(info.id, {
+    console.debug(i, "run:", info.id);
+    let result = await runner.runWasip1(info.id, {
       wasm: wasm,
       argv: task.args || [],
       envs: task.envs || [],
@@ -67,17 +75,30 @@ functions.http("wasimoff", async (req, res) => {
       rootfs: await getRootfsZip(storage, task.rootfs),
       artifacts: task.artifacts,
     } as Wasip1TaskParams);
-    printMemoryUsage();
 
     // format and send back the result protobuf
-    const response = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
+    response = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
       result: { case: "ok", value: {
         status: result.returncode,
         stdout: result.stdout,
         stderr: result.stderr,
         artifacts: result.artifacts ? { blob: result.artifacts } : undefined,
       }},
-    });
+    }) as wasimoff.Task_Wasip1_Response;
+
+  } catch (error) {
+
+    // format exceptions as WasiResponse.Error
+    console.error(i, error);
+    response = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
+      result: { case: "error", value: String(error || "unspecified error"), },
+    }) as wasimoff.Task_Wasip1_Response;
+    res.status(400);
+
+  } finally {
+
+    // serialize the response, if any
+    if (response === null) return;
     switch(content_type) {
       case "application/json":
         res.json(pb.toJson(wasimoff.Task_Wasip1_ResponseSchema, response));
@@ -90,30 +111,7 @@ functions.http("wasimoff", async (req, res) => {
         // this should never happen ..
         throw new Error("unknown content-type to return");
         break;
-    }
+    };
 
-  } catch (error) {
-    // format exceptions as WasiResponse.Error
-    const err = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
-      result: { case: "error", value: String(error || "unspecified error"), },
-    });
-    res.status(400).json(err);
-    return;
-    // res.statusMessage = "Task Error";
-    // res.status(400).json({ error: error !== undefined ? String(error) : "unspecified error" });
   };
 });
-
-// print { used, total, percent } of memory
-import os from "os";
-function printMemoryUsage() {
-  const total = os.totalmem();
-  const free = os.freemem();
-  const megabyte = (1024*1024);
-  const memory = {
-    used: Number(((total - free) / megabyte).toFixed(2)),
-    total: Number(((total) / megabyte).toFixed(2)),
-    percent: Number(((1 - (free / total)) * 100).toFixed(1)),
-  };
-  console.log("memory:", memory);
-}
