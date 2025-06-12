@@ -2,7 +2,9 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"log"
+
 	wasimoff "wasi.team/proto/v1"
 )
 
@@ -40,6 +42,24 @@ func (t *AsyncTask) Done() *AsyncTask {
 	// TODO: re-add a select to never block here?
 	t.done <- t
 	return t
+}
+
+// Check some prerequisites before attempting to schedule a task
+func (t *AsyncTask) Check() (err error) {
+	// done channel must never be nil
+	if t.done == nil {
+		panic("AsyncTask.done is nil, nobody is listening for this result")
+	}
+	// the Request and Result must not be nil
+	if t.Request == nil || t.Response == nil {
+		return fmt.Errorf("AsyncTask.Request and AsyncTask.Result must not be nil")
+	}
+	// the context is already cancelled
+	if t.Context.Err() != nil {
+		return t.Context.Err()
+	}
+	// ok
+	return nil
 }
 
 // Intercept replaces the done channel with another channel and returns the previous channel

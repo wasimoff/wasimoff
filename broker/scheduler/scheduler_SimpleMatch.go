@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"wasi.team/broker/provider"
@@ -62,25 +61,22 @@ func (s *SimpleMatchSelector) Schedule(ctx context.Context, task *provider.Async
 			return err
 		}
 
-		// while there are no providers, try to use cloud offloading
-		// TODO: cloud oddloading should also use a rate-limited interface with a semaphore
-		// TODO: ACCIDENTALLY SERIALIZED!
-		if len(providers) == 0 && s.store.CanCloudOffload(task) {
-			log.Println("no providers / cloud offloading:", task.Request.GetInfo().Id)
-			err := s.store.CloudOffload(task)
-			if err != nil {
-				log.Printf("WARNING: CloudOffload for task %s failed: %s", *task.Request.GetInfo().Id, err.Error())
-			} else {
-				log.Println("done:", task.Request.GetInfo().Id)
-				return nil
-			}
+		// ideally, you'd want to use available providers first, but then immediately fall back on
+		// cloud offloading, when none are there. with the CloudSubmit chan rewrite, the submission
+		// to the cloud can also block though, so this should also be handled inside a select case
+		// with timeout ...
+
+		// add cloud offloading queue, if it's suitable for this task
+		var cloud chan *provider.AsyncTask = nil
+		if s.store.CanCloudOffload(task) {
+			cloud = s.store.CloudSubmit
 		}
 
-		// wrap parent context in a short timeout
+		// wrap parent context in a short timeout, to retry selection regularly
 		timeout, cancel := context.WithTimeout(ctx, time.Second)
 
 		// submit the task normally with new context
-		err = dynamicSubmit(timeout, task, providers)
+		err = dynamicSubmit(timeout, task, providers, cloud)
 		if err != nil && ctx.Err() == nil && timeout.Err() == err {
 			// parent context not cancelled and err == our timeout,
 			// so reschedule in hopes of picking up changes in provider store

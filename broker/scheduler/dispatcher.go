@@ -97,33 +97,57 @@ func Dispatcher(selector Scheduler, concurrency int) {
 // dynamicSubmit uses `reflect.Select` to dynamically select a Provider to submit a task to.
 // This uses the Providers' unbuffered Queue, so that a task can only be submitted to a Provider
 // when it currently has free capacity, without needing to busy-loop and recheck capacity yourself.
+// Attempt to use regular Providers and fall back to add cloud queue if none are free immediately.
 // Based on StackOverflow answer by Dave C. on https://stackoverflow.com/a/32381409.
-func dynamicSubmit(ctx context.Context, call *provider.AsyncTask, providers []*provider.Provider) error {
+func dynamicSubmit(
+	timeout context.Context,
+	task *provider.AsyncTask,
+	providers []*provider.Provider,
+	cloud chan *provider.AsyncTask,
+) error {
 
 	// setup select cases
-	cases := make([]reflect.SelectCase, len(providers), len(providers)+1)
+	cases := make([]reflect.SelectCase, len(providers), len(providers)+2)
 	for i, p := range providers {
 		if p.Submit == nil {
 			panic("provider does not have a queue")
 		}
-		cases[i].Chan = reflect.ValueOf(p.Submit)
 		cases[i].Dir = reflect.SelectSend
-		cases[i].Send = reflect.ValueOf(call)
+		cases[i].Chan = reflect.ValueOf(p.Submit)
+		cases[i].Send = reflect.ValueOf(task)
+	}
+
+	// if there is a cloud offloading capability, attempt queueing only on providers first
+	if cloud != nil {
+		// first attempt with default case
+		cases = append(cases, reflect.SelectCase{Dir: reflect.SelectDefault})
+		i, _, _ := reflect.Select(cases)
+		if i == len(cases)-1 { // last item, i.e. default case
+			// no providers immediately free, replace default case with cloud queue
+			cases[len(providers)] = reflect.SelectCase{
+				Dir:  reflect.SelectSend,
+				Chan: reflect.ValueOf(cloud),
+				Send: reflect.ValueOf(task),
+			}
+			log.Printf("task %s: added cloud offloading queue", *task.Request.GetInfo().Id)
+		} else {
+			// successfully queued on some provider
+			return nil
+		}
 	}
 
 	// add context.Done as select case for timeout or cancellation
-	if ctx != nil {
+	if timeout != nil {
 		cases = append(cases, reflect.SelectCase{
-			Chan: reflect.ValueOf(ctx.Done()),
+			Chan: reflect.ValueOf(timeout.Done()),
 			Dir:  reflect.SelectRecv,
 		})
 	}
 
-	// select one of the queues and return the WasmCall struct
+	// select one of the queues
 	i, _, _ := reflect.Select(cases)
-	if i == len(providers) {
-		// index out of bounds for providers, so it must be the ctx.Done
-		return ctx.Err()
+	if i == len(cases)-1 { // last item, i.e. timeout / ctx.Done
+		return timeout.Err()
 	}
 	return nil
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+
 	"wasi.team/broker/net/transport"
 	wasimoff "wasi.team/proto/v1"
 
@@ -146,21 +147,9 @@ func (p *Provider) acceptTasks() (err error) {
 		case task := <-p.Submit:
 			p.waiting = false
 
-			// done channel MUST NEVER be nil
-			if task.done == nil {
-				panic("AsyncTask.done is nil, nobody is listening for this result")
-			}
-
-			// the Request and Result most not be nil
-			if task.Request == nil || task.Response == nil {
-				task.Error = fmt.Errorf("AsyncTask.Request and AsyncTask.Result must not be nil")
-				task.Done()
-				p.limiter.Release(1)
-				continue
-			}
-			// the context is already cancelled
-			if task.Context.Err() != nil {
-				task.Error = task.Context.Err()
+			// prerequisite checks
+			if err := task.Check(); err != nil {
+				task.Error = err
 				task.Done()
 				p.limiter.Release(1)
 				continue

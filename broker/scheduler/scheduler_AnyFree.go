@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+
 	"wasi.team/broker/provider"
 )
 
@@ -36,7 +37,7 @@ func (s *AnyFreeSelector) Schedule(ctx context.Context, task *provider.AsyncTask
 		return nil, err
 	}
 
-	err = dynamicSubmit(ctx, task, providers)
+	err = dynamicSubmit(ctx, task, providers, nil)
 	return
 
 }

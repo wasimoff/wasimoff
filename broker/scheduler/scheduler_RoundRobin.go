@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+
 	"wasi.team/broker/provider"
 
 	"golang.org/x/exp/slices"
@@ -56,7 +57,7 @@ func (s *RoundRobinSelector) Schedule(ctx context.Context, task *provider.AsyncT
 		return fmt.Errorf("RoundRobinSelector.Select() did not return exactly one Provider")
 	}
 
-	err = dynamicSubmit(ctx, task, providers)
+	err = dynamicSubmit(ctx, task, providers, nil)
 	return
 
 }

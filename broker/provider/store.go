@@ -14,6 +14,7 @@ import (
 	"wasi.team/broker/storage"
 	wasimoff "wasi.team/proto/v1"
 
+	"github.com/marusama/semaphore/v2"
 	"github.com/paulbellamy/ratecounter"
 	"github.com/puzpuzpuz/xsync"
 	"google.golang.org/api/idtoken"
@@ -29,6 +30,7 @@ type ProviderStore struct {
 
 	// hold an authenticated client for cloud offloading
 	// check with CanCloudOffload()
+	CloudSubmit   chan *AsyncTask
 	cloudClient   *http.Client
 	cloudFunction string
 
@@ -66,6 +68,7 @@ func NewProviderStore(storagepath string, conf *config.Configuration) (*Provider
 		}
 		store.cloudClient = client
 		store.cloudFunction = conf.CloudFunction
+		go store.cloudLoop(10)
 	}
 
 	// start broadcast transmitter
@@ -97,7 +100,7 @@ func (s *ProviderStore) transmitter() {
 // check if cloudclient is available and the task can be offloaded
 func (s *ProviderStore) CanCloudOffload(task *AsyncTask) bool {
 	// client available?
-	if s.cloudClient == nil {
+	if s.CloudSubmit == nil {
 		return false
 	}
 	// only Wasip1 tasks supported for now
@@ -108,7 +111,8 @@ func (s *ProviderStore) CanCloudOffload(task *AsyncTask) bool {
 	return false
 }
 
-func (s *ProviderStore) cloud(ctx context.Context, request wasimoff.Task_Request, response wasimoff.Task_Response) error {
+// cloudRun sends the task to the cloud function using the configured client
+func (s *ProviderStore) cloudRun(ctx context.Context, request wasimoff.Task_Request, response wasimoff.Task_Response) error {
 	body, err := proto.Marshal(request)
 	if err != nil {
 		return fmt.Errorf("failed marshalling request: %w", err)
@@ -134,20 +138,42 @@ func (s *ProviderStore) cloud(ctx context.Context, request wasimoff.Task_Request
 	return nil
 }
 
-func (s *ProviderStore) CloudOffload(task *AsyncTask) error {
+// throughput-limited listener loop for incoming cloud offloading requests
+func (s *ProviderStore) cloudLoop(concurrency int) {
 
-	// get type-casted request
-	request, ok := task.Request.(*wasimoff.Task_Wasip1_Request)
-	if !ok {
-		return fmt.Errorf("only *wasimoff.Task_Wasip1_Request supported for CloudOffload")
-	}
+	limiter := semaphore.New(concurrency) // limit simultaneous cloud invocations
+	s.CloudSubmit = make(chan *AsyncTask) // unbuffered on purpose
 
-	err := s.cloud(task.Context, request, task.Response)
-	if err != nil {
-		return fmt.Errorf("cloud offload failed: %w", err)
+	for {
+
+		// acquire a semaphore before accepting a task
+		_ = limiter.Acquire(context.TODO(), 1)
+
+		task, ok := <-s.CloudSubmit
+		if !ok {
+			log.Println("ERR: cloudSubmit channel closed")
+			return
+		}
+
+		// prerequisite checks
+		if err := task.Check(); err != nil {
+			task.Error = err
+			task.Done()
+			limiter.Release(1)
+			continue
+		}
+
+		// run the request asynchronously
+		go func(limiter semaphore.Semaphore, task *AsyncTask) {
+			err := s.cloudRun(task.Context, task.Request, task.Response)
+			if err != nil {
+				task.Error = fmt.Errorf("cloud offload failed: %w", err)
+			}
+			task.Done()
+			limiter.Release(1)
+		}(limiter, task)
+
 	}
-	task.Done()
-	return nil
 
 }
 
