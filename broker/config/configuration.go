@@ -30,6 +30,7 @@ type Configuration struct {
 	// the Google Cloud Run Function, using the given service account credentials JSON.
 	CloudCredentials string `desc:"Path to GCP service account credentials JSON" default:"./account.json" split_words:"true"`
 	CloudFunction    string `desc:"URL of the function to invoke for cloud offloading" split_words:"true"`
+	CloudConcurrency int    `desc:"Number of maximum simultaneous cloud invocations" default:"32" split_words:"true"`
 
 	// BENCHMODE activates a mode where the Broker produces infinite workload by itself
 	Benchmode int `desc:"Benchmarking mode with n concurrent tasks" default:"0"`

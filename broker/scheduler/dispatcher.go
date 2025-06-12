@@ -144,7 +144,7 @@ func dynamicSubmit(
 				Chan: reflect.ValueOf(cloud),
 				Send: reflect.ValueOf(task),
 			}
-			log.Printf("task %s: added cloud offloading queue", *task.Request.GetInfo().Id)
+			// log.Printf("task %s: added cloud offloading queue", *task.Request.GetInfo().Id)
 		} else {
 			// successfully queued on some provider
 			return nil
@@ -163,6 +163,13 @@ func dynamicSubmit(
 	i, _, _ := reflect.Select(cases)
 	if i == len(cases)-1 { // last item, i.e. timeout / ctx.Done
 		return timeout.Err()
+	}
+	// TODO: remove me?
+	if cloud != nil && i == len(cases)-2 {
+		log.Printf("task %s: scheduled on cloud offloading", *task.Request.GetInfo().Id)
+	}
+	if i < len(providers) {
+		log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Address))
 	}
 	return nil
 

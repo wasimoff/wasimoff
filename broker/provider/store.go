@@ -61,14 +61,14 @@ func NewProviderStore(storagepath string, conf *config.Configuration) (*Provider
 	}
 
 	// maybe initialize cloud client
-	if conf.CloudCredentials != "" && conf.CloudFunction != "" {
+	if conf.CloudCredentials != "" && conf.CloudFunction != "" && conf.CloudConcurrency > 0 {
 		client, err := idtoken.NewClient(context.Background(), conf.CloudFunction, idtoken.WithCredentialsFile(conf.CloudCredentials))
 		if err != nil {
 			return nil, fmt.Errorf("failed to initialize GCP cloudclient: %w", err)
 		}
 		store.cloudClient = client
 		store.cloudFunction = conf.CloudFunction
-		go store.cloudLoop(10)
+		go store.cloudLoop(conf.CloudConcurrency)
 	}
 
 	// start broadcast transmitter
