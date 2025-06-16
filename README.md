@@ -13,15 +13,39 @@ Publications relating to this project:
 * [Semjonov, A., & Edinger, J. (2024, December). *Demo: Zero-Setup Computation Offloading to Heterogeneous Volunteer Devices Using Web Browsers.* In *Proceedings of the 25th International Middleware Conference: Demos, Posters and Doctoral Symposium* (pp. 3-4).](https://dl.acm.org/doi/abs/10.1145/3704440.3704776)
 
 
-### Essential roles
+### Components
 
-The three essential roles **Broker**, **Provider** and **Client** can be found in their respective subdirectories.
+The three essential roles in Wasimoff are **Broker** (central entity), **Provider** (resource providers, the machines that execute the workload) and **Client** (users wishing to use the system in FaaS-style). Broker and Client can be found in their respective subdirectories and there's multiple Provider implementations covering modern web browsers and terminals / servers.
 
-* The **Broker** is a central entity to which all Providers connect and which then distributes tasks among them. Clients talk to the Broker to upload executables and queue tasks. It is written in Go and uses Protobuf messages over WebSocket connections.
+* The **Broker** (`broker/`) is a central entity to which all Providers connect and which then distributes tasks among them. Clients upload WebAssembly executables (think of this like registering a function in FaaS) and then queue tasks using these executables. The Broker is written in Go and uses Protobuf messages over WebSocket connections.
+
 * **Providers** are the participants that share their resources with the network. An important goal of this prototype was to implement the Provider entirely on the Web platform API, so it can run in the browser simply by opening a web page.
-  * A **Webprovider** is written in Vue.js and uses Workers to execute the WebAssembly modules concurrently.
-  * The exact same TypeScript code can also be run with **Deno**, thus there is also a CLI script to start a computational Provider in a terminal.
-* The **Client** interface is either a simple HTTP API or also a WebSocket connection for asynchronous task submission. Examples exist using `curl` in Bash, as well as a CLI written in Go. It contains a number of examples on how to write job configurations.
+  * A browser implementation (`webprovider/`) is written in Vue.js and uses Web Workers to execute the WebAssembly modules concurrently.
+  * The exact same TypeScript code can also be run with Deno (`denoprovider/`), which makes it easy to start Providers on a server or deploy them with Docker.
+
+* The **Client** (`client/`) interface is either a simple ConnectRPC HTTP API or also a WebSocket connection for asynchronous task submission. Examples exist using `curl` in Bash, as well as a CLI written in Go. It can be used to send individual tasks or schedule a large number of similar tasks with job configuration files.
+
+More detailed documentation can be found in each subdirectory.
+
+#### Protobuf
+
+The communication interfaces of the Broker all use Protobuf messages, which are defined in `proto/v1/messages.proto`. This makes it easy to deploy automatically generated client APIs using ConnectRPC on the one hand and have a well-defined RPC mechanism to the Providers as well.
+
+### Containerized Deployment
+
+This repository includes a multi-stage `Dockerfile`, which compiles the Broker binary in a Go image, compiles the Provider frontend in a NodeJS image, copies both to a barebones container image (`--target wasimoff`) and also prepares another headless provider image using Deno (`--target provider`). These containers are [built automatically in a GitHub action](https://github.com/wasimoff/wasimoff/actions) and published as:
+
+* [`ghcr.io/wasimoff/broker`](https://github.com/wasimoff/wasimoff/pkgs/container/broker)
+* [`ghcr.io/wasimoff/provider`](https://github.com/wasimoff/wasimoff/pkgs/container/provider)
+
+For a quick test environment with a Broker and a Provider, use the Docker Compose configuration with:
+
+```
+docker compose pull && docker compose up
+```
+
+Then go to the `client/` directory and launch some of the example applications.
+
 
 ### WASI applications
 
@@ -34,23 +58,4 @@ The WebAssembly System Interface (WASI) was chosen initially as an abstraction l
 
 ### Experiments
 
-The [`experiments` repository](https://github.com/wasimoff/experiments) contains various experiments and evaluations of pieces of the networking stack that were considered.
-
-
-### Containerized deployment
-
-This repository includes a multi-stage `Dockerfile`, which:
-* compiles the `broker` binary in a `golang` image,
-* compiles the webprovider frontend dist in a `node` image,
-* copies both to a barebones `alpine` image and
-* prepares another headless provider with a `denoland/deno` image.
-
-You can compile both main images individually with:
-* `docker build --target wasimoff -t wasimoff:broker .` or `make broker`
-* `docker build --target provider -t wasimoff:provider .` or `make provider`
-
-Or, for a quick test environment, use the `docker-compose.yaml` file with:
-
-```
-docker compose up --build
-```
+The sibling [`experiments` repository](https://github.com/wasimoff/experiments) contains various experiments and evaluations of pieces of the networking stack etc. that were considered during development.

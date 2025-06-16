@@ -2,7 +2,7 @@ services:
 
   broker:
 
-    image: ansemjo/wasimoff:broker
+    image: ghcr.io/wasimoff/broker
     build:
       context: ./
       target: wasimoff
@@ -26,7 +26,7 @@ services:
       WASIMOFF_METRICS: "true"
 
   provider:
-    image: ansemjo/wasimoff:provider
+    image: ghcr.io/wasimoff/provider
     build:
       context: ./
       target: provider
@@ -34,7 +34,7 @@ services:
     depends_on:
       broker:
         condition: service_healthy
-    command: ["--url", "http://broker:4080", "--workers", "2"]
+    command: ["--url", "http://broker:4080"]
 
 volumes:
   broker_storage:

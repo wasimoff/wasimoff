@@ -1,0 +1,34 @@
+server {
+
+  listen [::]:80;
+  listen [::]:443 ssl http2;
+  server_name wasimoff.example.com;
+
+  ssl_certificate     /etc/letsencrypt/live/wasimoff.example.com/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/wasimoff.example.com/privkey.pem;
+  include snippets/redirect/to_https.conf;
+  include vhosts/common.d/*.conf;
+
+  # add the real IP as header to the Broker can log it properly
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+  # silent prometheus metrics
+  location /metrics {
+    include snippets/proxypass.conf;
+    proxy_pass http://wasimoff;
+    access_log off;
+  }
+
+  # normal route with a little longer timeouts
+  location / {
+    include snippets/proxypass.conf;
+    proxy_pass http://wasimoff;
+    proxy_read_timeout 3600;
+  }
+
+}
+
+upstream wasimoff {
+  server 127.0.0.1:4080;
+}
