@@ -39,7 +39,7 @@ func loadConfiguration() (conf *Configuration) {
 	}
 
 	// load .env file into environment
-	if err := godotenv.Load(); err != nil && !errors.Is(err, os.ErrNotExist) {
+	if err := godotenv.Load(".env", "config.env"); err != nil && !errors.Is(err, os.ErrNotExist) {
 		// ignore simple "not found" errors
 		log.Fatalf("failed to load dotenv: %s", err)
 	}

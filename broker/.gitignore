@@ -9,6 +9,7 @@ __debug_bin*
 
 # dotenv config
 .env
+config.env
 
 # boltdb storage
 broker_storage.boltdb
