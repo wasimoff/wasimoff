@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"slices"
+
 	"wasi.team/broker/net/transport"
 	wasimoff "wasi.team/proto/v1"
 )
@@ -38,7 +39,7 @@ func WebSocketHandler(store *ProviderStore, origins []string) http.HandlerFunc {
 		go provider.eventTransmitter()
 
 		// get the list of available files on provider
-		if _, err = provider.ListFiles(); err != nil {
+		if err = provider.ListFiles(); err != nil {
 			log.Printf("[%s] New Provider: %s", addr, err)
 			return
 		}
@@ -107,11 +108,11 @@ func (p *Provider) eventTransmitter() {
 				// update about stored files on provider
 				for _, file := range ev.GetAdded() {
 					// first add
-					p.files[file] = struct{}{}
+					p.files.Store(file, nil)
 				}
 				for _, file := range ev.GetRemoved() {
 					// then remove, i.e. err on _not_ having the file
-					delete(p.files, file)
+					p.files.Delete(file)
 				}
 
 			default:

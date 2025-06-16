@@ -31,8 +31,8 @@ type Provider struct {
 	// information about the provider, to be accessed with Get()
 	info map[ProviderInfoKey]string
 
-	// list of files known on this provider
-	files map[string]struct{}
+	// hashmap of files known on this provider
+	files sync.Map // map[string]struct{}
 }
 
 type ProviderInfoKey string
@@ -54,7 +54,7 @@ func NewProvider(messenger *transport.Messenger) *Provider {
 		Submit:    nil, // must be setup by acceptTasks
 		limiter:   semaphore.New(0),
 		info:      make(map[ProviderInfoKey]string),
-		files:     make(map[string]struct{}),
+		files:     sync.Map{},
 	}
 
 	// set known information

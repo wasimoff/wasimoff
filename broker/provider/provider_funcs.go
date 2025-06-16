@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"wasi.team/broker/storage"
 	wasimoff "wasi.team/proto/v1"
 )
@@ -41,22 +43,21 @@ func (p *Provider) TryRun(ctx context.Context, args wasimoff.Task_Request, resul
 // ----- filesystem -----
 
 // ListFiles asks the Provider to list their files in storage
-func (p *Provider) ListFiles() (map[string]struct{}, error) {
+func (p *Provider) ListFiles() error {
 
 	// receive listing into a new struct
 	args := wasimoff.Filesystem_Listing_Request{}
 	response := wasimoff.Filesystem_Listing_Response{}
 	if err := p.messenger.RequestSync(context.TODO(), &args, &response); err != nil {
-		return nil, fmt.Errorf("provider.ListFiles failed: %w", err)
+		return fmt.Errorf("provider.ListFiles failed: %w", err)
 	}
 
 	// (re)set known files from received list
-	p.files = make(map[string]struct{})
+	p.files = sync.Map{}
 	for _, filename := range response.Files {
-		p.files[filename] = struct{}{}
+		p.files.Store(filename, nil)
 	}
-
-	return p.files, nil
+	return nil
 }
 
 // ProbeFile sends a content-address name to check if the Provider *has* a file
@@ -80,7 +81,7 @@ func (p *Provider) Upload(file *storage.File) (err error) {
 	// (either probe was ok or upload successful)
 	defer func() {
 		if err == nil {
-			p.files[ref] = struct{}{}
+			p.files.Store(ref, nil)
 		}
 	}()
 
@@ -109,6 +110,6 @@ func (p *Provider) Upload(file *storage.File) (err error) {
 
 // Has returns if this Provider *is known* to have a certain file, without re-probing
 func (p *Provider) Has(file string) bool {
-	_, ok := p.files[file]
+	_, ok := p.files.Load(file)
 	return ok
 }
