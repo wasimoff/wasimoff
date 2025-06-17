@@ -44,23 +44,48 @@ await provider.sendInfo(workers, "deno", `${navigator.userAgent} (${Deno.build.t
   };
 })();
 
+
+// log the currently running tasks
+function currentTasks() {
+  const now = new Date().getTime(); // unix epoch milliseconds
+  return provider.pool.currentTasks
+    .filter(w => w.busy)
+    .map(w => ({
+      worker: w.index, // worker index
+      task: w.task, // task ID
+      started: w.started, // absolute start date
+      age: w.started ? (now - w.started.getTime())/1000 : undefined, // age in seconds
+    }));
+};
+
 // register signal handlers for clean exits
 let forcequit = false; // force immediate on second signal
-Deno.addSignalListener("SIGINT", async () => {
+const graceperiod = 30_000; // grace period in ms, 0 = no grace timeout
+async function terminator() {
+
+  // called a second time, quit immediately
   if (forcequit) {
     console.error(" kill")
+    console.debug("aborted tasks:", currentTasks());
     await provider.disconnect();
     Deno.exit(1);
+  } else {
+    console.log(" shutdown (send signal again to force immediate exit)");
+    forcequit = true;
   };
-  console.log(" shutdown (send signal again to force immediate exit)");
-  forcequit = true;
+
+  // schedule the grace timeout
+  if (graceperiod > 0) setTimeout(terminator, graceperiod);
+
   // wait to finish all current tasks, then quit
   await provider.pool.scale(0);
-  // TODO: short timeout to allow outgoing messages, should be a flush
-  await new Promise(r => setTimeout(r, 20));
+  await new Promise(r => setTimeout(r, 20)); // ~ flush
   await provider.disconnect();
   Deno.exit(0);
-});
+}
+// handle SIGTERM (15) and SIGINT (2) the same
+Deno.addSignalListener("SIGTERM", terminator);
+Deno.addSignalListener("SIGINT",  terminator);
 
 // start handling requests
 await provider.handlerequests();

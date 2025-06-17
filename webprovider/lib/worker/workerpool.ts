@@ -18,6 +18,7 @@ export class WasiWorkerPool {
     index: number,
     busy: boolean,
     taskid?: string,
+    started?: Date,
     cancelled?: boolean,
     reject?: () => void,
   }>[] = [];
@@ -30,6 +31,16 @@ export class WasiWorkerPool {
 
   /** Get a "bitmap" of busy workers. */
   get busy() { return this.pool.map(w => w.busy); };
+
+  /** Get a list with information about current tasks. */
+  get currentTasks() {
+    return this.pool.map(w => ({
+      index: w.index,
+      busy: w.busy,
+      task: w.taskid,
+      started: w.started,
+    }));
+  };
 
   // an asynchronous queue to fetch an available worker
   private idlequeue = new Queue<typeof this.pool[0]>;
@@ -141,6 +152,7 @@ export class WasiWorkerPool {
     const worker = await this.idlequeue.get();
     worker.busy = true;
     worker.taskid = id;
+    worker.started = new Date();
 
     // try to execute the task and put worker back into queue
     try {
@@ -154,6 +166,7 @@ export class WasiWorkerPool {
       if (worker.cancelled !== true) {
         worker.busy = false;
         worker.taskid = undefined;
+        worker.started = undefined;
         await this.idlequeue.put(worker);
       };
     };
@@ -168,6 +181,7 @@ export class WasiWorkerPool {
     const worker = await this.idlequeue.get();
     worker.busy = true;
     worker.taskid = id;
+    worker.started = new Date();
 
     // try to execute the task and forcibly respawn afterwards due to memory leak
     // https://github.com/pyodide/pyodide/discussions/4338
@@ -182,6 +196,7 @@ export class WasiWorkerPool {
       console.log(...logprefix, `force worker ${worker.index} respawn`);
       worker.busy = false;
       worker.taskid = undefined;
+      worker.started = undefined;
       worker.link[releaseProxy]();
       worker.worker.terminate();
       await this.spawn();
