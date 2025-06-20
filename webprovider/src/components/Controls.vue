@@ -152,8 +152,16 @@ const usage = computed(() => {
         </div> -->
       </div>
 
-      <label class="label has-text-grey-dark">Current Usage: {{ (100*usage).toFixed() }}%</label>
-      <progress class="progress is-large is-info" :value="usage" max="1" style="width: 245px;"></progress>
+      <label class="label has-text-grey-dark">Busy Workers</label>
+      <!-- TODO: visualization with capacity as maximum slots -->
+      <div class="workerfarm" v-if="workers">
+        <span v-for="(busy, i) of workers">
+          <span class="workersquare" :class="busy ? 'busy' : ''">{{ i+1 }}</span>
+        </span>
+      </div>
+      <div v-if="workers.length === 0">
+        You have no active Workers.
+      </div>
 
     </div>
 
@@ -184,3 +192,28 @@ const usage = computed(() => {
 
   </div>
 </template>
+
+<style lang="css" scoped>
+
+.workerfarm {
+  max-width: calc((30px + 6px) * 8);
+}
+
+.workersquare {
+  text-align: center;
+  line-height: 30px;
+  border-radius: 6px;
+  margin: 0 6px 6px 0;
+  width: 30px;
+  height: 30px;
+  display: inline-block;
+  background-color: #ddd;
+  transition: background-color 0.5s ease-in;
+}
+
+.workersquare.busy {
+  background-color: rgb(27, 168, 27);
+  transition: none;
+}
+
+</style>
