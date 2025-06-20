@@ -2,6 +2,7 @@
 
 import Terminal from "@app/components/Terminal.vue";
 import Controls from "@app/components/Controls.vue";
+import VersionInfo from "@app/components/VersionInfo.vue";
 
 import { useTerminal, LogType } from "@app/stores/terminal.ts";
 const terminal = useTerminal();
@@ -11,9 +12,6 @@ terminal.log("Starting wasimoff provider ...", LogType.Black);
 if (!window.isSecureContext) {
   terminal.warn("WARNING: application running in an insecure context!")
 }
-
-// @ts-ignore: defined in vite plugin
-const version = VERSION;
 
 </script>
 
@@ -37,15 +35,7 @@ const version = VERSION;
 
   </div>
 
-  <div style="text-align:center">
-    <div class="github">
-      <a href="https://github.com/wasimoff/wasimoff">
-        <img src="https://github.githubassets.com/favicons/favicon.svg" alt="GitHub Logo" />
-        <span>github.com/wasimoff</span>
-      </a>
-    </div>
-    build: {{ version }}
-  </div>
+  <VersionInfo />
 
 </template>
 
@@ -64,19 +54,6 @@ const version = VERSION;
   height: 3rem;
 }
 
-.github {
-  /* display: flex; */
-  align-items: center;
-}
-.github img {
-  width: 20px;
-  height: 20px;
-  margin-right: 5px;
-  position: relative;
-  bottom: -5px;
-}
-.github a {
-  color: black;
-}
+
 
 </style>
