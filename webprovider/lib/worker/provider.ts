@@ -9,7 +9,7 @@ import { create, Message } from "@bufbuild/protobuf";
 import { Event_FileSystemUpdateSchema, Event_ProviderHelloSchema, Event_ProviderResourcesSchema }
   from "@wasimoff/proto/v1/messages_pb";
 import { rpchandler } from "@wasimoff/worker/rpchandler";
-import { expose, proxy as comlinkProxy, workerReady, transfer, proxy } from "./comlink";
+import { expose, workerReady, transfer, proxy } from "./comlink";
 import { Wasip1TaskParams } from "./wasiworker";
 
 /**
@@ -101,7 +101,7 @@ export class WasimoffProvider {
 
   /** Return a comlink proxy of the worker pool. */
   async poolProxy() {
-    return comlinkProxy(this.pool);
+    return proxy(this.pool);
   }
 
   // hold the wasiworkers in a pool
@@ -117,7 +117,7 @@ export class WasimoffProvider {
   /** Return a comlink proxy of the storage. */
   public storageProxy() {
     if (!this.storage) throw "storage does not exist yet";
-    return comlinkProxy(this.storage);
+    return proxy(this.storage);
   };
 
   /** Open a storage by URL. */
@@ -140,7 +140,7 @@ export class WasimoffProvider {
   /** Return a comlink proxy of the messenger. */
   async messengerProxy() {
     if (!this.messenger) throw "messenger does not exist yet";
-    return comlinkProxy(this.messenger);
+    return proxy(this.messenger);
   };
 
   // (re)connect to a broker by url

@@ -108,10 +108,12 @@ async function fillWorkers() {
 
 // get the maximum capacity from pool
 const nmax = ref(0);
-watch(() => wasimoff.$pool, async value => {
-  // capacity is readonly and should only ever change once
-  if (value) nmax.value = await value.capacity;
-  stop();
+const unwatch = watch(() => wasimoff.$pool, async value => {
+  if (value) {
+    // capacity is readonly and should only ever change once
+    nmax.value = await value.capacity;
+    unwatch();
+  };
 });
 
 // calculate current worker usage
