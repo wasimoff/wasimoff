@@ -3,32 +3,61 @@
 // TODO: select dataset with argv argument
 
 mod datasets;
-use datasets::{ City, CityConst, WG59, xy, CityRecord };
+use datasets::{ xy, City, CityConst, CityRecord, SGB128, WG59 };
+use time::Duration;
 
 fn main() {
 
     // collect commandline arguments
     let args: Vec<String> = std::env::args().collect();
 
-    // tsp gen [n] – print a random CSV for later
-    if args.len() == 3 && args[1] == "write" {
+    // tsp write [n] – print a random CSV for later
+    if args.len() == 3 && (args[1] == "write" || args[1] == "write_wg59") {
         let n = args[2].parse::<usize>().unwrap();
+        if n > WG59.len() {
+            eprintln!("n is larger than the number of cities in WG59 dataset");
+            std::process::exit(1);
+        }
         return write(&random_slice(&WG59, n));
     }
 
-    // tsp rand [n] – solve a random selection
+    // tsp write [n] – print a random CSV for later
+    if args.len() == 3 && (args[1] == "write_sgb128") {
+        let n = args[2].parse::<usize>().unwrap();
+        if n > SGB128.len() {
+            eprintln!("n is larger than the number of cities in SGB128 dataset");
+            std::process::exit(1);
+        }
+        return write(&random_slice(&SGB128, n));
+    }
+
+    // tsp rand [n] – brute-solve a random selection
     if args.len() == 3 && args[1] == "rand" {
         let n = args[2].parse::<usize>().unwrap();
         return solve(&random_slice(&WG59, n));
     }
 
-    // tsp read – read a previously generated CSV and solve it
-    if args.len() == 2 && args[1] == "read" {
+    // tsp read – read a previously generated CSV and brute-solve it
+    if args.len() == 2 && (args[1] == "read" || args[1] == "brute") {
         return solve(&read());
     }
 
+    // tsp anneal [t] - read a CSV and run simulated annealing for t seconds
+    if args.len() == 3 && args[1] == "anneal" {
+        let t = args[2].parse::<i64>().unwrap();
+        let cities = read();
+        return anneal(&cities, Duration::seconds(t));
+    }
+
+    // tsp hill [t] - read a CSV and run hill climbing for t seconds
+    if args.len() == 3 && args[1] == "hill" {
+        let t = args[2].parse::<i64>().unwrap();
+        let cities = read();
+        return hillclimb(&cities, Duration::seconds(t));
+    }
+
     // unknown or missing arguments
-    eprintln!("unknown arguments! tsp {{ write [n] | rand [n] | read }}");
+    eprintln!("unknown arguments! tsp {{ write_{{wg59,sgb128}} [n] | rand [n] | brute | anneal [t] | hill [t] }}");
     std::process::exit(1);
 
 }
@@ -42,6 +71,10 @@ fn read() -> Vec<City>{
     for result in reader.deserialize() {
         let r: CityRecord = result.unwrap();
         cities.push(((r.x, r.y), r.name));
+    }
+    if cities.is_empty() {
+        eprintln!("failed to read any cities from stdin!");
+        std::process::exit(1);
     }
     cities
 }
@@ -61,10 +94,31 @@ fn write (cities: &[City]) {
 fn solve (cities: &[City]) {
     // find the optimal path
     let path = travelling_salesman::brute_force::solve(&xy(cities));
+    print_distance(cities, &path);
+}
+
+/// Run the `travelling_salesman::simulated_annealing` algorithm on the chosen slice of cities.
+fn anneal (cities: &[City], time: Duration) {
+    // optimize the path with simulated annealing
+    let path = travelling_salesman::simulated_annealing::solve(&xy(cities), time);
+    print_distance(cities, &path);
+}
+
+/// Run the `travelling_salesman::hill_climbing` algorithm on the chosen slice of cities.
+fn hillclimb (cities: &[City], time: Duration) {
+    // optimize the path with simple hill-climbing without random restarts
+    let path = travelling_salesman::hill_climbing::solve(&xy(cities), time);
+    print_distance(cities, &path);
+}
+
+
+/// Print the found path
+fn print_distance (cities: &[City], path: &travelling_salesman::Tour) {
     // map the path to city names
     let names: Vec<String> = path.route.iter().map(|c| cities[*c].1.clone()).collect();
     // print result
-    println!("Path distance: {}, route: {:?}", path.distance, names);
+    println!("distance = {}", path.distance);
+    eprintln!("path = {:?}", names);
 }
 
 /// Pick a random selection of coordinates from a `(x,y): [(f64, f64)]` dataset.

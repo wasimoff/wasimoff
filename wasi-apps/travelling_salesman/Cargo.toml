@@ -15,4 +15,5 @@ strip = "debuginfo"
 csv = "1.2.2"
 rand = "0.8.5"
 serde = { version = "1.0.180", features = ["derive"] }
+time = "0.3.41"
 travelling_salesman = "1.1.22"
