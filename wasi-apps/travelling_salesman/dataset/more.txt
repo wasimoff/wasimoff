@@ -1,0 +1,5 @@
+There are a lot more datasets with (known) optimal routes here:
+http://comopt.ifi.uni-heidelberg.de/software/TSPLIB95/tsp/
+
+Files need to be reformatted a little bit to conform to CSV files
+using columns:  X, Y, Name
