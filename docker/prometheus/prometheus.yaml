@@ -26,16 +26,20 @@ scrape_configs:
     honor_timestamps: true
     metrics_path: /metrics
     scheme: http
+    scrape_interval: 2s
+    scrape_timeout: 2s
     static_configs:
-      - targets:
-        - localhost:4080
+      - labels:
+          env: development
+        targets:
+          - localhost:4080
 
-  - job_name: wasimoff_prod
-    honor_timestamps: true
-    metrics_path: /metrics
-    scheme: https
-    scrape_interval: 5s
-    scrape_timeout: 5s
-    static_configs:
-      - targets:
-        - wasi.team
+  #- job_name: wasimoff_prod
+  #  honor_timestamps: true
+  #  metrics_path: /metrics
+  #  scheme: https
+  #  scrape_interval: 5s
+  #  scrape_timeout: 5s
+  #  static_configs:
+  #    - targets:
+  #      - wasi.team

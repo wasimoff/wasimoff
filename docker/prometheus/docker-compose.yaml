@@ -6,9 +6,9 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yaml"
       - "--storage.tsdb.retention.time=1y"
-    ports:
-      - 127.0.0.1:9090:9090
-    #network_mode: host
+    #ports:
+    #  - 127.0.0.1:9090:9090
+    network_mode: host
     restart: unless-stopped
     volumes:
       - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
@@ -17,14 +17,15 @@ services:
   grafana:
     image: grafana/grafana
     container_name: wasimoff_grafana
-    ports:
-      - 127.0.0.1:3000:3000
-    #network_mode: host
+    #ports:
+    #  - 127.0.0.1:3000:3000
+    network_mode: host
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_DEFAULT_THEME=light
+      - GF_LOG_LEVEL=warn
     volumes:
       - ./grafana.yaml:/etc/grafana/provisioning/datasources/prometheus.yml
       - grafana:/var/lib/grafana
