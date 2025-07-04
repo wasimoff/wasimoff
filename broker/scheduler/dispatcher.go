@@ -19,15 +19,13 @@ var TaskQueue = make(chan *provider.AsyncTask, 2048)
 type Scheduler interface {
 	// The Schedule function tries to submit a Task to a suitable Provider's queue and returns the WasmTask struct
 	Schedule(ctx context.Context, task *provider.AsyncTask) error
-	// Called on task completion to measure overall throughput
-	RateTick()
 }
 
 // The Dispatcher takes a task queue and a provider selector strategy and then
 // decides which task to send to which provider for computation. Additionally,
 // limit the number of concurrently scheduling tasks (this does not mean running,
 // in-flight tasks but those that are currently "looking for a slot").
-func Dispatcher(selector Scheduler, concurrency int) {
+func Dispatcher(store *provider.ProviderStore, selector Scheduler, concurrency int) {
 
 	// use ticketing to limit simultaneous schedules
 	tickets := make(chan struct{}, concurrency)
@@ -91,10 +89,8 @@ func Dispatcher(selector Scheduler, concurrency int) {
 			// still erroneous after retries, give up
 			if err != nil {
 				task.Error = errors.Join(errs...)
-			} else {
-				// otherwise signal completion to measure throughput
-				selector.RateTick()
 			}
+			store.Observe(task)
 			interceptedChannel <- task
 
 		}(task)
@@ -164,12 +160,12 @@ func dynamicSubmit(
 	if i == len(cases)-1 { // last item, i.e. timeout / ctx.Done
 		return timeout.Err()
 	}
-	// TODO: remove me?
 	if cloud != nil && i == len(cases)-2 {
-		log.Printf("task %s: scheduled on cloud offloading", *task.Request.GetInfo().Id)
+		// log.Printf("task %s: scheduled on cloud offloading", *task.Request.GetInfo().Id)
+		task.CloudOffloaded = true
 	}
 	if i < len(providers) {
-		log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Address))
+		// log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Address))
 	}
 	return nil
 

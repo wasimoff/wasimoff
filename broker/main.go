@@ -3,11 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
-	"net/http/pprof"
 	"os"
 
 	"wasi.team/broker/config"
-	"wasi.team/broker/metrics"
 	"wasi.team/broker/net/server"
 	"wasi.team/broker/provider"
 	"wasi.team/broker/scheduler"
@@ -44,7 +42,7 @@ func main() {
 	log.Printf("Provider socket: %s/api/provider/ws", broker.Addr())
 
 	// create a queue for the tasks and start the dispatcher
-	go scheduler.Dispatcher(&selector, 32)
+	go scheduler.Dispatcher(store, selector, 32)
 
 	// maybe start the "benchmode" load generation
 	go client.BenchmodeTspFlood(store, conf.Benchmode)
@@ -70,14 +68,14 @@ func main() {
 
 	// pprof endpoint for debugging
 	if conf.Debug {
-		pprofHandler(mux, "/debug/pprof")
+		mux.Handle("GET /debug/pprof/", server.Profiling())
 		log.Printf("DEBUG: broker PID is %d", os.Getpid())
 		log.Printf("DEBUG: pprof profiles at %s/debug/pprof", broker.Addr())
 	}
 
 	// prometheus metrics
 	if conf.Metrics {
-		prometheusHandler(mux, "/metrics", store)
+		mux.Handle("/metrics", server.Prometheus())
 		log.Printf("Prometheus metrics: %s/metrics", broker.Addr())
 	}
 
@@ -94,35 +92,3 @@ func main() {
 
 //
 // ---
-
-// pprofHandler mimics what the net/http/pprof.init() does, but on a specified mux
-func pprofHandler(mux *http.ServeMux, prefix string) {
-	// https://cs.opensource.google/go/go/+/refs/tags/go1.23.0:src/net/http/pprof/pprof.go;l=95
-	mux.HandleFunc(prefix+"/", pprof.Index)
-	mux.HandleFunc(prefix+"/cmdline", pprof.Cmdline)
-	mux.HandleFunc(prefix+"/profile", pprof.Profile)
-	mux.HandleFunc(prefix+"/symbol", pprof.Symbol)
-	mux.HandleFunc(prefix+"/trace", pprof.Trace)
-
-}
-
-// metrics endpoint for Prometheus
-func prometheusHandler(mux *http.ServeMux, prefix string, store *provider.ProviderStore) {
-	mux.Handle(prefix, metrics.MetricsHandler(
-		// I'd love to put these funcs into the metrics package but that leads to an import cycle
-		// gaugeFunc for the providers
-		func() float64 {
-			return float64(store.Size())
-		},
-		// gaugeFunc for the workers
-		func() (f float64) {
-			sum := 0
-			store.Range(func(addr string, provider *provider.Provider) bool {
-				sum += provider.CurrentLimit()
-				return true
-			})
-			return float64(sum)
-		},
-	))
-
-}

@@ -10,12 +10,10 @@ import (
 	"time"
 
 	"wasi.team/broker/config"
-	"wasi.team/broker/metrics"
 	"wasi.team/broker/storage"
 	wasimoff "wasi.team/proto/v1"
 
 	"github.com/marusama/semaphore/v2"
-	"github.com/paulbellamy/ratecounter"
 	"github.com/puzpuzpuz/xsync"
 	"google.golang.org/api/idtoken"
 	"google.golang.org/protobuf/proto"
@@ -24,6 +22,9 @@ import (
 // ProviderStore holds the currently connected providers, safe for concurrent access.
 // It also keeps the list of files known to the provider in memory.
 type ProviderStore struct {
+
+	// prometheus metric gauges
+	metrics *ProviderStoreMetrics
 
 	// Providers are held in a sync.Map safe for concurrent access
 	providers *xsync.MapOf[string, *Provider]
@@ -41,7 +42,7 @@ type ProviderStore struct {
 	Broadcast chan proto.Message
 
 	// ratecounter is used to keep track of throughput [tasks/s]
-	ratecounter *ratecounter.RateCounter
+	ratecounter *RateCounter
 }
 
 // NewProviderStore properly initializes the fields in the store
@@ -50,8 +51,11 @@ func NewProviderStore(storagepath string, conf *config.Configuration) (*Provider
 	store := ProviderStore{
 		providers:   xsync.NewMapOf[*Provider](),
 		Broadcast:   make(chan proto.Message, 10),
-		ratecounter: ratecounter.NewRateCounter(5 * time.Second),
+		ratecounter: NewRateCounter(5 * time.Second),
 	}
+
+	// initialize metrics gauges
+	store.initializePrometheusMetrics()
 
 	// initialize file storage
 	if storagepath == "" || storagepath == ":memory:" {
@@ -179,19 +183,10 @@ func (s *ProviderStore) cloudLoop(concurrency int) {
 
 // -------------- ratecounter in tasks/second --------------
 
-// RateTick should be called on successful Task completion to measure throughput
-func (s *ProviderStore) RateTick() {
-	s.ratecounter.Incr(1)
-}
-
 // throughput expects
 func (s *ProviderStore) throughput(tick time.Duration) {
 	for range time.Tick(tick) {
-		tps := s.ratecounter.Rate() / 5
-		// log.Println("Tasks/sec:", tps)
-
-		// set gauge in metrics
-		metrics.Throughput.Set(float64(tps))
+		tps := s.ratecounter.GetRate()
 
 		select {
 		case s.Broadcast <- &wasimoff.Event_Throughput{

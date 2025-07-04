@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	wasimoff "wasi.team/proto/v1"
 )
@@ -11,11 +12,13 @@ import (
 // AsyncTask is an individual parametrized task from an offloading job that
 // can be submitted to a Provider's Submit() channel.
 type AsyncTask struct {
-	Context  context.Context
-	Request  wasimoff.Task_Request  // the overall request with metadata, QoS and task parameters
-	Response wasimoff.Task_Response // response containing either an error or specific output
-	Error    error                  // errors encountered internally during scheduling or RPC
-	done     chan *AsyncTask        // received itself when complete
+	Context        context.Context
+	Request        wasimoff.Task_Request  // the overall request with metadata, QoS and task parameters
+	Response       wasimoff.Task_Response // response containing either an error or specific output
+	CloudOffloaded bool
+	start          time.Time
+	Error          error           // errors encountered internally during scheduling or RPC
+	done           chan *AsyncTask // received itself when complete
 }
 
 // NewAsyncTask creates a new call struct for a scheduler
@@ -34,7 +37,15 @@ func NewAsyncTask(
 	if ctx == nil {
 		log.Panic("AsyncTask: context is nil")
 	}
-	return &AsyncTask{ctx, args, res, nil, done}
+	return &AsyncTask{
+		Context:        ctx,
+		Request:        args,
+		Response:       res,
+		CloudOffloaded: false,
+		start:          time.Now(), // TODO: not quite the actual "start"
+		Error:          nil,
+		done:           done,
+	}
 }
 
 // Done signals on the channel that this call is complete

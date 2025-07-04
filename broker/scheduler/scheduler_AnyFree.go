@@ -14,8 +14,8 @@ type AnyFreeSelector struct {
 }
 
 // Create a new AnyFreeSelector given an existing ProviderStore.
-func NewAnyFreeSelector(store *provider.ProviderStore) AnyFreeSelector {
-	return AnyFreeSelector{store}
+func NewAnyFreeSelector(store *provider.ProviderStore) *AnyFreeSelector {
+	return &AnyFreeSelector{store}
 }
 
 func (s *AnyFreeSelector) selectCandidates(_ *provider.AsyncTask) (candidates []*provider.Provider, err error) {
@@ -40,8 +40,4 @@ func (s *AnyFreeSelector) Schedule(ctx context.Context, task *provider.AsyncTask
 	err = dynamicSubmit(ctx, task, providers, nil)
 	return
 
-}
-
-func (s *AnyFreeSelector) RateTick() {
-	s.store.RateTick()
 }

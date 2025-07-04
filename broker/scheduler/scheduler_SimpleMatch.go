@@ -15,8 +15,8 @@ type SimpleMatchSelector struct {
 }
 
 // Create a new SimpleMatchSelector given an existing ProviderStore.
-func NewSimpleMatchSelector(store *provider.ProviderStore) SimpleMatchSelector {
-	return SimpleMatchSelector{store}
+func NewSimpleMatchSelector(store *provider.ProviderStore) *SimpleMatchSelector {
+	return &SimpleMatchSelector{store}
 }
 
 func (s *SimpleMatchSelector) selectCandidates(task *provider.AsyncTask) (candidates []*provider.Provider, err error) {
@@ -87,8 +87,4 @@ func (s *SimpleMatchSelector) Schedule(ctx context.Context, task *provider.Async
 		return err
 
 	}
-}
-
-func (s *SimpleMatchSelector) RateTick() {
-	s.store.RateTick()
 }

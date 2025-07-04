@@ -17,7 +17,7 @@ const { providers, throughput } = storeToRefs(cluster);
       Broker has {{ providers }} connected provider{{ providers > 1 ? "s" : "" }}.
     </p>
     <p>
-      Current throughput: {{ throughput }} tasks/sec
+      Current throughput: {{ throughput.toFixed(1) }} tasks/sec
     </p>
   </div>
   <p v-else>

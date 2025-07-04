@@ -19,8 +19,8 @@ type RoundRobinSelector struct {
 }
 
 // Create a new RoundRobinSelector given an existing ProviderStore.
-func NewRoundRobinSelector(store *provider.ProviderStore) RoundRobinSelector {
-	return RoundRobinSelector{store, -1} // will increment to 0 on first use
+func NewRoundRobinSelector(store *provider.ProviderStore) *RoundRobinSelector {
+	return &RoundRobinSelector{store, -1} // will increment to 0 on first use
 }
 
 func (s *RoundRobinSelector) selectCandidates(task *provider.AsyncTask) (candidates []*provider.Provider, err error) {
@@ -60,8 +60,4 @@ func (s *RoundRobinSelector) Schedule(ctx context.Context, task *provider.AsyncT
 	err = dynamicSubmit(ctx, task, providers, nil)
 	return
 
-}
-
-func (s *RoundRobinSelector) RateTick() {
-	s.store.RateTick()
 }
