@@ -116,14 +116,6 @@ const unwatch = watch(() => wasimoff.$pool, async value => {
   };
 });
 
-// calculate current worker usage
-const usage = computed(() => {
-  const w = workers.value;
-  if (w.length === 0 || nmax.value === 0) return 0;
-  const busy = w.filter(b => b).length;
-  return busy / nmax.value;
-});
-
 </script>
 
 <template>
