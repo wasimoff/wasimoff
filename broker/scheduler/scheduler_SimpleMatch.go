@@ -83,6 +83,9 @@ func (s *SimpleMatchSelector) Schedule(ctx context.Context, task *provider.Async
 			cancel()
 			continue // retry
 		}
+		if err == nil {
+			s.store.ObserveScheduled(task)
+		}
 		cancel()
 		return err
 

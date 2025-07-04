@@ -73,6 +73,9 @@ func NewProviderStore(storagepath string, conf *config.Configuration) (*Provider
 		store.cloudClient = client
 		store.cloudFunction = conf.CloudFunction
 		go store.cloudLoop(conf.CloudConcurrency)
+		store.metrics.AvailableWorkers.WithLabelValues("cloud").Set(float64(conf.CloudConcurrency))
+	} else {
+		store.metrics.AvailableWorkers.WithLabelValues("cloud").Set(0)
 	}
 
 	// start broadcast transmitter

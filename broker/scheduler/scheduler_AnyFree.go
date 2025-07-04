@@ -38,6 +38,9 @@ func (s *AnyFreeSelector) Schedule(ctx context.Context, task *provider.AsyncTask
 	}
 
 	err = dynamicSubmit(ctx, task, providers, nil)
+	if err == nil {
+		s.store.ObserveScheduled(task)
+	}
 	return
 
 }

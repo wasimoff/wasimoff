@@ -27,7 +27,9 @@ services:
       - GF_USERS_DEFAULT_THEME=light
       - GF_LOG_LEVEL=warn
     volumes:
-      - ./grafana.yaml:/etc/grafana/provisioning/datasources/prometheus.yml
+      - ./grafana_source.yaml:/etc/grafana/provisioning/datasources/prometheus.yml
+      - ./grafana_dashboard.yaml:/etc/grafana/provisioning/dashboards/wasimoff.yml
+      - ./dashboard.json:/etc/grafana/provisioning/dashboards/wasimoff.json
       - grafana:/var/lib/grafana
 
 volumes:

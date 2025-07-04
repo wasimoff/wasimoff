@@ -47,7 +47,9 @@ func Dispatcher(store *provider.ProviderStore, selector Scheduler, concurrency i
 			for i := 1; i <= retries; i++ {
 
 				// when retrying, we sleep and need to reacquire a ticket
+				// also increment the retry counter in metrics
 				if i > 1 {
+					store.ObserveRetry(i)
 					time.Sleep(exponentialDelay(i))
 					<-tickets
 				}
@@ -90,7 +92,7 @@ func Dispatcher(store *provider.ProviderStore, selector Scheduler, concurrency i
 			if err != nil {
 				task.Error = errors.Join(errs...)
 			}
-			store.Observe(task)
+			store.ObserveCompleted(task)
 			interceptedChannel <- task
 
 		}(task)
@@ -128,6 +130,11 @@ func dynamicSubmit(
 		cases[i].Send = reflect.ValueOf(task)
 	}
 
+	// set scheduling time on return
+	defer func() {
+		task.TimeScheduled = time.Now()
+	}()
+
 	// if there is a cloud offloading capability, attempt queueing only on providers first
 	if cloud != nil {
 		// first attempt with default case
@@ -160,13 +167,15 @@ func dynamicSubmit(
 	if i == len(cases)-1 { // last item, i.e. timeout / ctx.Done
 		return timeout.Err()
 	}
+
 	if cloud != nil && i == len(cases)-2 {
-		// log.Printf("task %s: scheduled on cloud offloading", *task.Request.GetInfo().Id)
+		log.Printf("task %s: scheduled on cloud offloading", *task.Request.GetInfo().Id)
 		task.CloudOffloaded = true
 	}
 	if i < len(providers) {
-		// log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Address))
+		log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Address))
 	}
+
 	return nil
 
 }

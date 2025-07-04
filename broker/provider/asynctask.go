@@ -12,13 +12,17 @@ import (
 // AsyncTask is an individual parametrized task from an offloading job that
 // can be submitted to a Provider's Submit() channel.
 type AsyncTask struct {
-	Context        context.Context
-	Request        wasimoff.Task_Request  // the overall request with metadata, QoS and task parameters
-	Response       wasimoff.Task_Response // response containing either an error or specific output
+	Context  context.Context
+	Request  wasimoff.Task_Request  // the overall request with metadata, QoS and task parameters
+	Response wasimoff.Task_Response // response containing either an error or specific output
+
+	// track a few things for metrics
 	CloudOffloaded bool
-	start          time.Time
-	Error          error           // errors encountered internally during scheduling or RPC
-	done           chan *AsyncTask // received itself when complete
+	TimeStart      time.Time
+	TimeScheduled  time.Time
+
+	Error error           // errors encountered internally during scheduling or RPC
+	done  chan *AsyncTask // received itself when complete
 }
 
 // NewAsyncTask creates a new call struct for a scheduler
@@ -42,7 +46,7 @@ func NewAsyncTask(
 		Request:        args,
 		Response:       res,
 		CloudOffloaded: false,
-		start:          time.Now(), // TODO: not quite the actual "start"
+		TimeStart:      time.Now(), // TODO: not quite the actual "start"
 		Error:          nil,
 		done:           done,
 	}

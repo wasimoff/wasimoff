@@ -58,6 +58,9 @@ func (s *RoundRobinSelector) Schedule(ctx context.Context, task *provider.AsyncT
 	}
 
 	err = dynamicSubmit(ctx, task, providers, nil)
+	if err == nil {
+		s.store.ObserveScheduled(task)
+	}
 	return
 
 }
