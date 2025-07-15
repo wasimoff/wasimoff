@@ -28,6 +28,7 @@ var ( // config flags
 	verbose   = false                   // be more verbose
 	readstdin = false                   // read stdin for exec
 	websock   = false                   // use websocket to send tasks
+	rootfs    = ""                      // include a rootfs in exec
 )
 
 var ( // command flags, pick one
@@ -55,6 +56,7 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", verbose, "Be more verbose and print raw messages for -exec")
 	flag.BoolVar(&readstdin, "stdin", readstdin, "Read and send stdin when using -exec (not streamed)")
 	flag.BoolVar(&websock, "ws", websock, "Use a WebSocket to send -run job")
+	flag.StringVar(&rootfs, "rootfs", rootfs, "Use a rootfs ZIP in -exec task")
 	flag.Parse()
 
 	switch true {
@@ -153,6 +155,10 @@ func Execute(args, envs []string) {
 			os.Exit(1)
 		}
 		request.Params.Stdin = stdin
+	}
+	// optionall add rootfs ref
+	if rootfs != "" {
+		request.Params.Rootfs = &wasimoff.File{Ref: &rootfs}
 	}
 
 	// make the request
