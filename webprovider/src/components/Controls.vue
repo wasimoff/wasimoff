@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, watch, ref } from "vue";
 import { storeToRefs } from "pinia";
+import { nanoid } from "nanoid";
 
 // terminal for logging
 import { useTerminal, LogType } from "@app/stores/terminal.ts";
@@ -45,11 +46,21 @@ watch(() => wasimoff.$provider, async (provider) => {
 async function connect() {
   try {
     const url = transport.value;
-    await wasimoff.connect(url);
-    terminal.log(`Connected to Broker at ${url}`, LogType.Success);
+    await wasimoff.connect(url, getlocalid());
+    terminal.log(`Connected to Broker at ${url} as id=${getlocalid()}`, LogType.Success);
     wasimoff.handlerequests();
   } catch (err) { terminal.error(String(err)); }
 };
+
+// get (and/or set) a random client ID in localStorage
+function getlocalid(): string {
+  let id = localStorage.getItem("wasimoff_id");
+  if (id === null) {
+    localStorage.setItem("wasimoff_id", nanoid());
+    return getlocalid();
+  };
+  return id;
+}
 
 // async function kill() {
 //   if (!$pool.value) return terminal.error("$pool not connected yet");

@@ -7,6 +7,7 @@
     "comlink": "npm:comlink@^4.4.1",
     "lru-cache": "npm:lru-cache@^11.0.0",
     "@zip.js/zip.js": "jsr:@zip-js/zip-js",
-    "pyodide": "npm:pyodide@0.27.2/pyodide.mjs"
+    "pyodide": "npm:pyodide@0.27.2/pyodide.mjs",
+    "nanoid": "npm:nanoid"
   }
 }

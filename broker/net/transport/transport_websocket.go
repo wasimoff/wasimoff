@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+
 	wasimoff "wasi.team/proto/v1"
 
 	"github.com/coder/websocket"

@@ -23,6 +23,12 @@ func WebSocketHandler(store *ProviderStore, origins []string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		addr := transport.ProxiedAddr(r)
 
+		// check for an id query parameter
+		id := "anonymous"
+		if pid := r.URL.Query().Get("id"); pid != "" {
+			id = pid
+		}
+
 		// upgrade the transport
 		wst, err := transport.UpgradeToWebSocketTransport(w, r, origins)
 		if err != nil {
@@ -45,7 +51,7 @@ func WebSocketHandler(store *ProviderStore, origins []string) http.HandlerFunc {
 		}
 
 		// add provider to the store
-		log.Printf("[%s] New Provider connected using WebSocket", addr)
+		log.Printf("[%s] New Provider (%s) connected using WebSocket", addr, id)
 		store.Add(provider)
 		defer store.Remove(provider)
 

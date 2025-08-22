@@ -79,7 +79,7 @@ export class WasimoffProvider {
 
   };
 
-  static async init(nmax: number, origin: string, dir: string) {
+  static async init(nmax: number, origin: string, dir: string, id?: string) {
     const p = new WasimoffProvider(nmax);
 
     // recheck the origin
@@ -91,7 +91,7 @@ export class WasimoffProvider {
 
     // replace protocol with websocket for transport
     url.protocol = url.protocol.replace("http", "ws");
-    await p.connect(url.origin);
+    await p.connect(url.origin, id);
 
     return p;
   };
@@ -144,7 +144,7 @@ export class WasimoffProvider {
   };
 
   // (re)connect to a broker by url
-  async connect(origin: string) {
+  async connect(origin: string, id?: string) {
 
     // close previous connections
     if (this.messenger !== undefined && !this.messenger.closed.aborted) {
@@ -155,11 +155,13 @@ export class WasimoffProvider {
     let url = new URL(origin);
     if (url.origin.match(/^wss?:$/) === null) url.protocol = url.protocol.replace("http", "ws");
     url.pathname = "/api/provider/ws";
+    if (id !== undefined) url.searchParams.set("id", id);
     const wst = WebSocketTransport.connect(url.href);
     this.messenger = new Messenger(wst);
     await wst.ready;
 
     // send current concurrency with our useragent
+    // TODO: this is sent automatically, even for Deno (which isn't "web")
     this.sendInfo(this.pool.length, "web", navigator.userAgent);
 
   };

@@ -1,6 +1,7 @@
 #!/usr/bin/env -S deno run --allow-env --allow-read --allow-write --allow-net --no-prompt --unstable-sloppy-imports
 
 import { parseArgs } from "@std/cli/parse-args";
+import { nanoid } from "nanoid";
 import { WasimoffProvider } from "@wasimoff/worker/provider.ts";
 
 // parse commandline arguments
@@ -28,9 +29,16 @@ if (!/^https?:\/\//.test(brokerurl)) throw "--url must be a HTTP(S) origin (http
 const nproc = Math.floor(Number(args.workers));
 if (Number.isNaN(nproc) || nproc < 1) throw "--workers must be a positive number";
 
+// get random client ID from localStorage
+let id = localStorage.getItem("wasimoff_id");
+if (id === null) {
+  id = nanoid();
+  localStorage.setItem("wasimoff_id", id);
+};
+
 // initialize the provider
 console.log("%c[Wasimoff]", "color: red;", "starting Provider in Deno ...");
-const provider = await WasimoffProvider.init(nproc, brokerurl, ":memory:");
+const provider = await WasimoffProvider.init(nproc, brokerurl, ":memory:", id);
 const workers = await provider.pool.scale();
 await provider.sendInfo(workers, "deno", `${navigator.userAgent} (${Deno.build.target})`);
 
