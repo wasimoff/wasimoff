@@ -23,6 +23,13 @@ func WebSocketHandler(store *ProviderStore, origins []string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		addr := transport.ProxiedAddr(r)
 
+		// get user-agent string from headers
+		useragent := r.Header.Get("user-agent")
+		if useragent == "" {
+			http.Error(w, "no user-agent", http.StatusBadRequest)
+			return
+		}
+
 		// check for an id query parameter
 		id := "anonymous"
 		if pid := r.URL.Query().Get("id"); pid != "" {
@@ -41,6 +48,10 @@ func WebSocketHandler(store *ProviderStore, origins []string) http.HandlerFunc {
 		provider := NewProvider(msg)
 		defer provider.Close(nil)
 
+		// set name and useragent from request
+		provider.info[Name] = id
+		provider.info[UserAgent] = useragent
+
 		// handle incoming event messages
 		go provider.eventTransmitter()
 
@@ -52,6 +63,7 @@ func WebSocketHandler(store *ProviderStore, origins []string) http.HandlerFunc {
 
 		// add provider to the store
 		log.Printf("[%s] New Provider (%s) connected using WebSocket", addr, id)
+		log.Printf("[%s] User-Agent: %s", addr, useragent)
 		store.Add(provider)
 		defer store.Remove(provider)
 
@@ -90,23 +102,13 @@ func (p *Provider) eventTransmitter() {
 				// generic text message
 				log.Printf("[%s] says: %s", p.Get(Address), ev.GetMessage())
 
-			case *wasimoff.Event_ProviderHello:
-				// initial hello with platform information
-				if v := ev.GetName(); v != "" {
-					p.info[Name] = v
-				}
-				if v := ev.GetUseragent(); v != "" {
-					p.info[UserAgent] = v
-					log.Printf("[%s] UserAgent: %s", p.Get(Address), v)
-				}
-
 			case *wasimoff.Event_ProviderResources:
 				// TODO: set active tasks
 				// The problem is that you can't really "set" a semaphore, so possibly
 				// need to switch to a manual atomic, when providers are allowed to receive
 				// tasks from multiple sources and we can't track it ourselves anymore.
 				if ev.Concurrency != nil {
-					log.Printf("[%s] Workers: %d", p.Get(Address), *ev.Concurrency)
+					// log.Printf("[%s] Workers: %d", p.Get(Address), *ev.Concurrency)
 					p.limiter.SetLimit(int(*ev.Concurrency))
 				}
 

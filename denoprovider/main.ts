@@ -40,7 +40,7 @@ if (id === null) {
 console.log("%c[Wasimoff]", "color: red;", "starting Provider in Deno ...");
 const provider = await WasimoffProvider.init(nproc, brokerurl, ":memory:", id);
 const workers = await provider.pool.scale();
-await provider.sendInfo(workers, "deno", `${navigator.userAgent} (${Deno.build.target})`);
+await provider.sendConcurrency(workers);
 
 // log received messages
 (async () => {

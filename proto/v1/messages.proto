@@ -277,12 +277,6 @@ message Event {
     string message = 1;
   }
 
-  // ProviderHello is sent once at the beginning to identify the Provider
-  message ProviderHello {
-    string name = 1; // a logging-friendly name of the provider
-    string useragent = 2; // like the navigator.useragent in browser
-  }
-
   // ProviderResources is information about the available resources in Worker pool
   message ProviderResources {
     uint32 concurrency = 1; // maximum possible concurrency (~ number of Workers)

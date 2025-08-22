@@ -6,7 +6,7 @@ import { ProviderStorage } from "@wasimoff/storage/index";
 import { Messenger, WebSocketTransport } from "@wasimoff/transport/index";
 import { WasiWorkerPool } from "./workerpool";
 import { create, Message } from "@bufbuild/protobuf";
-import { Event_FileSystemUpdateSchema, Event_ProviderHelloSchema, Event_ProviderResourcesSchema }
+import { Event_FileSystemUpdateSchema, Event_ProviderResourcesSchema }
   from "@wasimoff/proto/v1/messages_pb";
 import { rpchandler } from "@wasimoff/worker/rpchandler";
 import { expose, workerReady, transfer, proxy } from "./comlink";
@@ -67,7 +67,7 @@ export class WasimoffProvider {
           return async (...args: any[]) => {
             let result = await (method as any).apply(target, args) as Promise<number>;
             if (this.messenger !== undefined)
-              this.sendInfo(await result).catch(() => { /* ignore errors */ });
+              this.sendConcurrency(await result).catch(() => { /* ignore errors */ });
             return result;
           };
         } else {
@@ -160,9 +160,8 @@ export class WasimoffProvider {
     this.messenger = new Messenger(wst);
     await wst.ready;
 
-    // send current concurrency with our useragent
-    // TODO: this is sent automatically, even for Deno (which isn't "web")
-    this.sendInfo(this.pool.length, "web", navigator.userAgent);
+    // send current concurrency
+    this.sendConcurrency(this.pool.length);
 
   };
 
@@ -235,17 +234,12 @@ export class WasimoffProvider {
 
   // --------->  shorthands to send events
 
-  async sendInfo(pool?: number, name?: string, useragent?: string) {
+  async sendConcurrency(concurrency: number) {
     if (this.messenger === undefined) throw "not connected yet";
-    if (pool !== undefined) {
-      this.messenger.sendEvent(create(Event_ProviderResourcesSchema, { concurrency: pool }));
-    };
-    if (name !== undefined || useragent !== undefined) {
-      this.messenger.sendEvent(create(Event_ProviderHelloSchema, { name, useragent }));
+    if (concurrency !== undefined) {
+      this.messenger.sendEvent(create(Event_ProviderResourcesSchema, { concurrency: concurrency }));
     };
   };
-
-
 
 
 };
