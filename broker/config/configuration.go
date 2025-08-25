@@ -22,9 +22,11 @@ type Configuration struct {
 	// STATIC_FILES is a path with static files to serve; usually the webprovider frontend dist.
 	StaticFiles string `split_words:"true" default:"../webprovider/dist/" desc:"Serve static files on \"/\" from here"`
 
-	// FILESTORAGE is a path to use for a persistent BoltDB database.
+	// FILESTORAGE is a path to use for a persistent file storage.
 	// An empty string will use an ephemeral in-memory map[string]*File.
-	FileStorage string `desc:"Use persistent BoltDB storage for files" default:":memory:"`
+	// A path prefixed with boltdb:// will use a single BoltDB file with blobs.
+	// Any other path (or when prefixed with dirfs://) will use bare files in a directory.
+	FileStorage string `desc:"Use directory for persistent file storage" default:":memory:"`
 
 	// CLOUD_CREDENTIALS and CLOUD_FUNCTION are used to enable offloading functions to
 	// the Google Cloud Run Function, using the given service account credentials JSON.

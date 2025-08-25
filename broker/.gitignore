@@ -13,3 +13,4 @@ config.env
 
 # boltdb storage
 broker_storage.boltdb
+broker_storage/

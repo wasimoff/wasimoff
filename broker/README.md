@@ -26,7 +26,7 @@ Configuration is done through environment variables but you can also write a `co
 | `WASIMOFF_HTTP_{CERT,KEY}`      | Certificate and key to enable TLS on the HTTP server | (empty = no TLS) |
 | `WASIMOFF_ALLOWED_ORIGINS`      | List of allowed Origins for WebSocket connections | |
 | `WASIMOFF_STATIC_FILES`         | Serve static files on `/` from here (e.g. the frontend) | `../webprovider/dist/` |
-| `WASIMOFF_FILESTORAGE`          | Path to BoltDB storage for uploaded files | `:memory:` (kept in RAM only) |
+| `WASIMOFF_FILESTORAGE`          | Path to storage for uploaded files | `:memory:` (kept in RAM only) |
 | `WASIMOFF_METRICS`              | Enable Prometheus exporter on `/metrics` | `false` |
 | `WASIMOFF_DEBUG`                | Enable profiling handlers on `/debug/pprof` | `false` |
 

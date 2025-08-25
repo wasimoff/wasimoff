@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"wasi.team/broker/config"
@@ -58,10 +59,14 @@ func NewProviderStore(storagepath string, conf *config.Configuration) (*Provider
 	store.initializePrometheusMetrics()
 
 	// initialize file storage
-	if storagepath == "" || storagepath == ":memory:" {
+	if storagepath == "" || storagepath == ":memory:" || strings.HasPrefix(storagepath, "memory://") {
 		store.Storage = storage.NewMemoryFileStorage()
+	} else if strings.HasPrefix(storagepath, "boltdb://") {
+		store.Storage = storage.NewBoltFileStorage(storagepath[9:])
+	} else if strings.HasPrefix(storagepath, "dirfs://") {
+		store.Storage = storage.NewDirectoryFileStorage(storagepath[8:])
 	} else {
-		store.Storage = storage.NewBoltFileStorage(storagepath)
+		store.Storage = storage.NewDirectoryFileStorage(storagepath)
 	}
 
 	// maybe initialize cloud client
