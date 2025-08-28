@@ -3,6 +3,7 @@
 import { parseArgs } from "@std/cli/parse-args";
 import { nanoid } from "nanoid";
 import { WasimoffProvider } from "@wasimoff/worker/provider.ts";
+import { WasiWorkerPool } from "@wasimoff/worker/workerpool.ts";
 
 // parse commandline arguments
 const help = (fatal: boolean = false) => {
@@ -56,7 +57,7 @@ await provider.sendConcurrency(workers);
 // log the currently running tasks
 function currentTasks() {
   const now = new Date().getTime(); // unix epoch milliseconds
-  return provider.pool.currentTasks
+  return (provider.pool as WasiWorkerPool).currentTasks
     .filter(w => w.busy)
     .map(w => ({
       worker: w.index, // worker index

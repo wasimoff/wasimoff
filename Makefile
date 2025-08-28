@@ -6,7 +6,7 @@ REVISION := $(shell printf 'r%s-g%s' "$$(git rev-list --count HEAD)" "$$(git des
 # build docker containers for broker and deno providers
 .PHONY: broker provider push
 broker:
-	docker build --target wasimoff -t ansemjo/wasimoff:$@-$(REVISION) .
+	docker build --target broker -t ansemjo/wasimoff:$@-$(REVISION) .
 	docker tag ansemjo/wasimoff:$@-$(REVISION) ansemjo/wasimoff:$@
 provider:
 	docker build --target provider -t ansemjo/wasimoff:$@-$(REVISION) .

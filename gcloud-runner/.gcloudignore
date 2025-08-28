@@ -1,6 +1,0 @@
-# ignore everything BUT main.js, package.json and lockfile
-# run 'yarn build' before deployment to rollup main.js
-*
-!main.js
-!package.json
-!yarn.lock

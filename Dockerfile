@@ -1,6 +1,6 @@
 # =========================================================================== #
 # ---> build the broker binary
-FROM golang:1.24-bookworm AS broker
+FROM golang:1.24-bookworm AS brokerbuild
 
 # compile the binary
 COPY ./ /build
@@ -19,8 +19,6 @@ RUN yarn install && yarn build
 # =========================================================================== #
 # ---> build denoprovider for the terminal
 # docker build --target provider -t wasimoff/provider .
-#FROM denoland/deno:distroless-1.46.3 AS provider
-#FROM denoland/deno:distroless-2.1.1 AS provider
 FROM denoland/deno:distroless AS provider
 
 # copy files
@@ -40,11 +38,32 @@ ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", "--no-prompt", \
   "main.ts"]
 
 # =========================================================================== #
+# ---> build a deno image for google cloud run
+# docker build --target faas -t wasimoff/faas .
+FROM denoland/deno:distroless AS faas
+
+# copy files
+COPY ./gcloud-runner  /app/deno
+COPY ./webprovider    /app/webprovider
+
+WORKDIR /app/deno
+
+# install and cache dependencies
+RUN ["deno", "install", "--entrypoint", "main.ts"]
+
+# launch configuration
+CMD ["run", "--cached-only", "--no-prompt", \
+  "--allow-env", "--allow-net", "--unstable-sloppy-imports", \
+  "--allow-read=/app,/deno-dir/npm/registry.npmjs.org/pyodide/", \
+  "--allow-write=/deno-dir/npm/registry.npmjs.org/pyodide/", \
+  "main.ts"]
+
+# =========================================================================== #
 # ---> combine broker and frontend dist in default container
-# docker build --target wasimoff -t wasimoff/broker .
-FROM alpine AS wasimoff
-COPY --from=broker   /build/broker/broker /broker
-COPY --from=frontend /build/webprovider/dist /provider
+# docker build --target broker -t wasimoff/broker .
+FROM alpine AS broker
+COPY --from=brokerbuild  /build/broker/broker /broker
+COPY --from=frontend     /build/webprovider/dist /provider
 ENTRYPOINT [ "/broker" ]
 
 # needed for healthcheck

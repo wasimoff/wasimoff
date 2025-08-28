@@ -1,52 +1,69 @@
-import functions from "@google-cloud/functions-framework";
-import { WasiWorker, Wasip1TaskParams } from "@wasimoff/worker/wasiworker";
-import { ProviderStorage } from "@wasimoff/storage";
-import { getRootfsZip } from "@wasimoff/worker/rpchandler";
+#!/usr/bin/env -S deno run --allow-env --allow-read --allow-write --allow-net --no-prompt --unstable-sloppy-imports
 
-import * as wasimoff from "@wasimoff/proto/v1/messages_pb";
+import { Application } from "@oak/oak";
+import { Wasip1TaskParams } from "@wasimoff/worker/wasiworker.ts";
+import { WasiWorkerPool } from "@wasimoff/worker/workerpool.ts";
+import { ProviderStorage } from "@wasimoff/storage/index.ts";
+import { getRootfsZip } from "@wasimoff/worker/rpchandler.ts";
+
+import * as wasimoff from "@wasimoff/proto/v1/messages_pb.ts";
 import * as pb from "@bufbuild/protobuf";
 
-// defined git revision during rollup build
-const version: string = process.env.VERSION || "unknown";
-console.log("starting wasimoff-faas-runner, version", version);
+console.log("[Wasimoff] starting FaaS Provider", {
+  cpu: navigator.hardwareConcurrency,
+  agent: navigator.userAgent,
+});
 
-// initialize a storage to cache modules and zip in memory
-// TODO: get origin from env or implement proper url handling
-const storage = new ProviderStorage(":memory:", "https://wasi.team");
+// initialize a storage to cache modules and zip files in memory
+const origin = Deno.env.get("BROKER_ORIGIN") || "https://wasi.team";
+const storage = new ProviderStorage(":memory:", origin);
 
-// initialize a single runner for this instance
-const runner = new WasiWorker(0);
+// create a worker pool with one thread per logical cpu
+const pool = new WasiWorkerPool(navigator.hardwareConcurrency);
+await pool.scale();
 
-// request counter for readable logging
-let counter = 0;
+// port that the app will listen on
+const port = Number(Deno.env.get("PORT")) || 8000;
 
-// request handler
-functions.http("wasimoff", async (req, res) => {
-  const i = `task[${counter++}]`;
+// create the oak app for request handler
+const app = new Application({ state: { shutdown: false, counter: 0 }});
+app.use(async ctx => { // https://jsr.io/@oak/oak/doc/context/~/Context
+
+  // request counter for readable logging
+  const i = `task[${app.state.counter++}]`;
+
+  // is the app shutting down? (don't accept new tasks)
+  if (app.state.shutdown) {
+    ctx.response.status = 503;
+    ctx.response.body = "going away";
+    return;
+  };
 
   let response: wasimoff.Task_Wasip1_Response | null = null;
-  let content_type = req.header("content-type") as "application/json" | "application/proto";
+  const content_type = ctx.request.headers.get("content-type") as "application/json" | "application/proto";
 
   try {
 
     // parse the incoming request
     let request: wasimoff.Task_Wasip1_Request;
     switch (content_type) {
+
       case "application/json":
-        request = pb.fromJson(wasimoff.Task_Wasip1_RequestSchema, req.body) as wasimoff.Task_Wasip1_Request;
+        request = pb.fromJson(wasimoff.Task_Wasip1_RequestSchema, await ctx.request.body.json());
         break;
+
       case "application/proto":
-        request = pb.fromBinary(wasimoff.Task_Wasip1_RequestSchema, req.body) as wasimoff.Task_Wasip1_Request;
+        request = pb.fromBinary(wasimoff.Task_Wasip1_RequestSchema, new Uint8Array(await ctx.request.body.arrayBuffer()));
         break;
+
       default:
         throw new Error("only accepting Task_Wasip1_Request in JSON or Protobuf encoding");
-        break;
     };
 
     // mostly copied from rpchandler.ts from here on ...
 
     // deconstruct the request and check type
-    let { info, params } = request;
+    const { info, params } = request;
     if (info === undefined || params === undefined)
       throw "info and params cannot be undefined";
 
@@ -67,7 +84,7 @@ functions.http("wasimoff", async (req, res) => {
     };
 
     console.debug(i, "run:", info.id);
-    let result = await runner.runWasip1(info.id, {
+    const result = await pool.runWasip1(info.id, {
       wasm: wasm,
       argv: task.args || [],
       envs: task.envs || [],
@@ -93,25 +110,73 @@ functions.http("wasimoff", async (req, res) => {
     response = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
       result: { case: "error", value: String(error || "unspecified error"), },
     }) as wasimoff.Task_Wasip1_Response;
-    res.status(400);
+    ctx.response.status = 400;
 
   } finally {
 
     // serialize the response, if any
-    if (response === null) return;
+    if (response !== null)
     switch(content_type) {
+
       case "application/json":
-        res.json(pb.toJson(wasimoff.Task_Wasip1_ResponseSchema, response));
+        ctx.response.type = "json";
+        ctx.response.body = pb.toJson(wasimoff.Task_Wasip1_ResponseSchema, response);
         break;
+
       case "application/proto":
-        res.setHeader("content-type", content_type);
-        res.send(Buffer.from(pb.toBinary(wasimoff.Task_Wasip1_ResponseSchema, response)));
+        ctx.response.type = content_type;
+        ctx.response.body = pb.toBinary(wasimoff.Task_Wasip1_ResponseSchema, response);
         break;
+
       default:
-        // this should never happen ..
-        throw new Error("unknown content-type to return");
-        break;
+        // assert unreachable
+        ((_: never) => {})(content_type);
     };
 
   };
 });
+
+// log the currently running tasks
+function currentTasks() {
+  const now = new Date().getTime(); // unix epoch milliseconds
+  return pool.currentTasks
+    .filter(w => w.busy)
+    .map(w => ({
+      worker: w.index, // worker index
+      task: w.task, // task ID
+      started: w.started, // absolute start date
+      age: w.started ? (now - w.started.getTime())/1000 : undefined, // age in seconds
+    }));
+};
+
+// register signal handlers for clean exits
+let forcequit = false; // force immediate on second signal
+const graceperiod = 9_000; // grace period in ms, < 10s on GCP
+async function terminator() {
+  app.state.shutdown = true;
+
+  // called a second time, quit immediately
+  if (forcequit) {
+    console.error(" kill")
+    console.debug("aborted tasks:", currentTasks());
+    Deno.exit(1);
+  } else {
+    console.log(" shutdown (send signal again to force immediate exit)");
+    forcequit = true;
+  };
+
+  // schedule the grace timeout
+  if (graceperiod > 0) setTimeout(terminator, graceperiod);
+
+  // wait to finish all current tasks, then quit
+  await pool.scale(0);
+  await new Promise(r => setTimeout(r, 20)); // ~ flush
+  Deno.exit(0);
+}
+// handle SIGTERM (15) and SIGINT (2) the same
+Deno.addSignalListener("SIGTERM", terminator);
+Deno.addSignalListener("SIGINT",  terminator);
+
+// start the webserver
+console.log(`oak listening on port ${port}`);
+await app.listen({ port });

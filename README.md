@@ -33,7 +33,7 @@ The communication interfaces of the Broker all use Protobuf messages, which are 
 
 ### Containerized Deployment
 
-This repository includes a multi-stage `Dockerfile`, which compiles the Broker binary in a Go image, compiles the Provider frontend in a NodeJS image, copies both to a barebones container image (`--target wasimoff`) and also prepares another headless provider image using Deno (`--target provider`). These containers are [built automatically in a GitHub action](https://github.com/wasimoff/wasimoff/actions) and published as:
+This repository includes a multi-stage `Dockerfile`, which compiles the Broker binary in a Go image, compiles the Provider frontend in a NodeJS image, copies both to a barebones container image (`--target broker`) and also prepares another headless provider image using Deno (`--target provider`). These containers are [built automatically in a GitHub action](https://github.com/wasimoff/wasimoff/actions) and published as:
 
 * [`ghcr.io/wasimoff/broker`](https://github.com/wasimoff/wasimoff/pkgs/container/broker)
 * [`ghcr.io/wasimoff/provider`](https://github.com/wasimoff/wasimoff/pkgs/container/provider)
