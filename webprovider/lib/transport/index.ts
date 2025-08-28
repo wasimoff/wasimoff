@@ -25,3 +25,4 @@ export interface Transmit {
 
 export { Messenger } from "./messenger";
 export { WebSocketTransport } from "./websocket";
+export { WebRTCTransport } from "./webrtc";

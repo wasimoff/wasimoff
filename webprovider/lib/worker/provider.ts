@@ -3,7 +3,7 @@ declare var self: DedicatedWorkerGlobalScope | SharedWorkerGlobalScope;
 export {};
 
 import { ProviderStorage, ProviderStorageFileSystem } from "@wasimoff/storage/index";
-import { Messenger, WebSocketTransport } from "@wasimoff/transport/index";
+import { Messenger, WebRTCTransport, WebSocketTransport } from "@wasimoff/transport/index";
 import { WasiWorkerPool } from "./workerpool";
 import { create, Message } from "@bufbuild/protobuf";
 import {
@@ -98,6 +98,26 @@ export class WasimoffProvider {
     return p;
   }
 
+  static async initNats(
+    nmax: number,
+    origin: string,
+    announceInterval: number,
+    fs: ProviderStorageFileSystem,
+    id: string,
+  ) {
+    const p = new WasimoffProvider(nmax);
+
+    // recheck the origin
+    let url = new URL(origin);
+    if (!/^https?:$/.test(url.protocol)) throw "origin should be https? url";
+
+    // undefined origin, because fetching is disabled
+    await p.open(undefined, fs);
+
+    await p.connectNats(origin, announceInterval, id);
+    return p;
+  }
+
   // --------->  worker pool
 
   /** Return a comlink proxy of the worker pool. */
@@ -121,7 +141,7 @@ export class WasimoffProvider {
   }
 
   /** Open a storage by URL. */
-  async open(origin: string, fs?: ProviderStorageFileSystem) {
+  async open(origin?: string, fs?: ProviderStorageFileSystem) {
     // can't close a filesystem yet
     if (this.storage !== undefined) {
       throw "another storage is opened already";
@@ -172,6 +192,18 @@ export class WasimoffProvider {
     await wst.ready;
 
     // send current concurrency
+    this.sendConcurrency(this.pool.length);
+  }
+
+  async connectNats(natsUrl: string, announceInterval: number, id: string) {
+    // close previous connections
+    if (this.messenger !== undefined && !this.messenger.closed.aborted) {
+      this.messenger.close("reconnecting");
+    }
+
+    const rtcTransport = new WebRTCTransport(natsUrl, announceInterval, id);
+    this.messenger = new Messenger(rtcTransport);
+    await rtcTransport.ready;
     this.sendConcurrency(this.pool.length);
   }
 
