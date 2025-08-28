@@ -8,16 +8,21 @@ import { type Envelope } from "@wasimoff/proto/v1/messages_pb";
 export interface Transport {
 
   // receive ordered messages from an iterable
-  messages: AsyncIterable<Envelope>;
+  messages: AsyncIterable<Transmit>;
 
   // send messages with a simple function
-  send: (envelope: Envelope) => Promise<void>;
+  send: (envelope: Transmit) => Promise<void>;
 
   // signal a closed connection with an AbortController internally
   closed: AbortSignal;
   close: (reason?: string) => void;
   ready: Promise<void>;
 
+}
+
+export interface Transmit {
+  envelope: Envelope,
+  identifier?: string,
 }
 
 export { Messenger } from "./messenger";

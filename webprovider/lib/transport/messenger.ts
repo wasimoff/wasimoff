@@ -45,17 +45,17 @@ export class Messenger implements MessengerInterface {
 
   private async switchboard() {
     for await (const m of this.transport.messages) {
-      switch (m.type) {
+      switch (m.envelope.type) {
 
         case MessageType.Request:
           // construct a RemoteProcedureCall that will send a response when it's done
           //? careful not to await the call itself here, otherwise stream is blocked
           this.requests.push(async (handler) => {
             // prepare a response envelope
-            let r = create(EnvelopeSchema, { type: MessageType.Response, sequence: m.sequence });
+            let r = create(EnvelopeSchema, { type: MessageType.Response, sequence: m.envelope.sequence });
             try {
               // unpack the any payload
-              let request = this.unpack(m.payload);
+              let request = this.unpack(m.envelope.payload);
               // call the handler and marshal the result
               let result = await handler(request);
               r.payload = this.pack(result);
@@ -65,31 +65,31 @@ export class Messenger implements MessengerInterface {
               r.payload = undefined
             } finally {
               // send whatever we could gather back
-              await this.transport.send(r);
+              await this.transport.send({ envelope: r, identifier: m.identifier });
             };
           });
           break;
 
         case MessageType.Response:
           // find a pending request and resolve it; cleanup is done in sendRequest
-          let pending = this.pending.get(m.sequence);
-          if (m.error) {
-            pending?.(new Error(m.error));
+          let pending = this.pending.get(m.envelope.sequence);
+          if (m.envelope.error) {
+            pending?.(new Error(m.envelope.error));
           } else {
-            let response = this.unpack(m.payload);
+            let response = this.unpack(m.envelope.payload);
             pending?.(response);
           };
           break;
 
         case MessageType.Event:
           // push the event to the iterable
-          let e = anyUnpack(m.payload!, this.registry);
+          let e = anyUnpack(m.envelope.payload!, this.registry);
           this.events.push(e!);
           break;
-      
+
         default:
           // empty message or unknown type
-          console.warn("received a malformed letter:", m.sequence, m.type);
+          console.warn("received a malformed letter:", m.envelope.sequence, m.envelope.type);
           break;
 
       }; // switch
@@ -111,9 +111,11 @@ export class Messenger implements MessengerInterface {
     const result = new Promise<Result>(r => this.pending.set(sequence, r));
     try {
       // actually envelope the request and send it off
-      await this.transport.send(create(EnvelopeSchema, {
-        sequence, type: MessageType.Request, payload: this.pack(request),
-      }));
+      await this.transport.send({
+        envelope: create(EnvelopeSchema, {
+          sequence, type: MessageType.Request, payload: this.pack(request),
+        })
+      });
       // await the result, so the finally doesn't run until it's done
       return await result;
     } finally {
@@ -127,11 +129,13 @@ export class Messenger implements MessengerInterface {
   private eventSequence = 0n;
   async sendEvent(event: ProtoMessage): Promise<void> {
     // envelope the event and send it off
-    return this.transport.send(create(EnvelopeSchema, {
-      sequence: this.eventSequence++,
-      type: MessageType.Event,
-      payload: this.pack(event),
-    }));
+    return this.transport.send({
+      envelope: create(EnvelopeSchema, {
+        sequence: this.eventSequence++,
+        type: MessageType.Event,
+        payload: this.pack(event),
+      })
+    });
   };
 
   // handle closure and cancellation

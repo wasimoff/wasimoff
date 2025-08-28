@@ -1,11 +1,11 @@
 import { toBinary, fromBinary, toJsonString, fromJsonString, createRegistry } from "@bufbuild/protobuf";
 import { EnvelopeSchema, Subprotocol, type Envelope, Envelope_MessageType, file_proto_v1_messages } from "@wasimoff/proto/v1/messages_pb";
-import { type Transport } from "./index";
+import { Transmit, type Transport } from "./index";
 import { PushableAsyncIterable } from "@wasimoff/func/pushableiterable";
 import { Signal } from "@wasimoff/func/promises";
 
 export class WebSocketTransport implements Transport {
-  
+
   /** Connect using any known WebSocket subprotocol. */
   public static connect(url: string | URL): WebSocketTransport {
     let ws = new WebSocket(url, [
@@ -42,7 +42,7 @@ export class WebSocketTransport implements Transport {
         if (debugging && envelope.payload?.typeUrl !== "wasimoff/Throughput") {
           console.debug(...prefix.rx, envelope.sequence, Envelope_MessageType[envelope.type], envelope.payload?.typeUrl, envelope.error);
         };
-        this.messages.push(envelope);
+        this.messages.push({ envelope });
       } catch (err) {
         console.error(...prefix.err, err);
         this.messages.push(Promise.reject(err));
@@ -55,20 +55,20 @@ export class WebSocketTransport implements Transport {
   private readonly registry = createRegistry(file_proto_v1_messages);
 
   /** messages is an iterable of all incoming, already unmarshalled to Envelopes */
-  public messages = new PushableAsyncIterable<Envelope>();
+  public messages = new PushableAsyncIterable<Transmit>();
 
   /** send picks the correct codec depending on negotiated subprotocol and marshalls the envelope */
-  public async send(envelope: Envelope): Promise<void> {
+  public async send(transmit: Transmit): Promise<void> {
     this.closed.throwIfAborted();
     await this.signal.promise;
-    if (debugging) console.debug(...prefix.tx, envelope.sequence, Envelope_MessageType[envelope.type], envelope.payload?.typeUrl, envelope.error);
+    if (debugging) console.debug(...prefix.tx, transmit.envelope.sequence, Envelope_MessageType[transmit.envelope.type], transmit.envelope.payload?.typeUrl, transmit.envelope.error);
     switch (this.ws.protocol) {
 
       case WebSocketTransport.provider_v1_protobuf:
-        return this.ws.send(toBinary(EnvelopeSchema, envelope));
+        return this.ws.send(toBinary(EnvelopeSchema, transmit.envelope));
 
       case WebSocketTransport.provider_v1_json:
-        return this.ws.send(toJsonString(EnvelopeSchema, envelope, { registry: this.registry }));
+        return this.ws.send(toJsonString(EnvelopeSchema, transmit.envelope, { registry: this.registry }));
 
       default: // oops?
         let err = WebSocketTransport.Err.ProtocolViolation.Negotiation(this.ws.protocol);
@@ -160,9 +160,9 @@ const debugging = false;
 
 // pretty console logging prefixes
 const prefix = {
-  open : [ "%c[WebSocket]%c open", "color: skyblue;", "color: greenyellow;" ],
-  rx   : [ "%c[WebSocket]%c « Rx", "color: skyblue;", "color: blue;" ],
-  tx   : [ "%c[WebSocket]%c Tx »", "color: skyblue;", "color: greenyellow;" ],
-  err  : [ "%c[WebSocket]%c Error", "color: skyblue;", "color: firebrick;" ],
-  warn : [ "%c[WebSocket]%c Warning", "color: skyblue;", "color: goldenrod;" ],
+  open: ["%c[WebSocket]%c open", "color: skyblue;", "color: greenyellow;"],
+  rx: ["%c[WebSocket]%c « Rx", "color: skyblue;", "color: blue;"],
+  tx: ["%c[WebSocket]%c Tx »", "color: skyblue;", "color: greenyellow;"],
+  err: ["%c[WebSocket]%c Error", "color: skyblue;", "color: firebrick;"],
+  warn: ["%c[WebSocket]%c Warning", "color: skyblue;", "color: goldenrod;"],
 };
