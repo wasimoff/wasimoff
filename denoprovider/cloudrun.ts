@@ -5,11 +5,12 @@ import { Wasip1TaskParams } from "@wasimoff/worker/wasiworker.ts";
 import { WasiWorkerPool } from "@wasimoff/worker/workerpool.ts";
 import { ProviderStorage } from "@wasimoff/storage/index.ts";
 import { getRootfsZip } from "@wasimoff/worker/rpchandler.ts";
+import { Terminator } from "./util.ts";
 
 import * as wasimoff from "@wasimoff/proto/v1/messages_pb.ts";
 import * as pb from "@bufbuild/protobuf";
 
-console.log("[Wasimoff] starting FaaS Provider", {
+console.log("%c[Wasimoff]", "color: red", "starting FaaS Provider", {
   cpu: navigator.hardwareConcurrency,
   agent: navigator.userAgent,
 });
@@ -76,7 +77,7 @@ app.use(async ctx => { // https://jsr.io/@oak/oak/doc/context/~/Context
     if (task.binary.blob.length !== 0) {
       wasm = await WebAssembly.compile(task.binary.blob);
     } else if (task.binary.ref !== "") {
-      let m = await storage.getWasmModule(task.binary.ref);
+      const m = await storage.getWasmModule(task.binary.ref);
       if (m === undefined) throw "binary not found in storage";
       else wasm = m;
     } else {
@@ -136,47 +137,10 @@ app.use(async ctx => { // https://jsr.io/@oak/oak/doc/context/~/Context
   };
 });
 
-// log the currently running tasks
-function currentTasks() {
-  const now = new Date().getTime(); // unix epoch milliseconds
-  return pool.currentTasks
-    .filter(w => w.busy)
-    .map(w => ({
-      worker: w.index, // worker index
-      task: w.task, // task ID
-      started: w.started, // absolute start date
-      age: w.started ? (now - w.started.getTime())/1000 : undefined, // age in seconds
-    }));
-};
-
-// register signal handlers for clean exits
-let forcequit = false; // force immediate on second signal
-const graceperiod = 9_000; // grace period in ms, < 10s on GCP
-async function terminator() {
-  app.state.shutdown = true;
-
-  // called a second time, quit immediately
-  if (forcequit) {
-    console.error(" kill")
-    console.debug("aborted tasks:", currentTasks());
-    Deno.exit(1);
-  } else {
-    console.log(" shutdown (send signal again to force immediate exit)");
-    forcequit = true;
-  };
-
-  // schedule the grace timeout
-  if (graceperiod > 0) setTimeout(terminator, graceperiod);
-
-  // wait to finish all current tasks, then quit
-  await pool.scale(0);
-  await new Promise(r => setTimeout(r, 20)); // ~ flush
-  Deno.exit(0);
-}
-// handle SIGTERM (15) and SIGINT (2) the same
-Deno.addSignalListener("SIGTERM", terminator);
-Deno.addSignalListener("SIGINT",  terminator);
+// register signal handler for clean exits
+// GCP gives 10s grace period before SIGKILL
+new Terminator(pool, 9_000, (_) => { app.state.shutdown = true; });
 
 // start the webserver
-console.log(`oak listening on port ${port}`);
+console.log("%c[Wasimoff]%c oak listening on port %c%d", "color: red", "color: none;", "color: cyan;", port);
 await app.listen({ port });

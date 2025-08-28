@@ -22,17 +22,18 @@ RUN yarn install && yarn build
 FROM denoland/deno:distroless AS provider
 
 # copy files
-COPY ./denoprovider /app/deno
-COPY ./webprovider  /app/webprovider
+COPY ./denoprovider  /app/deno
+COPY ./webprovider   /app/webprovider
 
 WORKDIR /app/deno
 
 # cache required dependencies
-RUN ["deno", "cache", "--unstable-sloppy-imports", "main.ts"]
+RUN ["deno", "install", "--entrypoint", "main.ts"]
 
 # launch configuration
-ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", "--no-prompt", \
-  "--allow-env", "--allow-net", "--unstable-sloppy-imports", \
+ENTRYPOINT ["/tini", "--", "deno", "run", \
+  "--cached-only", "--no-prompt", "--sloppy-imports", \
+  "--allow-env", "--allow-net", \
   "--allow-read=/app,/deno-dir/npm/registry.npmjs.org/pyodide/", \
   "--allow-write=/deno-dir/npm/registry.npmjs.org/pyodide/", \
   "main.ts"]
@@ -40,23 +41,18 @@ ENTRYPOINT ["/tini", "--", "deno", "run", "--cached-only", "--no-prompt", \
 # =========================================================================== #
 # ---> build a deno image for google cloud run
 # docker build --target faas -t wasimoff/faas .
-FROM denoland/deno:distroless AS faas
-
-# copy files
-COPY ./gcloud-runner  /app/deno
-COPY ./webprovider    /app/webprovider
-
-WORKDIR /app/deno
+FROM provider AS faas
 
 # install and cache dependencies
-RUN ["deno", "install", "--entrypoint", "main.ts"]
+RUN ["deno", "install", "--entrypoint", "cloudrun.ts"]
 
 # launch configuration
-CMD ["run", "--cached-only", "--no-prompt", \
-  "--allow-env", "--allow-net", "--unstable-sloppy-imports", \
+ENTRYPOINT ["/tini", "--", "deno", "run", \
+  "--cached-only", "--no-prompt", "--sloppy-imports", \
+  "--allow-env", "--allow-net", \
   "--allow-read=/app,/deno-dir/npm/registry.npmjs.org/pyodide/", \
   "--allow-write=/deno-dir/npm/registry.npmjs.org/pyodide/", \
-  "main.ts"]
+  "cloudrun.ts"]
 
 # =========================================================================== #
 # ---> combine broker and frontend dist in default container
