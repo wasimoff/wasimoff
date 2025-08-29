@@ -18,6 +18,7 @@ import (
 	"reflect"
 	"sync"
 	"sync/atomic"
+
 	wasimoff "wasi.team/proto/v1"
 
 	"google.golang.org/protobuf/proto"
@@ -268,6 +269,7 @@ func (m *Messenger) send(ctx context.Context, seq *uint64, mt *wasimoff.Envelope
 	// prevent concurrent access on envelope
 	m.sendMutex.Lock()
 	defer m.sendMutex.Unlock()
+	m.envelope.Reset()
 	m.envelope.Sequence = seq
 	m.envelope.Type = mt
 	if payload != nil {

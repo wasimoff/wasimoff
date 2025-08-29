@@ -12,7 +12,7 @@
       "processId": 0
     },
     {
-      "name": "Launch Main",
+      "name": "Launch Broker",
       "type": "go",
       "request": "launch",
       "mode": "auto",
