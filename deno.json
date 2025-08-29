@@ -1,0 +1,12 @@
+{
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "semiColons": true,
+    "singleQuote": false,
+    "proseWrap": "preserve",
+    "include": ["denoprovider/**/*.ts", "webprovider/**/*.ts"],
+    "exclude": ["**/node_modules/", "**/dist/", "**/build/"]
+  }
+}
