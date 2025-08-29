@@ -23,7 +23,7 @@ The three essential roles in Wasimoff are **Broker** (central entity), **Provide
   * A browser implementation (`webprovider/`) is written in TypeScript with a Vue.js frontend and uses Web Workers to execute the WebAssembly modules concurrently.
   * The exact same TypeScript code can also be run with Deno (`denoprovider/`), which makes it easy to start Providers on a server or deploy them with Docker.
 
-* The **Client** (`client/`) interface is either a simple ConnectRPC HTTP API or also a WebSocket connection for asynchronous task submission. Examples exist using `curl` in Bash, as well as a CLI written in Go. It can be used to send individual tasks or schedule a large number of similar tasks with job configuration files.
+* The **Client** (`client/`) interface is either a simple ConnectRPC HTTP API or also a WebSocket connection for asynchronous task submission. Examples exist using `curl` in Bash, as well as a CLI written in Go (`go install wasi.team/client/cmd/wasimoff@latest`). It can be used to send individual tasks or schedule a large number of similar tasks with job configuration files.
 
 More detailed documentation can be found in each subdirectory.
 
