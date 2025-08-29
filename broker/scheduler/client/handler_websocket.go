@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"wasi.team/broker/net/transport"
 	wasimoff "wasi.team/proto/v1"
 
@@ -79,8 +80,20 @@ func ClientSocketHandler(rpc *ConnectRpcServer) http.HandlerFunc {
 					}(r.Context(), request, taskrequest)
 					continue
 
+				case *wasimoff.Filesystem_Upload_Request:
+					go func(ctx context.Context, req transport.IncomingRequest, task *wasimoff.Filesystem_Upload_Request) {
+						r := connect.NewRequest(task)
+						resp, err := rpc.Upload(ctx, r)
+						if err != nil {
+							request.Respond(ctx, nil, err)
+						} else {
+							request.Respond(ctx, resp.Msg, nil)
+						}
+					}(r.Context(), request, taskrequest)
+					continue
+
 				default: // unexpected message type
-					request.Respond(r.Context(), nil, fmt.Errorf("expecting only Task_Request messages on this socket"))
+					request.Respond(r.Context(), nil, fmt.Errorf("expecting only Task_Request/Upload messages on this socket"))
 					continue
 
 				}
