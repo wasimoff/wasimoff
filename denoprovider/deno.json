@@ -1,6 +1,7 @@
 {
   "imports": {
     "@cliffy/flags": "jsr:@cliffy/flags@^1.0.0-rc.8",
+    "@nats-io/nats-core": "jsr:@nats-io/nats-core@^3.1.0",
     "@wasimoff/": "../webprovider/lib/",
     "@oak/oak": "jsr:@oak/oak@^17.1.6",
     "@bjorn3/browser_wasi_shim": "npm:@bjorn3/browser_wasi_shim@^0.3.0",
@@ -9,6 +10,8 @@
     "lru-cache": "npm:lru-cache@^11.0.0",
     "@zip.js/zip.js": "jsr:@zip-js/zip-js",
     "pyodide": "npm:pyodide@0.27.2/pyodide.mjs",
-    "nanoid": "npm:nanoid"
-  }
+    "nanoid": "npm:nanoid",
+    "webrtc-polyfill": "npm:webrtc-polyfill@^1.1.10"
+  },
+  "nodeModulesDir": "auto"
 }
