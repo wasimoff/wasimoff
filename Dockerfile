@@ -28,7 +28,7 @@ COPY ./webprovider   /app/webprovider
 WORKDIR /app/deno
 
 # cache required dependencies
-RUN ["deno", "install", "--entrypoint", "main.ts"]
+RUN ["deno", "cache", "--sloppy-imports", "main.ts"]
 
 # launch configuration
 ENTRYPOINT ["/tini", "--", "deno", "run", \
@@ -44,7 +44,7 @@ ENTRYPOINT ["/tini", "--", "deno", "run", \
 FROM provider AS faas
 
 # install and cache dependencies
-RUN ["deno", "install", "--entrypoint", "cloudrun.ts"]
+RUN ["deno", "cache", "--sloppy-imports", "cloudrun.ts"]
 
 # launch configuration
 ENTRYPOINT ["/tini", "--", "deno", "run", \
