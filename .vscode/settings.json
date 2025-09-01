@@ -4,5 +4,12 @@
     "wasi-apps/fibonacci/Cargo.toml"
   ],
   "ansible.python.interpreterPath": "/bin/python",
-  "deno.enablePaths": [ "./denoprovider" ]
+  "deno.enablePaths": [
+    "./denoprovider"
+  ],
+  "deno.enable": true,
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "denoland.vscode-deno"
+  },
 }

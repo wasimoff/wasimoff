@@ -10,7 +10,6 @@ import { useTerminal } from "./terminal";
 import { useConfiguration } from "./configuration";
 
 export const useProvider = defineStore("WasimoffProvider", () => {
-
   // whether we are currently connected to the broker
   const connected = ref(false);
 
@@ -20,7 +19,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   // update busy map on interval
   setInterval(async () => {
     // this interval slows my devtools inspector to a crawl but works fine when closed
-    if ($pool.value) workers.value = await $pool.value.busy
+    if ($pool.value) workers.value = await $pool.value.busy;
   }, 50);
 
   // keep various proxies in refs ($ = Remote)
@@ -37,30 +36,31 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   const config = useConfiguration();
 
   // check if we're running exclusively (not open in another tab)
-  const exclusive = new Promise<void>(resolve => {
+  const exclusive = new Promise<void>((resolve) => {
     if ("locks" in navigator) {
       navigator.locks.request("wasimoff", { ifAvailable: true }, async (lock) => {
         if (lock === null) {
           return terminal.error("ERROR: another Provider is already running; refusing to start!");
-        };
+        }
         // got the lock, continue startup
         resolve();
         // return an "infinite" Promise; lock is only released when tab is closed
-        return new Promise(r => window.addEventListener("beforeunload", r));
+        return new Promise((r) => window.addEventListener("beforeunload", r));
       });
     } else {
       // can't check the lock, warn about it and continue anyway
       terminal.warn("WARNING: Web Locks API not available; can't check for exclusive Provider!");
       resolve();
-    };
+    }
   });
 
   // start the worker when the lock has been acquired
   exclusive.then(async () => {
-
     // start a worker and connect the comlink proxy
     connected.value = false;
-    worker.value = new Worker(new URL("@wasimoff/worker/provider.ts", import.meta.url), { type: "module" });
+    worker.value = new Worker(new URL("@wasimoff/worker/provider.ts", import.meta.url), {
+      type: "module",
+    });
     $provider.value = await construct<typeof WasimoffProvider>(worker.value, config.workers);
 
     // wrap the pool proxy in another proxy to keep worker count updated
@@ -73,13 +73,15 @@ export const useProvider = defineStore("WasimoffProvider", () => {
         if (typeof method === "function" && traps.includes(prop as string)) {
           return async (...args: any[]) => {
             let result = await (method as any).apply(target, args) as Promise<number>;
-            try { workers.value = await target.busy; } catch { };
+            try {
+              workers.value = await target.busy;
+            } catch {}
             return result;
           };
         } else {
           // anything else is passed through
           return method;
-        };
+        }
       },
     });
 
@@ -87,16 +89,15 @@ export const useProvider = defineStore("WasimoffProvider", () => {
     if ("wakeLock" in navigator) {
       try {
         const lock = await navigator.wakeLock.request("screen");
-        terminal.info("Acquired a wakelock.")
+        terminal.info("Acquired a wakelock.");
         lock.addEventListener("release", () => terminal.warn("Wakelock was revoked!"));
         window.addEventListener("beforeunload", () => lock.release());
       } catch (err) {
         terminal.warn(`Could not acquire wakelock: ${err}`);
-      };
+      }
     } else {
       terminal.info("Wakelock API unavailable.");
     }
-
   });
 
   async function open(...args: Parameters<WasimoffProvider["open"]>) {
@@ -104,7 +105,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
     // open the filesystem, get a proxy
     await $provider.value.open(...args);
     $storage.value = await $provider.value.storageProxy();
-  };
+  }
 
   async function connect(...args: Parameters<WasimoffProvider["connect"]>) {
     if (!$provider.value) throw "no provider connected yet";
@@ -118,30 +119,36 @@ export const useProvider = defineStore("WasimoffProvider", () => {
       // each spawn updates the workers ref
       let capacity = await $pool.value.capacity;
       while (await $pool.value.length < capacity) await $pool.value.spawn();
-    };
-  };
+    }
+  }
 
   async function disconnect() {
     if (!$provider.value) throw "no provider connected yet";
     await $provider.value.disconnect();
     connected.value = false;
-  };
+  }
 
   async function handlerequests() {
     if (!$provider.value) throw "no provider connected yet";
     await $provider.value.handlerequests();
     // the above promise only returns when the loop dies
     connected.value = false;
-  };
+  }
 
   // exported as store
   return {
     // plain refs
-    connected, workers,
+    connected,
+    workers,
     // comlink proxies
-    $provider, $pool, $messenger, $storage,
+    $provider,
+    $pool,
+    $messenger,
+    $storage,
     // special-cased methods
-    open, connect, disconnect, handlerequests,
+    open,
+    connect,
+    disconnect,
+    handlerequests,
   };
-
 });

@@ -6,27 +6,29 @@ import { ProviderStorage } from "@wasimoff/storage/index";
 import { Messenger, WebSocketTransport } from "@wasimoff/transport/index";
 import { WasiWorkerPool } from "./workerpool";
 import { create, Message } from "@bufbuild/protobuf";
-import { Event_FileSystemUpdateSchema, Event_ProviderResourcesSchema }
-  from "@wasimoff/proto/v1/messages_pb";
+import {
+  Event_FileSystemUpdateSchema,
+  Event_ProviderResourcesSchema,
+} from "@wasimoff/proto/v1/messages_pb";
 import { rpchandler } from "@wasimoff/worker/rpchandler";
-import { expose, workerReady, transfer, proxy } from "./comlink";
+import { expose, proxy, transfer, workerReady } from "./comlink";
 import { Wasip1TaskParams } from "./wasiworker";
 
 /**
  *     Wasimoff Provider
  * ----------------------------------
- * 
+ *
  * This is the "entrypoint" to connect to a Broker and get started serving requests.
  * Usage would depend a bit on what environment you're running in. Some variants may
  * be removed / become unsupported in the future, if they're not worth the added
  * complexity.
- * 
+ *
  * In Deno (or another terminal-based environment outside the web) you should just
  * instantiate the class directly in the main thread. The Messenger and Storage can
  * be initialized beforehand, amended with your own reconnection handlers and what
  * have you .. and then passed inside the constructor. The comlink won't be exposed
  * if the file is not running in a Worker scope.
- * 
+ *
  * In the Web, you should generally start this file in a Worker and let it handle
  * the connection and storage concerns. In that case, the Provider is controlled
  * through comlink and events (for UI updates etc.) should be streamed with an
@@ -39,12 +41,10 @@ import { Wasip1TaskParams } from "./wasiworker";
  * at all. Thus, the safest approach is to always spawn in a Worker and prevent
  * further Providers from starting with the Web Lock API (which is unavailable
  * on Deno, thus this isn't a completely universal approach either).
- * 
  */
 
 export class WasimoffProvider {
-
-  static readonly logprefix = [ `%c[Wasimoff Provider]`, "color: blue;" ];
+  static readonly logprefix = [`%c[Wasimoff Provider]`, "color: blue;"];
 
   constructor(
     /** maximum number of workers in the pool */
@@ -66,18 +66,18 @@ export class WasimoffProvider {
         if (typeof method === "function" && traps.includes(prop as string)) {
           return async (...args: any[]) => {
             let result = await (method as any).apply(target, args) as Promise<number>;
-            if (this.messenger !== undefined)
-              this.sendConcurrency(await result).catch(() => { /* ignore errors */ });
+            if (this.messenger !== undefined) {
+              this.sendConcurrency(await result).catch(() => {/* ignore errors */});
+            }
             return result;
           };
         } else {
           // anything else is passed through
           return method;
-        };
+        }
       },
     });
-
-  };
+  }
 
   static async init(nmax: number, origin: string, dir: string, id?: string) {
     const p = new WasimoffProvider(nmax);
@@ -94,8 +94,7 @@ export class WasimoffProvider {
     await p.connect(url.origin, id);
 
     return p;
-  };
-
+  }
 
   // --------->  worker pool
 
@@ -109,8 +108,7 @@ export class WasimoffProvider {
 
   async run(id: string, task: Wasip1TaskParams) {
     return this.pool.runWasip1(id, task);
-  };
-
+  }
 
   // --------->  file storage
 
@@ -118,22 +116,20 @@ export class WasimoffProvider {
   public storageProxy() {
     if (!this.storage) throw "storage does not exist yet";
     return proxy(this.storage);
-  };
+  }
 
   /** Open a storage by URL. */
   async open(directory: string, origin: string) {
-
     // can't close a filesystem yet
-    if (this.storage !== undefined)
+    if (this.storage !== undefined) {
       throw "another storage is opened already";
+    }
 
     this.storage = new ProviderStorage(directory, origin);
-    this.storage.updates.on(update => {
+    this.storage.updates.on((update) => {
       if (this.messenger) this.messenger.sendEvent(create(Event_FileSystemUpdateSchema, update));
     });
-
-  };
-
+  }
 
   // --------->  messenger connections
 
@@ -141,15 +137,14 @@ export class WasimoffProvider {
   async messengerProxy() {
     if (!this.messenger) throw "messenger does not exist yet";
     return proxy(this.messenger);
-  };
+  }
 
   // (re)connect to a broker by url
   async connect(origin: string, id?: string) {
-
     // close previous connections
     if (this.messenger !== undefined && !this.messenger.closed.aborted) {
       this.messenger.close("reconnecting");
-    };
+    }
 
     // only the websocket transport is implemented so far
     let url = new URL(origin);
@@ -162,15 +157,13 @@ export class WasimoffProvider {
 
     // send current concurrency
     this.sendConcurrency(this.pool.length);
-
-  };
+  }
 
   async disconnect() {
     if (this.messenger !== undefined && !this.messenger.closed.aborted) {
       this.messenger.close("bye");
-    };
-  };
-
+    }
+  }
 
   // --------->  handle rpc requests on messenger
 
@@ -180,31 +173,31 @@ export class WasimoffProvider {
   /** Start handling RPC requests from the messenger. Await this method to be
    * notified when the connection closes because that will break the loop inside. */
   async handlerequests() {
-
     // storage must be opened already to register rpchandler
-    if (this.storage === undefined)
+    if (this.storage === undefined) {
       throw "need to open a storage first";
+    }
 
     // must have an open messenger on which to receive requests
-    if (this.messenger === undefined || this.messenger.closed.aborted)
+    if (this.messenger === undefined || this.messenger.closed.aborted) {
       throw "need to connect to a broker first";
+    }
 
     // this will loop until the messenger is closed
     for await (const request of this.messenger.requests) {
-      request(request => this.rpchandler(request));
-    };
-
-  };
+      request((request) => this.rpchandler(request));
+    }
+  }
 
   /** Get a ReadableStream of the Events from the messenger. */
   async getEventstream() {
-
     // must have an open messenger on which to receive events
-    if (this.messenger === undefined || this.messenger.closed.aborted)
+    if (this.messenger === undefined || this.messenger.closed.aborted) {
       throw "need to connect to a broker first";
+    }
 
     // create a ReadableStream from the events iterable
-    const iterator = this.messenger.events[Symbol.asyncIterator]()
+    const iterator = this.messenger.events[Symbol.asyncIterator]();
     const stream = new ReadableStream<Message>({
       async pull(controller) {
         let { done, value } = await iterator.next();
@@ -215,22 +208,19 @@ export class WasimoffProvider {
 
     // transfer the stream
     // this doesn't work on safari :(
-    return transfer(stream, [ stream ]);
-
-  };
-
-  async getEventIteratorNext() {
-
-    // must have an open messenger on which to receive events
-    if (this.messenger === undefined || this.messenger.closed.aborted)
-      throw "need to connect to a broker first";
-
-    // create an iterator and return a proxied next
-    const iterator = this.messenger.events[Symbol.asyncIterator]()
-    return proxy(() => iterator.next());
-
+    return transfer(stream, [stream]);
   }
 
+  async getEventIteratorNext() {
+    // must have an open messenger on which to receive events
+    if (this.messenger === undefined || this.messenger.closed.aborted) {
+      throw "need to connect to a broker first";
+    }
+
+    // create an iterator and return a proxied next
+    const iterator = this.messenger.events[Symbol.asyncIterator]();
+    return proxy(() => iterator.next());
+  }
 
   // --------->  shorthands to send events
 
@@ -238,27 +228,25 @@ export class WasimoffProvider {
     if (this.messenger === undefined) throw "not connected yet";
     if (concurrency !== undefined) {
       this.messenger.sendEvent(create(Event_ProviderResourcesSchema, { concurrency: concurrency }));
-    };
-  };
-
-
-};
-
+    }
+  }
+}
 
 // detect if we're running in a worker and expose the comlink interface
-if (typeof self !== "undefined"
+if (
+  typeof self !== "undefined"
   && self.constructor.name === "DedicatedWorkerGlobalScope"
-  && self instanceof DedicatedWorkerGlobalScope) {
-
+  && self instanceof DedicatedWorkerGlobalScope
+) {
   // in a "normal" Worker
   // locks should be handled externally, before the Worker is even started
   console.log(...WasimoffProvider.logprefix, "new dedicated Worker started");
   expose(WasimoffProvider, self);
   self.postMessage(workerReady);
-
-} else if (self.constructor.name === "SharedWorkerGlobalScope" && self instanceof SharedWorkerGlobalScope) {
-
-  // in a SharedWorker, listen for connections 
+} else if (
+  self.constructor.name === "SharedWorkerGlobalScope" && self instanceof SharedWorkerGlobalScope
+) {
+  // in a SharedWorker, listen for connections
   console.log(...WasimoffProvider.logprefix, "new SharedWorker started");
   self.addEventListener("connect", ({ ports }) => {
     console.log(...WasimoffProvider.logprefix, "new connection");
@@ -269,5 +257,4 @@ if (typeof self !== "undefined"
 
   // TODO: proper connection manager?
   // search for `Tabulator` in sharedworker.ts, somewhere before 6f0cd00
-
 }

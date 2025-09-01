@@ -1,50 +1,58 @@
 import { construct, releaseProxy, type WrappedWorker } from "./comlink";
-import { type WasiWorker, type Wasip1TaskParams, Wasip1TaskResult, PyodideTaskParams, PyodideTaskResult } from "./wasiworker";
+import {
+  PyodideTaskParams,
+  PyodideTaskResult,
+  type Wasip1TaskParams,
+  Wasip1TaskResult,
+  type WasiWorker,
+} from "./wasiworker";
 import { Queue } from "@wasimoff/func/queue";
 
 // colorful console logging prefix
-const logprefix = [ "%c[WasiWorkerPool]", "color: purple;" ] as const;
+const logprefix = ["%c[WasiWorkerPool]", "color: purple;"] as const;
 
 /** Worker threadpool, which dispatches tasks to WasmWorkers. */
 export class WasiWorkerPool {
-
   constructor(
     /** The absolute maximum number of workers in this pool. */
     public readonly capacity: number = navigator.hardwareConcurrency,
-  ) { };
+  ) {}
 
   // hold the Workers in an array
   private pool: WrappedWorker<WasiWorker, {
-    index: number,
-    busy: boolean,
-    taskid?: string,
-    started?: Date,
-    cancelled?: boolean,
-    reject?: () => void,
+    index: number;
+    busy: boolean;
+    taskid?: string;
+    started?: Date;
+    cancelled?: boolean;
+    reject?: () => void;
   }>[] = [];
 
   /** Incrementing index for new workers. */
   private nextindex = 0;
 
   /** Get the number of Workers currently in the pool. */
-  get length() { return this.pool.length; };
+  get length() {
+    return this.pool.length;
+  }
 
   /** Get a "bitmap" of busy workers. */
-  get busy() { return this.pool.map(w => w.busy); };
+  get busy() {
+    return this.pool.map((w) => w.busy);
+  }
 
   /** Get a list with information about current tasks. */
   get currentTasks() {
-    return this.pool.map(w => ({
+    return this.pool.map((w) => ({
       index: w.index,
       busy: w.busy,
       task: w.taskid,
       started: w.started,
     }));
-  };
+  }
 
   // an asynchronous queue to fetch an available worker
-  private idlequeue = new Queue<typeof this.pool[0]>;
-
+  private idlequeue = new Queue<typeof this.pool[0]>();
 
   // --------->  spawn new workers
 
@@ -67,26 +75,25 @@ export class WasiWorkerPool {
     this.pool.push(wrapped);
     this.idlequeue.put(wrapped);
     return this.length;
-
-  };
+  }
 
   /** Scale to a certain number of Workers is in the pool, clamped by `nmax`. */
   async scale(n: number = this.capacity) {
     n = this.clamped(n);
-    if (this.length < n)
+    if (this.length < n) {
       while (this.length < n) await this.spawn();
-    else
+    } else {
       while (this.length > n) await this.drop();
+    }
     return this.length;
-  };
+  }
 
   // clamp a desired value to maximum number of workers
   private clamped(n?: number): number {
     if (n === undefined || n > this.capacity) return this.capacity;
     if (n <= 0) return 0;
     return n;
-  };
-
+  }
 
   // --------->  terminate workers
 
@@ -97,45 +104,44 @@ export class WasiWorkerPool {
     // take an idle worker from the queue
     const worker = await this.idlequeue.get();
     // remove it from the pool and release resources
-    this.pool.splice(this.pool.findIndex(el => el === worker), 1);
+    this.pool.splice(this.pool.findIndex((el) => el === worker), 1);
     console.info(...logprefix, "shutdown worker", worker.index);
     worker.link[releaseProxy]();
     worker.worker.terminate();
     return this.length;
-  };
+  }
 
   /** Forcefully terminate all Workers and reset the queue. */
   async killall() {
     if (this.length === 0) return;
     console.warn(...logprefix, `killing all ${this.length} workers`);
-    this.pool.forEach(w => {
+    this.pool.forEach((w) => {
       w.link[releaseProxy]();
       w.worker.terminate();
     });
     this.pool = [];
     this.idlequeue = new Queue();
     return this.length;
-  };
+  }
 
   /** Cancel a running task. There's not really any good way of stopping an
    * execution once the WebAssembly module is started, so just terminate and
    * respawn the worker. */
   async cancel(taskid: string) {
     // find a worker executing this task id
-    let w = this.pool.find(w => w.taskid === taskid);
+    let w = this.pool.find((w) => w.taskid === taskid);
     if (w !== undefined) {
       w.cancelled = true;
       console.warn(...logprefix, `cancel and respawn worker ${w.index}`);
       // terminate and remove from pool
-      this.pool.splice(this.pool.findIndex(el => el === w), 1);
+      this.pool.splice(this.pool.findIndex((el) => el === w), 1);
       w.link[releaseProxy]();
       w.worker.terminate();
       w.reject?.();
       // and respawn
       await this.spawn();
-    };
+    }
   }
-
 
   // --------->  send tasks to workers
 
@@ -168,11 +174,9 @@ export class WasiWorkerPool {
         worker.taskid = undefined;
         worker.started = undefined;
         await this.idlequeue.put(worker);
-      };
-    };
-
-  };
-
+      }
+    }
+  }
 
   async runPyodide(id: string, task: PyodideTaskParams): Promise<PyodideTaskResult> {
     if (this.length === 0) throw new Error("no workers in pool");
@@ -201,9 +205,7 @@ export class WasiWorkerPool {
       worker.worker.terminate();
       await this.spawn();
       // move splice last to avoid "no workers in pool" errors
-      this.pool.splice(this.pool.findIndex(el => el === worker), 1);
-    };
-
-  };
-
+      this.pool.splice(this.pool.findIndex((el) => el === worker), 1);
+    }
+  }
 }

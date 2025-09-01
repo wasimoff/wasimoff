@@ -24,18 +24,22 @@ async function compile(
       "--allow-net",
       "--allow-read",
       "--allow-write",
-      "--target", target,
-      "--output", `wasimoff-provider-${alias || target}${target.includes("windows") ? ".exe" : ""}`,
-      "main.ts"
+      "--target",
+      target,
+      "--output",
+      `wasimoff-provider-${alias || target}${target.includes("windows") ? ".exe" : ""}`,
+      "main.ts",
     ],
   });
   // execute it, inheriting stdio
   return await cmd.spawn().status;
-};
+}
 
 // check if arguments exist
 if (Deno.args.length === 0) {
-  console.warn("pick a target: {linux,windows,darwin}/{amd64,arm64}, native or all");
+  console.warn(
+    "pick a target: {linux,windows,darwin}/{amd64,arm64}, native or all",
+  );
   Deno.exit(1);
 }
 
@@ -44,11 +48,9 @@ if (Deno.args.includes("all")) {
   for (const target of targets) {
     console.log(`--> compile ${target}`);
     await compile(target);
-  };
-}
-
-// or one target per argument
-else {
+  }
+} else {
+  // or one target per argument
   for (const arg of Deno.args) {
     const alias = arg.replace("/", "-");
     switch (arg) {

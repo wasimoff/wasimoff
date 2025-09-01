@@ -6,7 +6,6 @@ import { isMessage, Message } from "@bufbuild/protobuf";
 import * as wasimoff from "@wasimoff/proto/v1/messages_pb";
 
 export const useClusterState = defineStore("ClusterState", () => {
-
   const providerstore = useProvider();
   const terminal = useTerminal();
 
@@ -19,7 +18,6 @@ export const useClusterState = defineStore("ClusterState", () => {
   // whenever the provider messenger reconnects
   watch(() => providerstore.$messenger, async (messenger) => {
     if (messenger !== undefined && providerstore.$provider !== undefined) {
-
       // transfer a readablestream from the provider directly
       // const stream = await wasimoff.$provider.getEventstream();
 
@@ -36,7 +34,6 @@ export const useClusterState = defineStore("ClusterState", () => {
       // read messages from the event stream
       for await (const event of stream) {
         switch (true) { // switch by message type
-
           // print generic messages to the terminal
           case isMessage(event, wasimoff.Event_GenericMessageSchema):
             terminal.info(`Message: ${event.message}`);
@@ -51,17 +48,13 @@ export const useClusterState = defineStore("ClusterState", () => {
           case isMessage(event, wasimoff.Event_ThroughputSchema):
             throughput.value = event.overall;
             break;
-
-        };
-      };
+        }
+      }
 
       // tidy up when disconnected
       providers.value = undefined;
-
-    };
+    }
   });
 
-
   return { providers, throughput };
-
-})
+});
