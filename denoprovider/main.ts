@@ -7,18 +7,25 @@ import { Terminator } from "./util.ts";
 
 // parse commandline arguments
 const help = (fatal: boolean = false) => {
-  console.log("$", import.meta.filename?.replace(/.*\//, ""), "[--workers n] [--url <Broker URL>]");
+  console.log(
+    "$",
+    import.meta.filename?.replace(/.*\//, ""),
+    "[--workers n] [--url <Broker URL>]",
+  );
   Deno.exit(fatal ? 1 : 0);
 };
 const args = parseArgs(Deno.args, {
-  alias: { "workers": "w", "url": "u", "help": "h" },
+  alias: { workers: "w", url: "u", help: "h" },
   default: {
-    "workers": navigator.hardwareConcurrency,
-    "url": "http://localhost:4080",
+    workers: navigator.hardwareConcurrency,
+    url: "http://localhost:4080",
   },
-  boolean: [ "help" ],
-  string: [ "url" ],
-  unknown: (arg) => { console.warn("Unknown argument:", arg); help(true); }
+  boolean: ["help"],
+  string: ["url"],
+  unknown: (arg) => {
+    console.warn("Unknown argument:", arg);
+    help(true);
+  },
 });
 
 // print help if requested
@@ -26,9 +33,13 @@ if (args.help) help();
 
 // validate the values
 const brokerurl = args.url;
-if (!/^https?:\/\//.test(brokerurl)) throw "--url must be a HTTP(S) origin (http?://)";
+if (!/^https?:\/\//.test(brokerurl)) {
+  throw "--url must be a HTTP(S) origin (http?://)";
+}
 const nproc = Math.floor(Number(args.workers));
-if (Number.isNaN(nproc) || nproc < 1) throw "--workers must be a positive number";
+if (Number.isNaN(nproc) || nproc < 1) {
+  throw "--workers must be a positive number";
+}
 
 // get random client ID from localStorage
 let id: string | null;
@@ -37,10 +48,10 @@ try {
   if (id === null) {
     id = nanoid();
     localStorage.setItem("wasimoff_id", id);
-  };
+  }
 } catch {
   id = nanoid();
-};
+}
 
 // initialize the provider
 console.log("%c[Wasimoff]", "color: red;", "starting Deno Provider");
@@ -53,9 +64,10 @@ await provider.sendConcurrency(workers);
   for await (const event of provider.messenger!.events) {
     const typename: string = event.$typeName;
     delete event.$typeName;
-    if (!typename.endsWith("Throughput"))
+    if (!typename.endsWith("Throughput")) {
       console.log(`%c[${typename}]`, "color: green;", JSON.stringify(event));
-  };
+    }
+  }
 })();
 
 // register signal handler for clean exits

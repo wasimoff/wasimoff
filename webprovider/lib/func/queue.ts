@@ -16,11 +16,11 @@ export class Queue<T> {
     // console.debug(...this.prefix("-GET"), { items: this.items.length, waiting: this.getters.length });
     // if the queue is empty, append ourselves as a waiting promise
     if (this.items.length === 0) {
-      return await new Promise<T>(r => this.getters.push(r));
+      return await new Promise<T>((r) => this.getters.push(r));
     }
     // otherwise yield an element immediately
     return this.items.shift()!;
-  };
+  }
 
   // put an item into the queue
   async put(item: T): Promise<void> {
@@ -31,6 +31,5 @@ export class Queue<T> {
     }
     // otherwise append to queue
     this.items.push(item);
-  };
-
-};
+  }
+}

@@ -6,7 +6,6 @@ import { type Envelope } from "@wasimoff/proto/v1/messages_pb";
  * Request-Response semantics. It is possible to reconnect or migrate connections
  * transparently without breaking the message iterator. */
 export interface Transport {
-
   // receive ordered messages from an iterable
   messages: AsyncIterable<Transmit>;
 
@@ -17,12 +16,11 @@ export interface Transport {
   closed: AbortSignal;
   close: (reason?: string) => void;
   ready: Promise<void>;
-
 }
 
 export interface Transmit {
-  envelope: Envelope,
-  identifier?: string,
+  envelope: Envelope;
+  identifier?: string;
 }
 
 export { Messenger } from "./messenger";

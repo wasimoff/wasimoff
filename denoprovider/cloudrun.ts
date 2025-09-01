@@ -27,9 +27,8 @@ await pool.scale();
 const port = Number(Deno.env.get("PORT")) || 8000;
 
 // create the oak app for request handler
-const app = new Application({ state: { shutdown: false, counter: 0 }});
-app.use(async ctx => { // https://jsr.io/@oak/oak/doc/context/~/Context
-
+const app = new Application({ state: { shutdown: false, counter: 0 } });
+app.use(async (ctx) => { // https://jsr.io/@oak/oak/doc/context/~/Context
   // request counter for readable logging
   const i = `task[${app.state.counter++}]`;
 
@@ -38,39 +37,49 @@ app.use(async ctx => { // https://jsr.io/@oak/oak/doc/context/~/Context
     ctx.response.status = 503;
     ctx.response.body = "going away";
     return;
-  };
+  }
 
   let response: wasimoff.Task_Wasip1_Response | null = null;
-  const content_type = ctx.request.headers.get("content-type") as "application/json" | "application/proto";
+  const content_type = ctx.request.headers.get("content-type") as
+    | "application/json"
+    | "application/proto";
 
   try {
-
     // parse the incoming request
     let request: wasimoff.Task_Wasip1_Request;
     switch (content_type) {
-
       case "application/json":
-        request = pb.fromJson(wasimoff.Task_Wasip1_RequestSchema, await ctx.request.body.json());
+        request = pb.fromJson(
+          wasimoff.Task_Wasip1_RequestSchema,
+          await ctx.request.body.json(),
+        );
         break;
 
       case "application/proto":
-        request = pb.fromBinary(wasimoff.Task_Wasip1_RequestSchema, new Uint8Array(await ctx.request.body.arrayBuffer()));
+        request = pb.fromBinary(
+          wasimoff.Task_Wasip1_RequestSchema,
+          new Uint8Array(await ctx.request.body.arrayBuffer()),
+        );
         break;
 
       default:
-        throw new Error("only accepting Task_Wasip1_Request in JSON or Protobuf encoding");
-    };
+        throw new Error(
+          "only accepting Task_Wasip1_Request in JSON or Protobuf encoding",
+        );
+    }
 
     // mostly copied from rpchandler.ts from here on ...
 
     // deconstruct the request and check type
     const { info, params } = request;
-    if (info === undefined || params === undefined)
+    if (info === undefined || params === undefined) {
       throw "info and params cannot be undefined";
+    }
 
     const task = params;
-    if (task.binary === undefined)
+    if (task.binary === undefined) {
       throw "wasip1.binary cannot be undefined";
+    }
 
     // get or compile the webassembly module
     let wasm: WebAssembly.Module;
@@ -82,7 +91,7 @@ app.use(async ctx => { // https://jsr.io/@oak/oak/doc/context/~/Context
       else wasm = m;
     } else {
       throw new Error("binary: neither blob nor ref were given");
-    };
+    }
 
     console.debug(i, "run:", info.id);
     const result = await pool.runWasip1(info.id, {
@@ -96,51 +105,63 @@ app.use(async ctx => { // https://jsr.io/@oak/oak/doc/context/~/Context
 
     // format and send back the result protobuf
     response = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
-      result: { case: "ok", value: {
-        status: result.returncode,
-        stdout: result.stdout,
-        stderr: result.stderr,
-        artifacts: result.artifacts ? { blob: result.artifacts } : undefined,
-      }},
+      result: {
+        case: "ok",
+        value: {
+          status: result.returncode,
+          stdout: result.stdout,
+          stderr: result.stderr,
+          artifacts: result.artifacts ? { blob: result.artifacts } : undefined,
+        },
+      },
     }) as wasimoff.Task_Wasip1_Response;
-
   } catch (error) {
-
     // format exceptions as WasiResponse.Error
     console.error(i, error);
     response = pb.create(wasimoff.Task_Wasip1_ResponseSchema, {
-      result: { case: "error", value: String(error || "unspecified error"), },
+      result: { case: "error", value: String(error || "unspecified error") },
     }) as wasimoff.Task_Wasip1_Response;
     ctx.response.status = 400;
-
   } finally {
-
     // serialize the response, if any
-    if (response !== null)
-    switch(content_type) {
+    if (response !== null) {
+      switch (content_type) {
+        case "application/json":
+          ctx.response.type = "json";
+          ctx.response.body = pb.toJson(
+            wasimoff.Task_Wasip1_ResponseSchema,
+            response,
+          );
+          break;
 
-      case "application/json":
-        ctx.response.type = "json";
-        ctx.response.body = pb.toJson(wasimoff.Task_Wasip1_ResponseSchema, response);
-        break;
+        case "application/proto":
+          ctx.response.type = content_type;
+          ctx.response.body = pb.toBinary(
+            wasimoff.Task_Wasip1_ResponseSchema,
+            response,
+          );
+          break;
 
-      case "application/proto":
-        ctx.response.type = content_type;
-        ctx.response.body = pb.toBinary(wasimoff.Task_Wasip1_ResponseSchema, response);
-        break;
-
-      default:
-        // assert unreachable
-        ((_: never) => {})(content_type);
-    };
-
-  };
+        default:
+          // assert unreachable
+          ((_: never) => {})(content_type);
+      }
+    }
+  }
 });
 
 // register signal handler for clean exits
 // GCP gives 10s grace period before SIGKILL
-new Terminator(pool, 9_000, (_) => { app.state.shutdown = true; });
+new Terminator(pool, 9_000, (_) => {
+  app.state.shutdown = true;
+});
 
 // start the webserver
-console.log("%c[Wasimoff]%c oak listening on port %c%d", "color: red", "color: none;", "color: cyan;", port);
+console.log(
+  "%c[Wasimoff]%c oak listening on port %c%d",
+  "color: red",
+  "color: none;",
+  "color: cyan;",
+  port,
+);
 await app.listen({ port });

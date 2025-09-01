@@ -39,9 +39,9 @@ export default defineConfig({
       "^/api/": "http://localhost:4080",
       // serve pyodide assets from broker
       "^/pyodide/": "http://localhost:4080",
-    }
+    },
   },
   optimizeDeps: {
-    exclude: [ "pyodide" ],
+    exclude: ["pyodide"],
   },
-})
+});
