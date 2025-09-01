@@ -5,7 +5,8 @@
   ],
   "ansible.python.interpreterPath": "/bin/python",
   "deno.enablePaths": [
-    "./denoprovider"
+    "./denoprovider/",
+    "./deno.json"
   ],
   "deno.enable": true,
   "editor.formatOnSave": true,
