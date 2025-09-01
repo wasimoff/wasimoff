@@ -15,12 +15,15 @@ export class ProviderStorage {
   filesystem: ProviderStorageFileSystem;
 
   // base origin for the remote fetching
-  public origin: string;
+  public origin?: string;
 
   public updates = new EventEmitter<{ added?: string[]; removed?: string[] }>();
 
   // cache compiled webassembly modules
-  private wasmCache = new LRUCache<string, { size: number; module: WebAssembly.Module }>({
+  private wasmCache = new LRUCache<
+    string,
+    { size: number; module: WebAssembly.Module }
+  >({
     // eviction policy
     ttl: minutes(30),
     max: 64, // items
@@ -54,10 +57,14 @@ export class ProviderStorage {
     },
   });
 
-  constructor(path: string, origin: string) {
+  constructor(path: string, origin?: string) {
     if (path === ":memory:") {
       this.filesystem = new MemoryFileSystem();
-      console.debug(...logprefix, `opened storage with`, this.filesystem.constructor.name);
+      console.debug(
+        ...logprefix,
+        `opened storage with`,
+        this.filesystem.constructor.name,
+      );
     } else {
       throw "OPFS not reimplemented yet.";
       // this needs more work due to async initializer
@@ -70,7 +77,10 @@ export class ProviderStorage {
   // fetch a file from the backend
   private async fetchFile(filename: string): Promise<File | undefined> {
     // request the file from broker
-    console.warn(...logprefix, `file ${filename} not found locally, fetch from broker`);
+    console.warn(
+      ...logprefix,
+      `file ${filename} not found locally, fetch from broker`,
+    );
     let response = await fetch(`${this.origin}/api/storage/${filename}`);
     if (!response.ok) return undefined;
 
@@ -91,12 +101,14 @@ export class ProviderStorage {
   // either return a file from filesystem or attempt to fetch it remotely
   private async getFile(filename: string): Promise<File | undefined> {
     let file = await this.filesystem.get(filename);
-    if (!file) file = await this.fetchFile(filename);
+    if (!file && this.origin) file = await this.fetchFile(filename);
     return file;
   }
 
   /** Get a WebAssembly module compiled from a stored executable. */
-  async getWasmModule(filename: string): Promise<WebAssembly.Module | undefined> {
+  async getWasmModule(
+    filename: string,
+  ): Promise<WebAssembly.Module | undefined> {
     return (await this.wasmCache.fetch(filename))?.module;
   }
 
@@ -127,9 +139,12 @@ export interface ProviderStorageFileSystem {
 
 /** Return the SHA-256 digest of a file. This can be used to check for an exact match
  * without actually transferring the file's contents. */
-export async function digest(buf: Uint8Array | ArrayBuffer): Promise<Uint8Array> {
-  if (crypto.subtle) return new Uint8Array(await crypto.subtle.digest("SHA-256", buf));
-  else return new Uint8Array(32); // will always re-transfer
+export async function digest(
+  buf: Uint8Array | ArrayBuffer,
+): Promise<Uint8Array> {
+  if (crypto.subtle) {
+    return new Uint8Array(await crypto.subtle.digest("SHA-256", buf));
+  } else return new Uint8Array(32); // will always re-transfer
 }
 
 /** Check if a filename is a SHA256 content address aka. ref. */
