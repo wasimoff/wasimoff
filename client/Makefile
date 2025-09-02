@@ -1,2 +1,2 @@
-wasimoff: client.go
-	go build -o $@
+wasimoff: cmd/wasimoff/main.go
+	go build -o $@ $<
