@@ -2,7 +2,7 @@
 declare var self: DedicatedWorkerGlobalScope | SharedWorkerGlobalScope;
 export {};
 
-import { ProviderStorage } from "@wasimoff/storage/index";
+import { ProviderStorage, ProviderStorageFileSystem } from "@wasimoff/storage/index";
 import { Messenger, WebSocketTransport } from "@wasimoff/transport/index";
 import { WasiWorkerPool } from "./workerpool";
 import { create, Message } from "@bufbuild/protobuf";
@@ -13,6 +13,8 @@ import {
 import { rpchandler } from "@wasimoff/worker/rpchandler";
 import { expose, proxy, transfer, workerReady } from "./comlink";
 import { Wasip1TaskParams } from "./wasiworker";
+import { OriginPrivateFileSystem } from "@wasimoff/storage/fs_opfs";
+import { MemoryFileSystem } from "@wasimoff/storage/fs_memory";
 
 /**
  *     Wasimoff Provider
@@ -79,7 +81,7 @@ export class WasimoffProvider {
     });
   }
 
-  static async init(nmax: number, origin: string, dir: string, id?: string) {
+  static async init(nmax: number, origin: string, fs: ProviderStorageFileSystem, id?: string) {
     const p = new WasimoffProvider(nmax);
 
     // recheck the origin
@@ -87,7 +89,7 @@ export class WasimoffProvider {
     if (!/^https?:$/.test(url.protocol)) throw "origin should be https? url";
 
     // connect the storage
-    await p.open(dir, url.origin);
+    await p.open(url.origin, fs);
 
     // replace protocol with websocket for transport
     url.protocol = url.protocol.replace("http", "ws");
@@ -119,13 +121,27 @@ export class WasimoffProvider {
   }
 
   /** Open a storage by URL. */
-  async open(directory: string, origin: string) {
+  async open(origin: string, fs?: ProviderStorageFileSystem) {
     // can't close a filesystem yet
     if (this.storage !== undefined) {
       throw "another storage is opened already";
     }
 
-    this.storage = new ProviderStorage(directory, origin);
+    // try to open opfs and fallback to memory filesystem otherwise
+    if (fs === undefined) {
+      if ("storage" in navigator && typeof navigator.storage.getDirectory === "function") {
+        try {
+          fs = await OriginPrivateFileSystem.open("/wasm");
+        } catch (err) {
+          console.error("failed opening OPFS:", err);
+        }
+      }
+      if (fs === undefined) { // still
+        fs = new MemoryFileSystem();
+      }
+    }
+
+    this.storage = new ProviderStorage(fs, origin);
     this.storage.updates.on((update) => {
       if (this.messenger) this.messenger.sendEvent(create(Event_FileSystemUpdateSchema, update));
     });

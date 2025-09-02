@@ -1,4 +1,4 @@
-import { ProviderStorageFileSystem } from "./index";
+import { filesize, ProviderStorageFileSystem } from "./index";
 
 const logprefix = ["%c[OriginPrivateFileSystem]", "color: purple;"];
 
@@ -10,12 +10,14 @@ export class OriginPrivateFileSystem implements ProviderStorageFileSystem {
   ) {}
 
   /** Initialize a new Filesystem with OPFS backing. */
-  static async open(directory?: string | FileSystemDirectoryHandle) {
+  static async open(
+    directory?: string | FileSystemDirectoryHandle,
+  ): Promise<OriginPrivateFileSystem> {
     let opfs = await navigator.storage.getDirectory();
     let storage: OriginPrivateFileSystem;
     // easy mode: open the root
     if (directory === undefined || directory === "/") {
-      storage = new OriginPrivateFileSystem(opfs, "/");
+      storage = new OriginPrivateFileSystem(opfs, "opfs:///");
     } else {
       // directory is a path, open each fragment until we reach its handle
       if (typeof directory === "string") {
@@ -28,28 +30,42 @@ export class OriginPrivateFileSystem implements ProviderStorageFileSystem {
       // (now) directory is a handle, resolve its path and open
       let path = await opfs.resolve(directory);
       if (path === null) throw "given DirectoryHandle is not in OPFS";
-      storage = new OriginPrivateFileSystem(directory, `/${path.join("/")}/`);
+      storage = new OriginPrivateFileSystem(directory, `opfs:///${path.join("/")}/`);
     }
+
     console.log(...logprefix, `opened OPFS at "${storage.path}"`);
     return storage;
   }
 
   // list all files in directory
   async list(): Promise<string[]> {
-    let files: string[] = [];
+    let list: string[] = [];
     for await (let it of (this.handle as any).values()) {
       // can also be FileSystemDirectoryHandle, but we ignore those here
-      if (it instanceof FileSystemFileHandle) files.push(it.name);
+      if (it instanceof FileSystemFileHandle) list.push(it.name);
     }
-    return files;
+    console.debug(...logprefix, `has ${list.length} files:`, list);
+    this.usage();
+    return list;
   }
 
   // return a specific file
   async get(filename: string): Promise<File | undefined> {
     try {
-      return this.handle.getFileHandle(filename).then((h) => h.getFile());
+      let f = await this.handle.getFileHandle(filename);
+      return f.getFile();
     } catch (err) {
       return undefined;
+    }
+  }
+
+  // check for a specific file
+  async has(filename: string): Promise<boolean> {
+    try {
+      await this.handle.getFileHandle(filename, { create: false });
+      return true;
+    } catch (err) {
+      return false;
     }
   }
 
@@ -60,15 +76,23 @@ export class OriginPrivateFileSystem implements ProviderStorageFileSystem {
     let writer = await handle.createWritable({ keepExistingData: false });
     await writer.write(await file.arrayBuffer());
     await writer.close();
+    this.usage();
     return await handle.getFile();
   }
 
   // remove a particular file
-  async rm(filename: string): Promise<boolean> {
+  async delete(filename: string): Promise<boolean> {
     console.debug(...logprefix, `delete:`, filename);
     let had = (await this.list()).includes(filename);
     await this.handle.removeEntry(filename);
     return had;
+  }
+
+  // print usage estimate to console
+  async usage() {
+    let { quota, usage } = await navigator.storage.estimate();
+    if (quota === undefined || usage === undefined) return;
+    console.debug(...logprefix, "OPFS usage:", filesize(usage), "/", filesize(quota));
   }
 
   // ------------------- old functions ------------------- //

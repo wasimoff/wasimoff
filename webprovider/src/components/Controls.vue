@@ -27,11 +27,7 @@ const { connected, workers, $pool } = storeToRefs(wasimoff);
 watch(() => wasimoff.$provider, async (provider) => {
   if (provider !== undefined) {
 
-    await wasimoff.open(":memory:", transport.value);
-    // terminal.success(`Opened in-memory storage.`);
-
-    // add at least one worker immediately
-    // if (workers.value.length === 0) await $pool.value?.scale(1);
+    await wasimoff.open(transport.value);
 
     // maybe autoconnect to the broker
     if (conf.autoconnect) await connect();

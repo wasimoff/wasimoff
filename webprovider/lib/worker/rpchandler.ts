@@ -29,7 +29,7 @@ export async function rpchandler(
         // get or compile the webassembly module
         let wasm: WebAssembly.Module;
         if (task.binary.blob.length !== 0) {
-          wasm = await WebAssembly.compile(task.binary.blob);
+          wasm = await WebAssembly.compile(task.binary.blob as Uint8Array<ArrayBuffer>);
         } else if (task.binary.ref !== "") {
           if (this.storage === undefined) throw "cannot access storage yet";
           let m = await this.storage.getWasmModule(task.binary.ref);
@@ -147,7 +147,8 @@ export async function rpchandler(
       return <Promise<wasimoff.Filesystem_Upload_Response>> (async () => {
         if (request.upload === undefined) throw "empty upload";
         if (this.storage === undefined) throw "cannot access storage yet";
-        let { blob, media, ref } = request.upload;
+        let blob = request.upload.blob as Uint8Array<ArrayBuffer>;
+        let { media, ref } = request.upload;
         // overwrite name with computed digest
         if (!isRef(ref)) ref = await getRef(blob);
         await this.storage.filesystem.put(ref, new File([blob], ref, { type: media }));

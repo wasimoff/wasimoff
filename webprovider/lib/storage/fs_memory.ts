@@ -21,6 +21,11 @@ export class MemoryFileSystem implements ProviderStorageFileSystem {
     return this.storage.get(filename);
   }
 
+  // check if file is in map
+  async has(filename: string): Promise<boolean> {
+    return this.storage.has(filename);
+  }
+
   // store a new file in the map
   async put(filename: string, file: File): Promise<File> {
     console.debug(...logprefix, `store:`, file);
@@ -29,13 +34,13 @@ export class MemoryFileSystem implements ProviderStorageFileSystem {
   }
 
   // remove a file from map
-  async rm(filename: string): Promise<boolean> {
+  async delete(filename: string): Promise<boolean> {
     console.debug(...logprefix, `delete:`, filename);
     return this.storage.delete(filename);
   }
 
   // remove all files
-  async prune(): Promise<string[]> {
+  async clear(): Promise<string[]> {
     let list = [...this.storage.keys()];
     this.storage.clear();
     return list;

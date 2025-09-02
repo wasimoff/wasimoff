@@ -4,6 +4,7 @@ import { Application } from "@oak/oak";
 import { Wasip1TaskParams } from "@wasimoff/worker/wasiworker.ts";
 import { WasiWorkerPool } from "@wasimoff/worker/workerpool.ts";
 import { ProviderStorage } from "@wasimoff/storage/index.ts";
+import { MemoryFileSystem } from "@wasimoff/storage/memory.ts";
 import { getRootfsZip } from "@wasimoff/worker/rpchandler.ts";
 import { Terminator } from "./util.ts";
 
@@ -17,7 +18,7 @@ console.log("%c[Wasimoff]", "color: red", "starting FaaS Provider", {
 
 // initialize a storage to cache modules and zip files in memory
 const origin = Deno.env.get("BROKER_ORIGIN") || "https://wasi.team";
-const storage = new ProviderStorage(":memory:", origin);
+const storage = new ProviderStorage(new MemoryFileSystem(), origin);
 
 // create a worker pool with one thread per logical cpu
 const pool = new WasiWorkerPool(navigator.hardwareConcurrency);
