@@ -83,9 +83,17 @@ export class WasiWorkerPool {
     if (this.length < n) {
       while (this.length < n) await this.spawn();
     } else {
+      if (n === 0) await this.shutdown();
       while (this.length > n) await this.drop();
     }
     return this.length;
+  }
+
+  /** Scale down to zero immediately to shutdown cleanly. */
+  async shutdown() {
+    // create and await promises for all drops simultaneously
+    const drops = Array.from({ length: this.length }, () => this.drop());
+    await Promise.allSettled(drops);
   }
 
   // clamp a desired value to maximum number of workers
