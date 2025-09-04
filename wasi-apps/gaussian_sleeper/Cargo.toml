@@ -1,0 +1,15 @@
+[package]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+name = "gaussian_sleeper"
+version = "0.1.0"
+edition = "2024"
+
+# strip unneeded custom sections in release builds
+[profile.release]
+strip = "debuginfo"
+# for actual deployment, you could further strip function names, too
+#strip = true
+
+[dependencies]
+rand = "0.9.2"
+rand_distr = "0.5.1"
