@@ -28,6 +28,7 @@ func main() {
 	flag.Parse()
 	args := flag.Args()
 	if len(args) < 1 {
+		flag.Usage()
 		log.Fatalln("args: must give at least a binary name")
 	}
 
