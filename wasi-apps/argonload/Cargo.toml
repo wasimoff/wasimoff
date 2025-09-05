@@ -1,0 +1,11 @@
+[package]
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+name = "argonload"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+argon2 = "0.5.3"
+clap = { version = "4.5.47", default-features = false, features = ["std", "derive", "help"] }
+hex = "0.4.3"
+rand_core = { version = "0.9.3", features = ["os_rng"] }
