@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"strconv"
@@ -9,34 +12,68 @@ import (
 
 func main() {
 
-	if len(os.Args) < 4 {
-		fmt.Fprintln(os.Stderr, "usage: tracebench <csv:path> <first:int> <col:string>")
+	if len(os.Args) < 3 {
+		fmt.Fprintln(os.Stderr, "usage: tracebench <download:dir> <day:int> <col:str>")
 		os.Exit(1)
 	}
 
 	// parse args
 	file := os.Args[1]
-	take := must(strconv.Atoi(os.Args[2]))
+	day := must(strconv.Atoi(os.Args[2]))
 	coln := os.Args[3]
 
 	// read input file
 	t0 := time.Now()
-	frame := ReadQframe(file).Slice(0, take)
-	fmt.Printf("read frame with %d lines in %s\n", frame.Len(), time.Since(t0))
+	trace := ReadDay(file, day)
+	fmt.Printf("read full trace in %s\n", time.Since(t0))
+	trace.SelectColumns([]string{coln})
 
-	// use a subset of columns
-	sel := frame.Select("time", coln)
-	// for _, col := range sel.ColumnNames() {
-	// 	sel = sel.Apply(qframe.Instruction{Fn: function.FloatI, DstCol: col, SrcCol1: col})
-	// }
-	fmt.Println(sel)
+	t0 = time.Now()
+	spline := FitInterpolator(trace.RequestsPerSecond, coln)
+	triggers := make(chan time.Time, 100)
+	go InterpolatedFunctionTicker(context.Background(), t0, spline, triggers)
 
-	// fit the predictors
-	xs := sel.MustFloatView("time").Slice()
-	ys := sel.MustFloatView(coln).Slice()
-	fmt.Println("xs:", xs)
-	fmt.Println("ys:", ys)
-	TryFitters(xs, ys, xs[len(xs)-1], xs[1]/2)
+	triggered := make([]string, 0, 200)
+
+	for t := range triggers {
+		inst := t.Sub(t0)
+		diff := time.Since(t)
+		fmt.Printf("---> trigger! %s (%s)\n", inst, diff)
+		triggered = append(triggered, inst.String())
+		if t.Sub(t0) > 3*time.Second {
+			break
+		}
+	}
+
+	h := sha256.New()
+	for _, s := range triggered {
+		if _, err := h.Write([]byte(s)); err != nil {
+			panic(err)
+		}
+	}
+	fmt.Printf("hash so far: %s\n", hex.EncodeToString(h.Sum(nil)))
+	time.Sleep(time.Minute)
+
+	tickerUpdateTicker := time.Tick(time.Second)
+
+	initial := spline.Predict(0)
+	fmt.Printf("initial prediction: %f rq/s\n", initial)
+	funcTicker := time.NewTicker(time.Duration(float64(time.Second) / initial))
+	funcCounter := 0
+	go func() {
+		for t := range funcTicker.C {
+			funcCounter += 1
+			nominal := t.Sub(t0)
+			fmt.Printf("function %6d at %s (%s)\n", funcCounter, nominal, time.Since(t0)-nominal)
+		}
+	}()
+
+	for t := range tickerUpdateTicker {
+		now := float64(t.Sub(t0).Seconds())
+		rate := spline.Predict(now)
+		funcTicker.Reset(time.Duration(float64(time.Second) / rate))
+		fmt.Printf("TICKER --> %s set to Predict(%f) = %7.2f req/s\n", t, now, rate)
+	}
 
 }
 
