@@ -60,6 +60,7 @@ message Task {
   message QoS {
     bool priority = 1;
     google.protobuf.Timestamp deadline = 2;
+    bool immediate = 3; // schedule immediately or fail task execution if no worker is available
     // TODO
   }
 
