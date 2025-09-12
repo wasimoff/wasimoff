@@ -14,7 +14,7 @@ FROM node:22-bookworm AS frontend
 # compile the frontend
 COPY ./ /build
 WORKDIR /build/webprovider
-RUN yarn install && yarn build
+RUN corepack enable && yarn install && yarn build
 
 # =========================================================================== #
 # ---> build denoprovider for the terminal

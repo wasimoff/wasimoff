@@ -1,5 +1,6 @@
 broker/broker
 broker/*.boltdb
+broker/broker_storage/
 broker/.env
 client/client
 client/wasimoff
@@ -7,3 +8,4 @@ webprovider/node_modules/
 webprovider/dist/
 **/venv/
 **/.venv/
+wasi-apps/*/target/
