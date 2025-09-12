@@ -7,14 +7,7 @@ import {
 } from "@wasimoff/proto/v1/messages_pb";
 import * as nats_core from "@nats-io/nats-core";
 import { PushableAsyncIterable } from "@wasimoff/func/pushableiterable";
-import {
-  create,
-  createRegistry,
-  fromBinary,
-  isMessage,
-  Message as ProtoMessage,
-  toBinary,
-} from "@bufbuild/protobuf";
+import { createRegistry, fromBinary, isMessage, toBinary } from "@bufbuild/protobuf";
 import { Signal } from "@wasimoff/func/promises";
 import { anyUnpack } from "@bufbuild/protobuf/wkt";
 
@@ -118,7 +111,7 @@ export class WebRTCTransport implements Transport {
   }
 
   private announce(): void {
-    if (this.nc && this.announceMsg) {      
+    if (this.nc && this.announceMsg) {
       this.nc.publish("providers", JSON.stringify(this.announceMsg));
     }
   }

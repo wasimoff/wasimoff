@@ -33,10 +33,10 @@ export async function rpchandler(
           if (this.storage !== undefined) {
             // overwrite name with computed digest
             let ref: string = task.binary.ref;
-            if (!isRef(ref)) ref = await getRef(task.binary.blob);
+            if (!isRef(ref)) ref = await getRef(task.binary.blob as Uint8Array<ArrayBuffer>);
             await this.storage.filesystem.put(
               ref,
-              new File([task.binary.blob], ref, { type: task.binary.media }),
+              new File([task.binary.blob as Uint8Array<ArrayBuffer>], ref, { type: task.binary.media }),
             );
             m = await this.storage.getWasmModule(task.binary.ref);
           }
