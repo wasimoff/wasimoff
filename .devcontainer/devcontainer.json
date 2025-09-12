@@ -6,8 +6,18 @@
 	"image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
 	"features": {
 		"ghcr.io/devcontainers/features/go:1": {},
+		"ghcr.io/devcontainers-extra/features/protoc-asdf:1": {},
 		"ghcr.io/devcontainer-community/devcontainer-features/deno.com:1": {},
+		"ghcr.io/devcontainers-extra/features/gh-release:1": {
+			"repo": "bufbuild/buf",
+			"binaryNames": "buf,protoc-gen-buf-lint,protoc-gen-buf-breaking",
+			"assetRegex": ".*\\.tar\\.gz",
+			"libName": "buf"
+		}
 	},
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest",
 
 	// Set the default shell to bash
 	"customizations": {
@@ -17,7 +27,8 @@
 			},
 			"extensions": [
 				"denoland.vscode-deno",
-				"Vue.volar"
+				"Vue.volar",
+				"bufbuild.vscode-buf"
 			]
 		}
 	}
@@ -27,9 +38,6 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
-
-	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "yarn install",
 
 	// Configure tool-specific properties.
 	// "customizations": {},

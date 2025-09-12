@@ -16,7 +16,7 @@ export async function rpchandler(
     case isMessage(request, wasimoff.Task_Wasip1_RequestSchema):
       return <Promise<wasimoff.Task_Wasip1_Response>> (async () => {
         // deconstruct the request and check type
-        let { info, params } = request;
+        let { info, qos, params } = request;
         if (info === undefined || params === undefined) {
           throw "info and params cannot be undefined";
         }
@@ -50,6 +50,14 @@ export async function rpchandler(
           else wasm = m;
         } else {
           throw new Error("binary: neither blob nor ref were given");
+        }
+
+        if (qos) {
+          if (qos.immediate && !this.pool.anyIdle) {
+            return create(wasimoff.Task_Wasip1_ResponseSchema, {
+              result: { case: "error", value: "qos: no idle workers for immediate mode" },
+            });
+          }
         }
 
         console.debug(...rpcHandlerPrefix, info.id, task);

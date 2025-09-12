@@ -41,6 +41,10 @@ export class WasiWorkerPool {
     return this.pool.map((w) => w.busy);
   }
 
+  get anyIdle() {
+    return this.pool.some((w) => !w.busy);
+  }
+
   /** Get a list with information about current tasks. */
   get currentTasks() {
     return this.pool.map((w) => ({
