@@ -28,12 +28,13 @@ COPY ./webprovider   /app/webprovider
 WORKDIR /app/deno
 
 # cache required dependencies
+RUN ["deno", "install", "--allow-scripts=npm:node-datachannel", "--entrypoint", "main.ts" ]
 RUN ["deno", "cache", "--sloppy-imports", "main.ts"]
 
 # launch configuration
 ENTRYPOINT ["/tini", "--", "deno", "run", \
   "--cached-only", "--no-prompt", "--sloppy-imports", \
-  "--allow-env", "--allow-net", \
+  "--allow-env", "--allow-net", "--allow-ffi", \
   "--allow-read=/app,/deno-dir/npm/registry.npmjs.org/pyodide/", \
   "--allow-write=/deno-dir/npm/registry.npmjs.org/pyodide/", \
   "main.ts"]
