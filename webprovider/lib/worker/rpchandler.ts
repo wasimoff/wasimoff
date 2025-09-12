@@ -29,7 +29,20 @@ export async function rpchandler(
         // get or compile the webassembly module
         let wasm: WebAssembly.Module;
         if (task.binary.blob.length !== 0) {
-          wasm = await WebAssembly.compile(task.binary.blob as Uint8Array<ArrayBuffer>);
+          let m: WebAssembly.Module | undefined;
+          if (this.storage !== undefined) {
+            // overwrite name with computed digest
+            let ref: string = task.binary.ref;
+            if (!isRef(ref)) ref = await getRef(task.binary.blob);
+            await this.storage.filesystem.put(
+              ref,
+              new File([task.binary.blob], ref, { type: task.binary.media }),
+            );
+            m = await this.storage.getWasmModule(task.binary.ref);
+          }
+          if (m === undefined) {
+            wasm = await WebAssembly.compile(task.binary.blob as Uint8Array<ArrayBuffer>);
+          } else wasm = m;
         } else if (task.binary.ref !== "") {
           if (this.storage === undefined) throw "cannot access storage yet";
           let m = await this.storage.getWasmModule(task.binary.ref);
