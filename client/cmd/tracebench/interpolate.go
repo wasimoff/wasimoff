@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math"
 
 	"github.com/tobgu/qframe"
@@ -40,10 +39,10 @@ func FitInterpolator(frame qframe.QFrame, col string) interp.Predictor {
 	time := frame.MustFloatView("time").Slice()
 	values := frame.MustFloatView(col).Slice()
 
-	log.Println("values in column", col, "=>", values[:100], "...")
+	// log.Println("values in column", col, "=>", values[:100], "...")
 
 	// instantiate the predictor and fit
-	spline := &interp.PiecewiseLinear{}
+	spline := &interp.AkimaSpline{}
 	// according to the docs it always returns nil ..
 	err := spline.Fit(time, values)
 	if err != nil {

@@ -2,11 +2,10 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -20,60 +19,44 @@ func main() {
 	// parse args
 	file := os.Args[1]
 	day := must(strconv.Atoi(os.Args[2]))
-	coln := os.Args[3]
+	columns := os.Args[3:]
 
 	// read input file
-	t0 := time.Now()
+	// t0 := time.Now()
 	trace := ReadDay(file, day)
-	fmt.Printf("read full trace in %s\n", time.Since(t0))
-	trace.SelectColumns([]string{coln})
+	// fmt.Printf("read full trace in %s\n", time.Since(t0))
+	trace.SelectColumns(columns)
 
-	t0 = time.Now()
-	spline := FitInterpolator(trace.RequestsPerSecond, coln)
-	triggers := make(chan time.Time, 100)
-	go InterpolatedFunctionTicker(context.Background(), t0, spline, triggers)
+	timeout, _ := context.WithTimeout(context.Background(), 120*time.Second)
 
-	triggered := make([]string, 0, 200)
+	start := time.Now()
 
-	for t := range triggers {
-		inst := t.Sub(t0)
-		diff := time.Since(t)
-		fmt.Printf("---> trigger! %s (%s)\n", inst, diff)
-		triggered = append(triggered, inst.String())
-		if t.Sub(t0) > 3*time.Second {
-			break
-		}
+	wg := sync.WaitGroup{}
+	for _, col := range columns {
+		wg.Add(1)
+
+		rps := FitInterpolator(trace.RequestsPerSecond, col)
+		delay := FitInterpolator(trace.FunctionDelayAvgPerMinute, col)
+		ticker := make(chan Tick, 100)
+		go InterpolatedFunctionTicker(timeout, start, rps, ticker)
+
+		go func() {
+			i := 0
+			for t := range ticker {
+				i += 1
+				diff := time.Since(t.Scheduled)
+				funcdelay := delay.Predict(t.Elapsed.Seconds())
+				if diff > 10*time.Millisecond {
+					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, i, diff)
+				}
+				fmt.Printf("tick[ %3s ]  %s --> %f ms\n", col, t.Elapsed, funcdelay)
+			}
+			wg.Done()
+		}()
+
 	}
 
-	h := sha256.New()
-	for _, s := range triggered {
-		if _, err := h.Write([]byte(s)); err != nil {
-			panic(err)
-		}
-	}
-	fmt.Printf("hash so far: %s\n", hex.EncodeToString(h.Sum(nil)))
-	time.Sleep(time.Minute)
-
-	tickerUpdateTicker := time.Tick(time.Second)
-
-	initial := spline.Predict(0)
-	fmt.Printf("initial prediction: %f rq/s\n", initial)
-	funcTicker := time.NewTicker(time.Duration(float64(time.Second) / initial))
-	funcCounter := 0
-	go func() {
-		for t := range funcTicker.C {
-			funcCounter += 1
-			nominal := t.Sub(t0)
-			fmt.Printf("function %6d at %s (%s)\n", funcCounter, nominal, time.Since(t0)-nominal)
-		}
-	}()
-
-	for t := range tickerUpdateTicker {
-		now := float64(t.Sub(t0).Seconds())
-		rate := spline.Predict(now)
-		funcTicker.Reset(time.Duration(float64(time.Second) / rate))
-		fmt.Printf("TICKER --> %s set to Predict(%f) = %7.2f req/s\n", t, now, rate)
-	}
+	wg.Wait()
 
 }
 
