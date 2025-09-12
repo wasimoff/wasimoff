@@ -135,6 +135,8 @@ func dynamicSubmit(
 		task.TimeScheduled = time.Now()
 	}()
 
+	// TODO: handle QoS parameter "immediate" to fail scheduling if no provider is available right away
+
 	// if there is a cloud offloading capability, attempt queueing only on providers first
 	if cloud != nil {
 		// first attempt with default case
