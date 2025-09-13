@@ -3,7 +3,7 @@
 {
 	"name": "Node.js",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:22",
 	"features": {
 		"ghcr.io/devcontainers/features/go:1": {},
 		"ghcr.io/devcontainers-extra/features/protoc-asdf:1": {},
@@ -18,6 +18,11 @@
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	"postCreateCommand": "go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest",
+
+	// Configure environment variables
+	"containerEnv": {
+		"YARN_PNPM_STORE_FOLDER": "/home/node/.yarn/store"	
+	},
 
 	// Set the default shell to bash
 	"customizations": {
