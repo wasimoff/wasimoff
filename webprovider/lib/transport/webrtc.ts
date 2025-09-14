@@ -39,24 +39,56 @@ export class WebRTCTransport implements Transport {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private dataChannels: Map<string, RTCDataChannel> = new Map();
   private connectionStates: Map<string, string> = new Map();
-  private natsUrl: string;
-  private nc?: nats_core.NatsConnection;
-  private uuid: string;
+  private nc: nats_core.NatsConnection;
+  private id: string;
   private iceServers: RTCIceServer[];
-  private announceIntervalMillis: number;
   private announceMsg?: ProviderAnnounce;
   private readonly registry = createRegistry(file_proto_v1_messages);
 
-  public constructor(
-    natsUrl: string,
-    announceIntervalMinutes: number,
+  private constructor(
+    natsConnection: nats_core.NatsConnection,
     id: string,
+    announceInterval: number,
   ) {
     this.iceServers = [{ urls: "stun:stun.l.google.com:19302" }];
-    this.natsUrl = natsUrl;
-    this.uuid = id;
-    this.setupNatsConnection();
-    this.announceIntervalMillis = announceIntervalMinutes * 60 * 1000;
+    this.id = id;
+    this.nc = natsConnection;
+    // subscribe to sdp channel
+    const sub = this.nc.subscribe("sdp");
+    (async () => {
+      for await (const m of sub) {
+        await this.handleSdpMessages(m);
+      }
+    })();
+
+    setInterval(() => {
+      this.announce();
+    }, announceInterval * 1000);
+    this.signal.resolve();
+  }
+
+  public static async connect(url: URL): Promise<WebRTCTransport> {
+    // Parse and validate URL parameters
+    const id = url.searchParams.get("id");
+    if (!id) {
+      throw "Missing required parameter: id";
+    }
+
+    const announceParam = url.searchParams.get("announce");
+    if (!announceParam) {
+      throw "Missing required parameter: announce";
+    }
+
+    const announceInterval = parseInt(announceParam, 10);
+    if (isNaN(announceInterval) || announceInterval <= 0) {
+      throw "Invalid announce parameter: must be a positive number";
+    }
+
+    const con_opts = { servers: url.origin };
+    console.info("connecting to nats server", con_opts);
+    let nc = await nats_core.wsconnect(con_opts);
+    console.info(`connected to ${nc.getServer()}`);
+    return new WebRTCTransport(nc, id, announceInterval);
   }
 
   async send(transmit: Transmit): Promise<void> {
@@ -74,7 +106,7 @@ export class WebRTCTransport implements Transport {
         if (payloadMessage === undefined) throw "unknown payload type";
         if (isMessage(payloadMessage, Event_ProviderResourcesSchema)) {
           let { concurrency } = payloadMessage;
-          this.announceMsg = { id: this.uuid, concurrency };
+          this.announceMsg = { id: this.id, concurrency };
           this.announce();
           return;
         }
@@ -83,35 +115,8 @@ export class WebRTCTransport implements Transport {
     }
   }
 
-  private async setupNatsConnection() {
-    // verify nats url
-    const con_opts = { servers: this.natsUrl };
-    try {
-      console.info("connecting to nats server", this.natsUrl);
-      this.nc = await nats_core.wsconnect(con_opts);
-      console.info(`connected to ${this.nc.getServer()}`);
-
-      // subscribe to sdp channel
-      const sub = this.nc.subscribe("sdp");
-      (async () => {
-        for await (const m of sub) {
-          await this.handleSdpMessages(m);
-        }
-      })();
-
-      // send announce every announceInterval
-      setInterval(() => {
-        this.announce();
-      }, this.announceIntervalMillis);
-
-      this.signal.resolve();
-    } catch (err) {
-      console.error(`error connecting to ${JSON.stringify(con_opts)}`, err);
-    }
-  }
-
   private announce(): void {
-    if (this.nc && this.announceMsg) {
+    if (this.announceMsg) {
       this.nc.publish("providers", JSON.stringify(this.announceMsg));
     }
   }
@@ -121,7 +126,7 @@ export class WebRTCTransport implements Transport {
 
     const sdpMessage: SdpMessage = JSON.parse(new TextDecoder().decode(m.data));
 
-    if ("Offer" in sdpMessage.msg && sdpMessage.destination === this.uuid) {
+    if ("Offer" in sdpMessage.msg && sdpMessage.destination === this.id) {
       const sdpOffer = sdpMessage.msg.Offer;
 
       const peerConnection = new RTCPeerConnection({
@@ -134,7 +139,7 @@ export class WebRTCTransport implements Transport {
       await peerConnection.setLocalDescription(answer);
 
       const answerMessage: SdpMessage = {
-        source: this.uuid,
+        source: this.id,
         destination: sdpMessage.source,
         msg: { Answer: answer },
       };
@@ -153,13 +158,11 @@ export class WebRTCTransport implements Transport {
             candidateData.candidate = candidateData.candidate.substring(2);
           }
           const iceMessage: SdpMessage = {
-            source: this.uuid,
+            source: this.id,
             destination: sdpMessage.source,
             msg: { Candidate: candidateData },
           };
-          if (this.nc) {
-            this.nc.publish("sdp", JSON.stringify(iceMessage));
-          }
+          this.nc.publish("sdp", JSON.stringify(iceMessage));
         }
       };
 
@@ -204,9 +207,7 @@ export class WebRTCTransport implements Transport {
       };
 
       // Publish the answer back via NATS
-      if (this.nc) {
-        this.nc.publish("sdp", JSON.stringify(answerMessage));
-      }
+      this.nc.publish("sdp", JSON.stringify(answerMessage));
     }
   }
 
@@ -229,11 +230,10 @@ export class WebRTCTransport implements Transport {
     this.connectionStates.clear();
 
     // Close NATS connection
-    if (this.nc) {
-      this.nc
-        .close()
-        .catch((err) => console.error("Error closing NATS connection:", err));
-    }
+    this.nc
+      .close()
+      .catch((err) => console.error("Error closing NATS connection:", err));
+
     this.messages.close();
     this.signal.reject(err);
     this.controller.abort(err);
