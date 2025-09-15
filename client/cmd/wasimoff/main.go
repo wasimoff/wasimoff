@@ -11,11 +11,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"wasi.team/client"
 	wasimoff "wasi.team/proto/v1"
 
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -25,6 +27,7 @@ var ( // config flags
 	readstdin = false                   // read stdin for exec
 	websock   = false                   // use websocket to send tasks
 	rootfs    = ""                      // include a rootfs in exec
+	trace     = false                   // enable tracing on task
 )
 
 var ( // command flags, pick one
@@ -55,6 +58,7 @@ func main() {
 	flag.BoolVar(&readstdin, "stdin", readstdin, "Read and send stdin when using -exec (not streamed)")
 	flag.BoolVar(&websock, "ws", websock, "Use a WebSocket to connect to Broker")
 	flag.StringVar(&rootfs, "rootfs", rootfs, "Use a rootfs ZIP in -exec task")
+	flag.BoolVar(&trace, "trace", trace, "Collect timestamps during task lifetime")
 	flag.Parse()
 
 	// establish a connection to the broker
@@ -131,6 +135,7 @@ func Execute(args, envs []string) {
 
 	// prepare the request
 	request := &wasimoff.Task_Wasip1_Request{
+		Info: &wasimoff.Task_Metadata{},
 		Params: &wasimoff.Task_Wasip1_Params{
 			Binary: &wasimoff.File{Ref: proto.String(args[0])},
 			Args:   args,
@@ -148,9 +153,17 @@ func Execute(args, envs []string) {
 		request.Params.Stdin = stdin
 	}
 
-	// optionall add rootfs ref
+	// optionally add rootfs ref
 	if rootfs != "" {
 		request.Params.Rootfs = &wasimoff.File{Ref: &rootfs}
+	}
+
+	// optionally enable tracing
+	if trace {
+		request.Info.Trace = &wasimoff.Task_Trace{
+			Created: proto.Int64(time.Now().UnixNano()),
+		}
+		request.Info.TraceEvent(wasimoff.Task_TraceEvent_ClientTransmit)
 	}
 
 	// make the request
@@ -169,11 +182,12 @@ func Execute(args, envs []string) {
 
 	// print the result
 	ok := response.GetOk()
-	maybeDumpJson("[RunWasip1] result:", ok)
+	maybeDumpJson("[RunWasip1] result:", response)
 	if len(ok.GetStderr()) != 0 {
 		fmt.Fprintf(os.Stderr, "\033[31m%s\033[0m\n", string(ok.GetStderr()))
 	}
 	fmt.Fprintln(os.Stdout, string(ok.GetStdout()))
+	maybePrintTrace(response.GetInfo())
 	os.Exit(int(ok.GetStatus()))
 
 }
@@ -275,5 +289,34 @@ func maybeDumpJson(pre string, m proto.Message) {
 	if verbose {
 		js, _ := protojson.Marshal(m)
 		log.Println(pre, string(js))
+	}
+}
+
+func maybePrintTrace(info *wasimoff.Task_Metadata) {
+	if trace {
+
+		// pop the trace to print separately
+		trace := info.GetTrace()
+		info.Trace = nil
+
+		// compute diffs between steps in milliseconds
+		events := trace.Events
+		for i := len(events) - 1; i >= 0; i-- {
+			ev := events[i]
+			var prev int64
+			if i > 0 {
+				prev = *events[i-1].Unixnano
+			} else {
+				prev = *trace.Created
+			}
+			ev.Unixnano = proto.Int64(*ev.Unixnano - prev)
+		}
+
+		// print metadata and the list of steps
+		fmt.Fprintf(os.Stderr, "\033[1mTask Metadata:\n\033[0;36m%s\033[0m", prototext.Format(info))
+		fmt.Fprintf(os.Stderr, "\n\033[36m%s START\033[0m\n", time.Unix(0, *trace.Created))
+		for _, ev := range trace.Events {
+			fmt.Fprintf(os.Stderr, "\033[36m+%12.3f ms > %v\033[0m\n", float64(*ev.Unixnano)/1_000_000, ev.Event)
+		}
 	}
 }

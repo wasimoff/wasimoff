@@ -41,7 +41,7 @@ func main() {
 	// create the request
 	request := &wasimoffv1.Task_Wasip1_Request{
 		Info: &wasimoffv1.Task_Metadata{
-			Id: proto.String("gcloud-invoke"),
+			Reference: proto.String("gcp_invoke"),
 		},
 		Params: &wasimoffv1.Task_Wasip1_Params{
 			Binary: &wasimoffv1.File{Ref: proto.String(args[0])},

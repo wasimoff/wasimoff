@@ -54,6 +54,8 @@ message Task {
     string id = 1; // unique identifier for this task
     string requester = 2; // who is requesting this task
     string provider = 3; // which provider executed this task
+    string reference = 4; // identifier given by client
+    Trace trace = 5; // existence signals that events should be traced
   }
 
   // Quality of Service (QoS) parameters for a given task.
@@ -62,6 +64,45 @@ message Task {
     google.protobuf.Timestamp deadline = 2;
     bool immediate = 3; // schedule immediately or fail task execution if no worker is available
     // TODO
+  }
+
+  message Trace {
+    int64 created = 1;   // unixnano
+    uint64 duration = 2; // total duration equivalent to client-observed delay
+    repeated TraceEvent events = 3; // log of events
+  }
+
+  // Trace certain events throughout a task lifetime
+  message TraceEvent {
+    int64 unixnano = 1;  // timestamp in nanoseconds (start instant of event)
+    EventType event = 2; // event identifier
+    string details = 3;  // optional freetext details
+
+    enum EventType {
+      UNKNOWN = 0;
+
+      ClientError = 10;
+      ClientTransmit = 11;
+      ClientResponseReceived = 12;
+
+      BrokerError = 20;
+      BrokerRequestReceived = 21;
+      BrokerQueueTask = 22;
+      BrokerScheduleTask = 23;
+      BrokerTransmit = 24;
+      BrokerResponseReceived = 25;
+
+      ProviderError = 30;
+      ProviderTaskReceived = 31;
+      ProviderGetWorker = 32;
+      ProviderSendToWorker = 33;
+      ProviderPrepareExec = 34;
+      ProviderExecuteTask = 35;
+      ProviderExecutionDone = 36;
+      ProviderTransmitResult = 37;
+
+      // TODO: deco events starting with 40
+    }
   }
 
   // Request to terminate a running task on Provider.

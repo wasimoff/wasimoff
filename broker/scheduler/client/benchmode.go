@@ -63,7 +63,7 @@ func BenchmodeTspFlood(store *provider.ProviderStore, parallel int) {
 			context.Background(),
 			&wasimoff.Task_Wasip1_Request{
 				Info: &wasimoff.Task_Metadata{
-					Id: proto.String(fmt.Sprintf("benchmode/%d", i)),
+					Reference: proto.String(fmt.Sprintf("tspflood/%d", i)),
 				},
 				Params: &wasimoff.Task_Wasip1_Params{
 					Binary: &binary,
@@ -110,7 +110,7 @@ func BenchmodePyodideTest(parallel int) {
 			context.Background(),
 			&wasimoff.Task_Pyodide_Request{
 				Info: &wasimoff.Task_Metadata{
-					Id: proto.String(fmt.Sprintf("pytest/%d", i)),
+					Reference: proto.String(fmt.Sprintf("pyflood/%d", i)),
 				},
 				Params: &wasimoff.Task_Pyodide_Params{
 					Run: &wasimoff.Task_Pyodide_Params_Script{

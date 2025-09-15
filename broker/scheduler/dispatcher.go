@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"wasi.team/broker/provider"
+	wasimoff "wasi.team/proto/v1"
 )
 
 // reuseable task queue for HTTP handler and websocket
@@ -55,6 +56,7 @@ func Dispatcher(store *provider.ProviderStore, selector Scheduler, concurrency i
 				}
 
 				// schedule the task with a provider and release a ticket
+				task.Request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_BrokerScheduleTask)
 				err = selector.Schedule(task.Context, task)
 				tickets <- struct{}{}
 
@@ -91,6 +93,7 @@ func Dispatcher(store *provider.ProviderStore, selector Scheduler, concurrency i
 			// still erroneous after retries, give up
 			if err != nil {
 				task.Error = errors.Join(errs...)
+				task.Request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_BrokerError)
 			}
 			store.ObserveCompleted(task)
 			interceptedChannel <- task
@@ -175,7 +178,7 @@ func dynamicSubmit(
 		task.CloudOffloaded = true
 	}
 	if i < len(providers) {
-		log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Address))
+		log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Name))
 	}
 
 	return nil

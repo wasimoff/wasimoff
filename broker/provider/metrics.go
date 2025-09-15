@@ -2,7 +2,6 @@ package provider
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -132,7 +131,7 @@ func (s *ProviderStore) ObserveCompleted(task *AsyncTask) {
 	labels := prometheus.Labels{"status": status, "target": target}
 	s.metrics.TasksCompleted.With(labels).Observe(durComplete)
 	s.metrics.TasksExecution.With(labels).Observe(durExecution)
-	log.Printf("TASK id=%s status=%s on=%s time=%f (%f)", task.Request.GetInfo().GetId(), status, target, durComplete, durExecution)
+	// log.Printf("TASK id=%s status=%s on=%s time=%f (%f)", task.Request.GetInfo().GetId(), status, target, durComplete, durExecution)
 
 }
 
