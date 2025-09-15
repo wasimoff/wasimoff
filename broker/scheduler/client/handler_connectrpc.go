@@ -2,8 +2,12 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
+	"strconv"
 	"sync/atomic"
+
 	"wasi.team/broker/provider"
 	"wasi.team/broker/scheduler"
 	"wasi.team/broker/storage"
@@ -65,24 +69,22 @@ func (s *ConnectRpcServer) RunWasip1(
 	*connect.Response[wasimoff.Task_Wasip1_Response],
 	error,
 ) {
+	// assemble task info for internal dispatcher queue
 	r := req.Msg
+	r.Info = s.prepareTaskInfo(r.GetInfo(), req.Peer())
 
 	// resolve any filenames to storage hashes
 	if err := s.Store.Storage.ResolveTaskFiles(r); err != nil {
 		return nil, err
 	}
 
-	// assemble task info for internal dispatcher queue
-	r.Info = &wasimoff.Task_Metadata{
-		Id:        proto.String(fmt.Sprintf("connect/%d/wasip1", s.taskSeq.Add(1))),
-		Requester: proto.String(req.Peer().Addr),
-	}
-
 	// dispatch
 	response := &wasimoff.Task_Wasip1_Response{}
 	done := make(chan *provider.AsyncTask, 1)
+	r.Info.TraceEvent(wasimoff.Task_TraceEvent_BrokerQueueTask)
 	scheduler.TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
 	call := <-done
+	s.copyTaskInfo(r.Info, &response.Info)
 
 	if call.Error != nil {
 		return nil, call.Error
@@ -104,12 +106,13 @@ func (s *ConnectRpcServer) RunWasip1Job(
 	// amend the job with information about client
 	job.JobID = fmt.Sprintf("%05d", s.jobSeq.Add(1))
 	job.ClientAddr = req.Peer().Addr
+	// TODO: request metadata with optional trace for individual tasks
 
 	// compute all the tasks of a request
 	results := dispatchJob(ctx, s.Store, &job, scheduler.TaskQueue)
 
 	if results.Error != nil {
-		return nil, fmt.Errorf(*results.Error)
+		return nil, errors.New(*results.Error)
 	} else {
 		return connect.NewResponse(results), nil
 	}
@@ -123,19 +126,17 @@ func (s *ConnectRpcServer) RunPyodide(
 	*connect.Response[wasimoff.Task_Pyodide_Response],
 	error,
 ) {
-	r := req.Msg
-
 	// assemble task info for internal dispatcher queue
-	r.Info = &wasimoff.Task_Metadata{
-		Id:        proto.String(fmt.Sprintf("connect/%d/pyodide", s.taskSeq.Add(1))),
-		Requester: proto.String(req.Peer().Addr),
-	}
+	r := req.Msg
+	r.Info = s.prepareTaskInfo(r.GetInfo(), req.Peer())
 
 	// dispatch
 	response := &wasimoff.Task_Pyodide_Response{}
 	done := make(chan *provider.AsyncTask, 1)
+	r.Info.TraceEvent(wasimoff.Task_TraceEvent_BrokerQueueTask)
 	scheduler.TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
 	call := <-done
+	s.copyTaskInfo(r.Info, &response.Info)
 
 	if call.Error != nil {
 		return nil, call.Error
@@ -143,4 +144,30 @@ func (s *ConnectRpcServer) RunPyodide(
 		return connect.NewResponse(response), nil
 	}
 
+}
+
+// -------------------- handlers for task metadata --------------------
+
+func (s *ConnectRpcServer) prepareTaskInfo(info *wasimoff.Task_Metadata, peer connect.Peer) *wasimoff.Task_Metadata {
+	info.TraceEvent(wasimoff.Task_TraceEvent_BrokerRequestReceived)
+	return &wasimoff.Task_Metadata{
+		Id:        proto.String(strconv.FormatUint(s.taskSeq.Add(1), 10)),
+		Requester: proto.String(peer.Addr),
+		Reference: info.Reference,
+		Trace:     info.Trace,
+		Provider:  nil,
+	}
+}
+
+func (s *ConnectRpcServer) copyTaskInfo(info *wasimoff.Task_Metadata, res **wasimoff.Task_Metadata) {
+	if *res == nil {
+		log.Printf("WARN: Metadata missing on response for Task %q", *info.Id)
+		*res = info
+	} else {
+		r := *res
+		r.Id = info.Id
+		r.Reference = info.Reference
+		r.Requester = info.Requester
+	}
+	(*res).TraceEvent(wasimoff.Task_TraceEvent_BrokerResponseReceived)
 }

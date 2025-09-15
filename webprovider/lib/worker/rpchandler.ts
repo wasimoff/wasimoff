@@ -7,6 +7,19 @@ import { PyodideTaskParams, Wasip1TaskParams } from "./wasiworker";
 // Handle incoming RemoteProcedureCalls on the Messenger iterable. Moved into a
 // separate file for better readability and separation of concerns in a way.
 
+export function traceEvent(
+  info: wasimoff.Task_Metadata | undefined,
+  ev: wasimoff.Task_TraceEvent_EventType,
+) {
+  if (info !== undefined && info.trace !== undefined) {
+    const now_ns = (performance.now() + performance.timeOrigin) * 1_000_000;
+    info.trace.events.push(create(wasimoff.Task_TraceEventSchema, {
+      unixnano: BigInt(now_ns),
+      event: ev,
+    }));
+  }
+}
+
 export async function rpchandler(
   this: WasimoffProvider,
   request: ProtoMessage,
@@ -20,6 +33,8 @@ export async function rpchandler(
         if (info === undefined || params === undefined) {
           throw "info and params cannot be undefined";
         }
+
+        traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderTaskReceived);
 
         const task = params;
         if (task.binary === undefined) {
@@ -36,7 +51,9 @@ export async function rpchandler(
             if (!isRef(ref)) ref = await getRef(task.binary.blob as Uint8Array<ArrayBuffer>);
             await this.storage.filesystem.put(
               ref,
-              new File([task.binary.blob as Uint8Array<ArrayBuffer>], ref, { type: task.binary.media }),
+              new File([task.binary.blob as Uint8Array<ArrayBuffer>], ref, {
+                type: task.binary.media,
+              }),
             );
             m = await this.storage.getWasmModule(task.binary.ref);
           }
@@ -54,16 +71,14 @@ export async function rpchandler(
 
         if (qos) {
           if (qos.immediate && !this.pool.anyIdle) {
-            return create(wasimoff.Task_Wasip1_ResponseSchema, {
-              result: { case: "error", value: "qos: no idle workers for immediate mode" },
-            });
+            throw new Error("qos: no idle workers for immediate mode");
           }
         }
 
-        console.debug(...rpcHandlerPrefix, info.id, task);
+        console.debug(...rpcHandlerPrefix, info, task);
         try {
           // execute the module in a worker
-          let run = await this.pool.runWasip1(info.id, {
+          let run = await this.pool.runWasip1(info, {
             wasm: wasm,
             argv: task.args,
             envs: task.envs,
@@ -72,7 +87,9 @@ export async function rpchandler(
             artifacts: task.artifacts,
           } as Wasip1TaskParams);
           // send back the result
+          traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderExecutionDone);
           return create(wasimoff.Task_Wasip1_ResponseSchema, {
+            info: info,
             result: {
               case: "ok",
               value: {
@@ -85,7 +102,9 @@ export async function rpchandler(
           });
         } catch (err) {
           // format exceptions as WasiResponse.Error
+          traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderError);
           return create(wasimoff.Task_Wasip1_ResponseSchema, {
+            info: info,
             result: { case: "error", value: String(err) },
           });
         }
@@ -113,7 +132,7 @@ export async function rpchandler(
 
         console.debug(...rpcHandlerPrefix, info.id, task);
         try {
-          let run = await this.pool.runPyodide(info.id, task);
+          let run = await this.pool.runPyodide(info, task);
           return create(wasimoff.Task_Pyodide_ResponseSchema, {
             result: {
               case: "ok",

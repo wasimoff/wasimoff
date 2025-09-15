@@ -1,4 +1,6 @@
-import { construct, releaseProxy, type WrappedWorker } from "./comlink";
+import { Task_Metadata, Task_TraceEvent_EventType } from "@wasimoff/proto/v1/messages_pb";
+import { construct, proxy, releaseProxy, type WrappedWorker } from "./comlink";
+import { traceEvent } from "./rpchandler";
 import {
   PyodideTaskParams,
   PyodideTaskResult,
@@ -163,21 +165,24 @@ export class WasiWorkerPool {
    * Afterwards, the method makes sure to put the worker back into the queue,
    * so *don't* keep any references to it around! The result of the computation
    * is finally returned to the caller in a Promise. */
-  async runWasip1(id: string, task: Wasip1TaskParams): Promise<Wasip1TaskResult> {
+  async runWasip1(info: Task_Metadata, task: Wasip1TaskParams): Promise<Wasip1TaskResult> {
     if (this.length === 0) throw new Error("no workers in pool");
 
     // take an idle worker from the queue
+    traceEvent(info, Task_TraceEvent_EventType.ProviderGetWorker);
     const worker = await this.idlequeue.get();
     worker.busy = true;
-    worker.taskid = id;
+    worker.taskid = info.id;
     worker.started = new Date();
 
     // try to execute the task and put worker back into queue
     try {
       // promise can be rejected if the task is cancelled
       return await new Promise<Wasip1TaskResult>((resolve, reject) => {
+        traceEvent(info, Task_TraceEvent_EventType.ProviderSendToWorker);
+        const infoproxy = info.trace !== undefined ? proxy(info) : undefined;
         worker.reject = reject;
-        worker.link.runWasip1(id, task).then(resolve, reject);
+        worker.link.runWasip1(info.id, task, infoproxy).then(resolve, reject);
       });
     } finally {
       // don't requeue if it's terminated
@@ -190,13 +195,14 @@ export class WasiWorkerPool {
     }
   }
 
-  async runPyodide(id: string, task: PyodideTaskParams): Promise<PyodideTaskResult> {
+  async runPyodide(info: Task_Metadata, task: PyodideTaskParams): Promise<PyodideTaskResult> {
     if (this.length === 0) throw new Error("no workers in pool");
 
     // take an idle worker from the queue
+    traceEvent(info, Task_TraceEvent_EventType.ProviderGetWorker);
     const worker = await this.idlequeue.get();
     worker.busy = true;
-    worker.taskid = id;
+    worker.taskid = info.id;
     worker.started = new Date();
 
     // try to execute the task and forcibly respawn afterwards due to memory leak
@@ -204,8 +210,10 @@ export class WasiWorkerPool {
     try {
       // promise can be rejected if the task is cancelled
       return await new Promise<PyodideTaskResult>((resolve, reject) => {
+        traceEvent(info, Task_TraceEvent_EventType.ProviderSendToWorker);
+        const infoproxy = info.trace !== undefined ? proxy(info) : undefined;
         worker.reject = reject;
-        worker.link.runPyodide(id, task).then(resolve, reject);
+        worker.link.runPyodide(info.id, task, infoproxy).then(resolve, reject);
       });
     } finally {
       // always respawn this worker

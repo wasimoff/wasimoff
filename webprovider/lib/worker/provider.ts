@@ -9,6 +9,7 @@ import { create, Message } from "@bufbuild/protobuf";
 import {
   Event_FileSystemUpdateSchema,
   Event_ProviderResourcesSchema,
+  Task_Metadata,
 } from "@wasimoff/proto/v1/messages_pb";
 import { rpchandler } from "@wasimoff/worker/rpchandler";
 import { expose, proxy, transfer, workerReady } from "./comlink";
@@ -114,8 +115,8 @@ export class WasimoffProvider {
   // hold the wasiworkers in a pool
   public pool: WasiWorkerPool;
 
-  async run(id: string, task: Wasip1TaskParams) {
-    return this.pool.runWasip1(id, task);
+  async run(info: Task_Metadata, task: Wasip1TaskParams) {
+    return this.pool.runWasip1(info, task);
   }
 
   // --------->  file storage
@@ -175,7 +176,7 @@ export class WasimoffProvider {
 
     if (isArtDeco) {
       // construct new url because switching from custom to non-custom scheme is not supported
-      let href = url.href.replace(/^ads?:/, url.protocol === 'ads:' ? 'wss:' : 'ws:');
+      let href = url.href.replace(/^ads?:/, url.protocol === "ads:" ? "wss:" : "ws:");
       url = new URL(href);
       console.debug("connecting to ad", url);
       const rtcTransport = await WebRTCTransport.connect(url);

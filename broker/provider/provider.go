@@ -158,6 +158,8 @@ func (p *Provider) acceptTasks() (err error) {
 			// run the Request in a goroutine asynchronously
 			// TODO: avoid gofunc by using a second listener on a `chan *PendingCall`
 			go func() {
+				task.Request.GetInfo().Provider = proto.String(p.Get(Name))
+				task.Request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_BrokerTransmit)
 				task.Error = p.run(task.Context, task.Request, task.Response)
 				// send cancellation event if error is due to context
 				if errors.Is(task.Error, context.Canceled) {

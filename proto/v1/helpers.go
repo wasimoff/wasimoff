@@ -1,5 +1,11 @@
 package wasimoffv1
 
+import (
+	"time"
+
+	"google.golang.org/protobuf/proto"
+)
+
 // Additional helpers on the generated types.
 
 // Fill any unset (nil) task parameters from a parent task specification.
@@ -42,4 +48,19 @@ func (tr *Task_Wasip1_Request) GetRequiredFiles() (files []string) {
 	}
 
 	return files
+}
+
+// Add a traced event to task metadata.
+func (t *Task_Metadata) TraceEvent(ev Task_TraceEvent_EventType) {
+	// only append if metadata contains a trace message
+	if t.Trace != nil {
+		// prepare list with some capacity when empty
+		if t.Trace.Events == nil {
+			t.Trace.Events = make([]*Task_TraceEvent, 0, 20)
+		}
+		t.Trace.Events = append(t.Trace.Events, &Task_TraceEvent{
+			Unixnano: proto.Int64(time.Now().UnixNano()),
+			Event:    ev.Enum(),
+		})
+	}
 }

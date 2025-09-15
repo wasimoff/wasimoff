@@ -26,8 +26,14 @@ export class WasiWorker {
 
   /** Run a WebAssembly module with a WASI shim with commandline arguments, environment
    * variables etc. The binary can be either a precompiled module or raw bytes. */
-  public async runWasip1(id: string, task: Wasip1TaskParams): Promise<Wasip1TaskResult> {
+  public async runWasip1(
+    id: string,
+    task: Wasip1TaskParams,
+    info?: Task_Metadata,
+  ): Promise<Wasip1TaskResult> {
     try {
+      traceEvent(info, Task_TraceEvent_EventType.ProviderPrepareExec);
+
       // log the overall commandline to dev console
       if (this.verbose) {
         let cmdline = [...task.envs, task.argv[0] || "<binary>", ...task.argv.slice(1)];
@@ -84,6 +90,7 @@ export class WasiWorker {
       // start the instance's main() and wait for it to exit
       let returncode = 0;
       try {
+        traceEvent(info, Task_TraceEvent_EventType.ProviderExecuteTask);
         type Wasip1Instance = { exports: { memory: WebAssembly.Memory; _start: () => unknown } };
         returncode = shim.start(instance as Wasip1Instance);
       } catch (error) {
@@ -118,8 +125,14 @@ export class WasiWorker {
 
   /** Run a Python script through Pyodide. Give the plaintext script and any known imported
    * packages in the parameters. If the last statement returns a result, it is pickled back. */
-  public async runPyodide(id: string, task: PyodideTaskParams): Promise<PyodideTaskResult> {
+  public async runPyodide(
+    id: string,
+    task: PyodideTaskParams,
+    info?: Task_Metadata,
+  ): Promise<PyodideTaskResult> {
     try {
+      traceEvent(info, Task_TraceEvent_EventType.ProviderPrepareExec);
+
       // preprocess environment variables by splitting on '='
       const envs = task.envs?.reduce((map, env) => {
         const idx = env.indexOf("=");
@@ -196,6 +209,7 @@ export class WasiWorker {
       // variable to hold the return value of either execution
       let ret: any = undefined;
 
+      traceEvent(info, Task_TraceEvent_EventType.ProviderExecuteTask);
       if (typeof task.run === "string") {
         // execute a plaintext script
         await py.loadPackagesFromImports(task.run);
@@ -420,6 +434,8 @@ async function compressArtifactsEmscripten(
 // -------------------- patches --------------------
 
 import { wasi } from "@bjorn3/browser_wasi_shim";
+import { Task_Metadata, Task_TraceEvent_EventType } from "@wasimoff/proto/v1/messages_pb";
+import { traceEvent } from "./rpchandler";
 
 // Workaround for https://github.com/bjorn3/browser_wasi_shim/issues/14
 // from: https://gist.github.com/igrep/0cf42131477422ebba45107031cd964c

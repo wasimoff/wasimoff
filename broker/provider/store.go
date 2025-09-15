@@ -177,6 +177,8 @@ func (s *ProviderStore) cloudLoop(concurrency int) {
 
 		// run the request asynchronously
 		go func(limiter semaphore.Semaphore, task *AsyncTask) {
+			task.Request.GetInfo().Provider = proto.String("cloud")
+			task.Request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_BrokerTransmit)
 			err := s.cloudRun(task.Context, task.Request, task.Response)
 			if err != nil {
 				task.Error = fmt.Errorf("cloud offload failed: %w", err)
