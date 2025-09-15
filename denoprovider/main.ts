@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-env --allow-read --allow-write --allow-net --no-prompt --unstable-sloppy-imports
+#!/usr/bin/env -S deno run --allow-env --allow-read --allow-write --allow-net --no-prompt --sloppy-imports --allow-scripts=npm:node-datachannel --allow-ffi
 
 import { type FlagOptions, parseFlags, ValidationError } from "@cliffy/flags";
 import { nanoid } from "nanoid";
