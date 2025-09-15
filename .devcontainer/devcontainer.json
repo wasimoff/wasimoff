@@ -21,7 +21,7 @@
 
 	// Configure environment variables
 	"containerEnv": {
-		"YARN_PNPM_STORE_FOLDER": "/home/node/.yarn/store"	
+		"YARN_GLOBAL_FOLDER": "/workspaces/wasimoff/webprovider/.yarn"
 	},
 
 	// Set the default shell to bash
