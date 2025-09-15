@@ -37,8 +37,10 @@ const flags: (FlagOptions & { help?: string })[] = [{
   default: "http://localhost:4080",
   help: "URL to the Broker",
   value(v: string) {
-    if (!/^https?:\/\//.test(v)) {
-      throw new ValidationError("Broker URL must be a http(s):// scheme");
+    if (!/^(https?|ads?):\/\//.test(v)) {
+      throw new ValidationError(
+        "Broker URL must be a http(s):// or ad(s):// scheme",
+      );
     }
     return v;
   },
@@ -48,25 +50,6 @@ const flags: (FlagOptions & { help?: string })[] = [{
   aliases: ["d"],
   default: undefined,
   help: "Path to storage directory",
-}, {
-  name: "deco",
-  type: "boolean",
-  aliases: ["ad"],
-  default: false,
-  help: "Use ArtDeco connection",
-  optionalValue: true,
-}, {
-  name: "interval",
-  type: "number",
-  aliases: ["i"],
-  help: "Announce Interval in seconds for ArtDeco",
-  default: 1,
-  value(v: number) {
-    if (Number.isNaN(v) || v < 1) {
-      throw new ValidationError("Announce interval must be a positive number");
-    }
-    return v;
-  },
 }];
 
 function manual() {
@@ -108,18 +91,13 @@ console.log("%c[Wasimoff]", "color: red;", "starting Deno Provider");
 const fs = args.storage !== undefined
   ? await DenoFileSystem.open(args.storage)
   : new MemoryFileSystem();
-let provider: WasimoffProvider;
-if (args.deco) {
-  provider = await WasimoffProvider.initNats(
-    args.workers,
-    args.url,
-    args.interval,
-    fs,
-    id,
-  );
-} else {
-  provider = await WasimoffProvider.init(args.workers, args.url, fs, id);
-}
+const provider: WasimoffProvider = await WasimoffProvider.init(
+  args.workers,
+  args.url,
+  fs,
+  id,
+);
+
 const workers = await provider.pool.scale();
 await provider.sendConcurrency(workers);
 

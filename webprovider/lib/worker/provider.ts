@@ -86,35 +86,21 @@ export class WasimoffProvider {
 
     // recheck the origin
     let url = new URL(origin);
-    if (!/^https?:$/.test(url.protocol)) throw "origin should be https? url";
+    if (!url) throw "cannot parse url";
+    if (!/^(https?|ads?):$/.test(url.protocol)) throw "origin should be https? or ads? url";
 
-    // connect the storage
-    await p.open(url.origin, fs);
+    // connect to storage if using http/https
+    if (url.protocol.match(/^https?:$/)) {
+      await p.open(url.origin, fs);
+      // replace protocol with websocket for transport
+      url.protocol = url.protocol.replace("http", "ws");
+    } else {
+      // for other protocols, open without origin
+      await p.open(undefined, fs);
+    }
 
-    // replace protocol with websocket for transport
-    url.protocol = url.protocol.replace("http", "ws");
-    await p.connect(url.origin, id);
+    await p.connect(url.href, id);
 
-    return p;
-  }
-
-  static async initNats(
-    nmax: number,
-    origin: string,
-    announceInterval: number,
-    fs: ProviderStorageFileSystem,
-    id: string,
-  ) {
-    const p = new WasimoffProvider(nmax);
-
-    // recheck the origin
-    let url = new URL(origin);
-    if (!/^https?:$/.test(url.protocol)) throw "origin should be https? url";
-
-    // undefined origin, because fetching is disabled
-    await p.open(undefined, fs);
-
-    await p.connectNats(origin, announceInterval, id);
     return p;
   }
 
@@ -182,28 +168,29 @@ export class WasimoffProvider {
       this.messenger.close("reconnecting");
     }
 
-    // only the websocket transport is implemented so far
     let url = new URL(origin);
-    if (url.origin.match(/^wss?:$/) === null) url.protocol = url.protocol.replace("http", "ws");
-    url.pathname = "/api/provider/ws";
+    if (!url) throw "cannot parse url";
+    let isArtDeco = /^ads?:$/.test(url.protocol);
     if (id !== undefined) url.searchParams.set("id", id);
-    const wst = WebSocketTransport.connect(url.href);
-    this.messenger = new Messenger(wst);
-    await wst.ready;
 
-    // send current concurrency
-    this.sendConcurrency(this.pool.length);
-  }
-
-  async connectNats(natsUrl: string, announceInterval: number, id: string) {
-    // close previous connections
-    if (this.messenger !== undefined && !this.messenger.closed.aborted) {
-      this.messenger.close("reconnecting");
+    if (isArtDeco) {
+      // construct new url because switching from custom to non-custom scheme is not supported
+      let href = url.href.replace(/^ads?:/, url.protocol === 'ads:' ? 'wss:' : 'ws:');
+      url = new URL(href);
+      console.debug("connecting to ad", url);
+      const rtcTransport = await WebRTCTransport.connect(url);
+      this.messenger = new Messenger(rtcTransport);
+      await rtcTransport.ready;
+    } else {
+      url.protocol = url.protocol.replace("http", "ws");
+      url.pathname = "/api/provider/ws";
+      console.debug("connecting to wasimoff", url);
+      const wst = WebSocketTransport.connect(url);
+      this.messenger = new Messenger(wst);
+      await wst.ready;
     }
 
-    const rtcTransport = new WebRTCTransport(natsUrl, announceInterval, id);
-    this.messenger = new Messenger(rtcTransport);
-    await rtcTransport.ready;
+    // send current concurrency
     this.sendConcurrency(this.pool.length);
   }
 
