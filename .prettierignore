@@ -1,0 +1,7 @@
+# generated and built files
+webprovider/lib/proto/v1/messages_pb.ts
+webprovider/dist/
+wasi-apps/**/target/
+
+# example jsons from jq
+client/examples/**/*.json
