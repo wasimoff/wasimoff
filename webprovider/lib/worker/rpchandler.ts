@@ -13,10 +13,12 @@ export function traceEvent(
 ) {
   if (info !== undefined && info.trace !== undefined) {
     const now_ns = (performance.now() + performance.timeOrigin) * 1_000_000;
-    info.trace.events.push(create(wasimoff.Task_TraceEventSchema, {
-      unixnano: BigInt(now_ns),
-      event: ev,
-    }));
+    info.trace.events.push(
+      create(wasimoff.Task_TraceEventSchema, {
+        unixnano: BigInt(now_ns),
+        event: ev,
+      }),
+    );
   }
 }
 
@@ -27,7 +29,7 @@ export async function rpchandler(
   switch (true) {
     // execute a wasip1 task
     case isMessage(request, wasimoff.Task_Wasip1_RequestSchema):
-      return <Promise<wasimoff.Task_Wasip1_Response>> (async () => {
+      return <Promise<wasimoff.Task_Wasip1_Response>>(async () => {
         // deconstruct the request and check type
         let { info, qos, params } = request;
         if (info === undefined || params === undefined) {
@@ -110,7 +112,7 @@ export async function rpchandler(
 
     // execute a pyodide task
     case isMessage(request, wasimoff.Task_Pyodide_RequestSchema):
-      return <Promise<wasimoff.Task_Pyodide_Response>> (async () => {
+      return <Promise<wasimoff.Task_Pyodide_Response>>(async () => {
         // deconstruct the request and check type
         let { info, params } = request;
         if (info === undefined || params === undefined) {
@@ -157,7 +159,7 @@ export async function rpchandler(
 
     // cancel a running task
     case isMessage(request, wasimoff.Task_CancelSchema):
-      return <Promise<wasimoff.Task_Cancel>> (async () => {
+      return <Promise<wasimoff.Task_Cancel>>(async () => {
         const { id, reason } = request;
         if (id !== undefined) {
           console.warn(`cancelling task '${id}': ${reason}`);
@@ -170,7 +172,7 @@ export async function rpchandler(
 
     // list files in storage
     case isMessage(request, wasimoff.Filesystem_Listing_RequestSchema):
-      return <Promise<wasimoff.Filesystem_Listing_Response>> (async () => {
+      return <Promise<wasimoff.Filesystem_Listing_Response>>(async () => {
         if (this.storage === undefined) throw "cannot access storage yet";
         const files = await this.storage.filesystem.list();
         return create(wasimoff.Filesystem_Listing_ResponseSchema, { files });
@@ -178,15 +180,15 @@ export async function rpchandler(
 
     // probe for a specific file in storage
     case isMessage(request, wasimoff.Filesystem_Probe_RequestSchema):
-      return <Promise<wasimoff.Filesystem_Probe_Response>> (async () => {
+      return <Promise<wasimoff.Filesystem_Probe_Response>>(async () => {
         if (this.storage === undefined) throw "cannot access storage yet";
-        let ok = await this.storage.filesystem.get(request.file) !== undefined;
+        let ok = (await this.storage.filesystem.get(request.file)) !== undefined;
         return create(wasimoff.Filesystem_Probe_ResponseSchema, { ok });
       })();
 
     // binaries uploaded from the broker inside an rpc
     case isMessage(request, wasimoff.Filesystem_Upload_RequestSchema):
-      return <Promise<wasimoff.Filesystem_Upload_Response>> (async () => {
+      return <Promise<wasimoff.Filesystem_Upload_Response>>(async () => {
         if (request.upload === undefined) throw "empty upload";
         if (this.storage === undefined) throw "cannot access storage yet";
         let blob = request.upload.blob as Uint8Array<ArrayBuffer>;

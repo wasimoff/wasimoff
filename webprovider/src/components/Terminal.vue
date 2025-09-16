@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { ref, watch } from "vue";
 import { useTerminal } from "@app/stores/terminal";
 import LogLine from "@app/components/LogLine.vue";
@@ -15,14 +14,15 @@ watch(terminal.lines, scrolldown, { deep: false, flush: "post" });
 function scrolldown() {
   const area = logarea.value;
   if (!!area) area.scrollTop = area.scrollHeight;
-};
-
+}
 </script>
 
 <template>
   <span class="textarea is-family-monospace" ref="logarea">
     <LogLine v-for="line in terminal.lines" :ts="line.date" :is="line.is">{{ line.text }}</LogLine>
-    <span v-if="!terminal.lines.length" class="has-text-grey-lighter">Log Messages will appear here</span>
+    <span v-if="!terminal.lines.length" class="has-text-grey-lighter"
+      >Log Messages will appear here</span
+    >
   </span>
 </template>
 

@@ -1,15 +1,14 @@
 version: v2
 plugins:
-
   # generate golang for the broker
   - local: protoc-gen-go
     out: ./
-    opt: [ paths=source_relative ]
+    opt: [paths=source_relative]
 
   # generate connectrpc for clients
   - local: protoc-gen-connect-go
     out: ./
-    opt: [ paths=source_relative ]
+    opt: [paths=source_relative]
 
   # generate python code for clients
   - protoc_builtin: python
@@ -19,4 +18,4 @@ plugins:
   # need to run 'yarn install' in webprovider first
   - local: webprovider/node_modules/@bufbuild/protoc-gen-es/bin/protoc-gen-es
     out: webprovider/lib
-    opt: [ target=ts, json_types=true ]
+    opt: [target=ts, json_types=true]

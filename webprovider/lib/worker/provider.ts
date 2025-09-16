@@ -68,9 +68,11 @@ export class WasimoffProvider {
         // wrap the function calls with an update to the broker
         if (typeof method === "function" && traps.includes(prop as string)) {
           return async (...args: any[]) => {
-            let result = await (method as any).apply(target, args) as Promise<number>;
+            let result = (await (method as any).apply(target, args)) as Promise<number>;
             if (this.messenger !== undefined) {
-              this.sendConcurrency(await result).catch(() => {/* ignore errors */});
+              this.sendConcurrency(await result).catch(() => {
+                /* ignore errors */
+              });
             }
             return result;
           };
@@ -143,7 +145,8 @@ export class WasimoffProvider {
           console.error("failed opening OPFS:", err);
         }
       }
-      if (fs === undefined) { // still
+      if (fs === undefined) {
+        // still
         fs = new MemoryFileSystem();
       }
     }
@@ -270,9 +273,9 @@ export class WasimoffProvider {
 
 // detect if we're running in a worker and expose the comlink interface
 if (
-  typeof self !== "undefined"
-  && self.constructor.name === "DedicatedWorkerGlobalScope"
-  && self instanceof DedicatedWorkerGlobalScope
+  typeof self !== "undefined" &&
+  self.constructor.name === "DedicatedWorkerGlobalScope" &&
+  self instanceof DedicatedWorkerGlobalScope
 ) {
   // in a "normal" Worker
   // locks should be handled externally, before the Worker is even started
@@ -280,7 +283,8 @@ if (
   expose(WasimoffProvider, self);
   self.postMessage(workerReady);
 } else if (
-  self.constructor.name === "SharedWorkerGlobalScope" && self instanceof SharedWorkerGlobalScope
+  self.constructor.name === "SharedWorkerGlobalScope" &&
+  self instanceof SharedWorkerGlobalScope
 ) {
   // in a SharedWorker, listen for connections
   console.log(...WasimoffProvider.logprefix, "new SharedWorker started");

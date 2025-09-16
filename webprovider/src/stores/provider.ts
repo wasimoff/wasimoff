@@ -72,7 +72,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
         // wrap the function calls with an update to the broker
         if (typeof method === "function" && traps.includes(prop as string)) {
           return async (...args: any[]) => {
-            let result = await (method as any).apply(target, args) as Promise<number>;
+            let result = (await (method as any).apply(target, args)) as Promise<number>;
             try {
               workers.value = await target.busy;
             } catch {}
@@ -118,7 +118,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
       // doing it manually here is more responsive, because
       // each spawn updates the workers ref
       let capacity = await $pool.value.capacity;
-      while (await $pool.value.length < capacity) await $pool.value.spawn();
+      while ((await $pool.value.length) < capacity) await $pool.value.spawn();
     }
   }
 

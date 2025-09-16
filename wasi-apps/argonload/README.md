@@ -1,9 +1,8 @@
 # argonload
 
-This is a simple application using the `argon2` crate to compute random password hashes
-with given parameters for memory size and iteration count. It can be used to create a
-somewhat deterministric load, which depends on the hardware performance and scales
-about linearly with increased parameters.
+This is a simple application using the `argon2` crate to compute random password hashes with given
+parameters for memory size and iteration count. It can be used to create a somewhat deterministric
+load, which depends on the hardware performance and scales about linearly with increased parameters.
 
 ```
 $ wasmtime ./argonload.wasm

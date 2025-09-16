@@ -6,7 +6,7 @@
   "trailingComma": "all",
   "singleQuote": false,
   "quoteProps": "consistent",
-  "proseWrap": "preserve",
+  "proseWrap": "always",
   "endOfLine": "lf",
   "bracketSpacing": true,
   "bracketSameLine": false,

@@ -76,9 +76,9 @@ export class ProviderStorage {
     if (!response.ok) return undefined;
 
     // store fetched file to filesystem
-    let buf = await response.bytes() as Uint8Array<ArrayBuffer>;
+    let buf = (await response.bytes()) as Uint8Array<ArrayBuffer>;
     let media = response.headers.get("content-type") || "";
-    let name = response.headers.get("x-wasimoff-ref") || await getRef(buf);
+    let name = response.headers.get("x-wasimoff-ref") || (await getRef(buf));
     let file = new File([buf], name, { type: media });
     await this.filesystem.put(name, file);
 

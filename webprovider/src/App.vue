@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import Terminal from "@app/components/Terminal.vue";
 import Controls from "@app/components/Controls.vue";
 import VersionInfo from "@app/components/VersionInfo.vue";
@@ -10,13 +9,11 @@ terminal.log("Starting wasimoff provider ...", LogType.Black);
 
 // check if we are in a secure context
 if (!window.isSecureContext) {
-  terminal.warn("WARNING: application running in an insecure context!")
+  terminal.warn("WARNING: application running in an insecure context!");
 }
-
 </script>
 
 <template>
-
   <!-- logo and title -->
   <h1 class="title">
     <img alt="WebAssembly Logo" class="logo" src="./assets/wasm.svg" />
@@ -25,22 +22,20 @@ if (!window.isSecureContext) {
 
   <!-- raised card for controls and terminal-->
   <div class="field box">
-
     <!-- worker pool and transport controls -->
-    <Controls/>
+    <Controls />
 
     <!-- virtual console for worker output -->
-    <label class="label has-text-grey-dark">Log Messages <a @click="terminal.clear()" title="Clear messages">×</a></label>
-    <Terminal/>
-
+    <label class="label has-text-grey-dark"
+      >Log Messages <a @click="terminal.clear()" title="Clear messages">×</a></label
+    >
+    <Terminal />
   </div>
 
   <VersionInfo />
-
 </template>
 
 <style scoped>
-
 .title {
   color: rgb(75, 9, 180);
   font-weight: 500;
@@ -53,7 +48,4 @@ if (!window.isSecureContext) {
   top: 0.7rem;
   height: 3rem;
 }
-
-
-
 </style>

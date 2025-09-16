@@ -1,7 +1,5 @@
 services:
-
   broker:
-
     image: ghcr.io/wasimoff/broker
     build:
       context: ./
@@ -12,7 +10,7 @@ services:
     volumes:
       - broker_storage:/data
     healthcheck:
-      test: [ "CMD", "curl", "-sf", "http://localhost:4080/healthz" ]
+      test: ["CMD", "curl", "-sf", "http://localhost:4080/healthz"]
       interval: 2s
     environment:
       # listen on this address

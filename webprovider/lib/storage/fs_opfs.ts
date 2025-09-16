@@ -99,10 +99,7 @@ export class OriginPrivateFileSystem implements ProviderStorageFileSystem {
 
   /** Compile a `WebAssembly.Module` by opening a file in a streaming fashion. */
   async compileStreaming(filename: string) {
-    console.log(
-      ...logprefix,
-      `compile WebAssembly module ${this.path}${filename}`,
-    );
+    console.log(...logprefix, `compile WebAssembly module ${this.path}${filename}`);
     // fetch the file from opfs and check if it's wasm
     let file = await (await this.handle.getFileHandle(filename)).getFile();
     if (file.type !== "application/wasm") {
@@ -131,9 +128,7 @@ export class OriginPrivateFileSystem implements ProviderStorageFileSystem {
     let response = await request;
     // check if request is OK and content-type is as expected
     if (!response.ok) {
-      throw new Error(
-        `request failed: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`request failed: ${response.status} ${response.statusText}`);
     }
     let type = response.headers.get("content-type")?.toLowerCase();
     if (type !== "application/wasm") {

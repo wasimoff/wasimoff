@@ -32,8 +32,9 @@ export class PushableAsyncIterable<T> implements AsyncIterable<T> {
   async *[Symbol.asyncIterator]() {
     try {
       this._listeners++;
-      for /*ever*/ (;;) {
-        while (!this.buffer.length) { // while empty
+      for (;;) /*ever*/ {
+        while (!this.buffer.length) {
+          // while empty
           if (this.closed) return; // orderly exit on close
           await new Promise((wake) => this.waiting.push(wake)); // sleep
         }

@@ -111,8 +111,8 @@ export class WasiWorker {
       // format the result
       let result: Wasip1TaskResult = {
         returncode,
-        stdout: (<OpenFile> shim.fds[1]).file.data,
-        stderr: (<OpenFile> shim.fds[2]).file.data,
+        stdout: (<OpenFile>shim.fds[1]).file.data,
+        stderr: (<OpenFile>shim.fds[2]).file.data,
       };
       if (task.artifacts !== undefined && task.artifacts.length > 0) {
         result.artifacts = await compressArtifacts(shim.fds[3] as PreopenDirectory, task.artifacts);
@@ -135,12 +135,15 @@ export class WasiWorker {
       traceEvent(info, Task_TraceEvent_EventType.ProviderWorkerPrepare);
 
       // preprocess environment variables by splitting on '='
-      const envs = task.envs?.reduce((map, env) => {
-        const idx = env.indexOf("=");
-        if (idx === -1) throw `malformed env variable: {env}`;
-        map[env.slice(0, idx)] = env.slice(idx + 1);
-        return map;
-      }, {} as { [k: string]: string });
+      const envs = task.envs?.reduce(
+        (map, env) => {
+          const idx = env.indexOf("=");
+          if (idx === -1) throw `malformed env variable: {env}`;
+          map[env.slice(0, idx)] = env.slice(idx + 1);
+          return map;
+        },
+        {} as { [k: string]: string },
+      );
 
       // remove duplicates from packages to load
       // const pkgs = [ ... new Set([ ...task.packages, "cloudpickle" ]) ];
@@ -155,7 +158,7 @@ export class WasiWorker {
         checkAPIVersion: true, // must be this exact version
         packages: [...task.packages, "cloudpickle"], // preload some packages explicitly
         // if we are a browser, set indexURL to the Pyodide dist URL
-        indexURL: ("Deno" in globalThis) ? undefined : this.pydist,
+        indexURL: "Deno" in globalThis ? undefined : this.pydist,
         env: envs,
       });
       // if in Deno, you can quasi-set the indexURL by overwriting cdnUrl of the PackageManager
@@ -262,9 +265,9 @@ export class WasiWorker {
 
 // only expose if we're actually started in a worker and not just being imported
 if (
-  typeof self !== "undefined"
-  && self.constructor.name === "DedicatedWorkerGlobalScope"
-  && self.postMessage !== undefined
+  typeof self !== "undefined" &&
+  self.constructor.name === "DedicatedWorkerGlobalScope" &&
+  self.postMessage !== undefined
 ) {
   expose(WasiWorker, self);
   postMessage(workerReady);
@@ -398,17 +401,19 @@ async function compressArtifacts(dir: PreopenDirectory, artifacts: string[]): Pr
   let zip = new ZipWriter(new Uint8ArrayWriter());
 
   // add all requested files
-  await Promise.all(artifacts.map((filename) => {
-    // lookup the file in rootfs
-    if (filename.startsWith("/")) filename = filename.slice(1);
-    let { inode_obj: entry } = dir.path_lookup(filename, 0);
-    if (entry instanceof File) {
-      return zip.add(filename, new Uint8ArrayReader(entry.data), { useWebWorkers: false });
-    } else {
-      // TODO: this is pretty simplistic and won't add directories recursively
-      return zip.add(filename, undefined, { directory: true, useWebWorkers: false });
-    }
-  }));
+  await Promise.all(
+    artifacts.map((filename) => {
+      // lookup the file in rootfs
+      if (filename.startsWith("/")) filename = filename.slice(1);
+      let { inode_obj: entry } = dir.path_lookup(filename, 0);
+      if (entry instanceof File) {
+        return zip.add(filename, new Uint8ArrayReader(entry.data), { useWebWorkers: false });
+      } else {
+        // TODO: this is pretty simplistic and won't add directories recursively
+        return zip.add(filename, undefined, { directory: true, useWebWorkers: false });
+      }
+    }),
+  );
 
   // finish the file and return its contents
   return await zip.close();
@@ -423,10 +428,12 @@ async function compressArtifactsEmscripten(
 
   // add all requested files
   // TODO: this is pretty simplistic and won't add directories at all
-  await Promise.all(artifacts.map((filename) => {
-    let file = fs.readFile(filename);
-    return zip.add(filename, new Uint8ArrayReader(file), { useWebWorkers: false });
-  }));
+  await Promise.all(
+    artifacts.map((filename) => {
+      let file = fs.readFile(filename);
+      return zip.add(filename, new Uint8ArrayReader(file), { useWebWorkers: false });
+    }),
+  );
 
   // finish the file and return its contents
   return await zip.close();
@@ -485,22 +492,12 @@ export function patchWasiPollOneoff(self: WASI): void {
       const event_fd_readwrite_nbytes_offset = 16;
       const event_fd_readwrite_flags_offset = 16 + 8;
 
-      events.setBigUint64(
-        i * size_event + event_userdata_offset,
-        userdata,
-        true,
-      );
-      events.setUint32(
-        i * size_event + event_error_offset,
-        wasi.ERRNO_SUCCESS,
-        true,
-      );
+      events.setBigUint64(i * size_event + event_userdata_offset, userdata, true);
+      events.setUint32(i * size_event + event_error_offset, wasi.ERRNO_SUCCESS, true);
 
       function assertOpenFileAvailable(): OpenFile {
         const fd = subscriptions.getUint32(
-          i * size_subscription
-            + subscription_u_offset
-            + subscription_u_tag_size,
+          i * size_subscription + subscription_u_offset + subscription_u_tag_size,
           true,
         );
         const openFile = self.fds[fd];
@@ -510,29 +507,13 @@ export function patchWasiPollOneoff(self: WASI): void {
         return openFile;
       }
       function setEventFdReadWrite(size: bigint): void {
-        events.setUint16(
-          i * size_event + event_type_offset,
-          wasi.EVENTTYPE_FD_READ,
-          true,
-        );
-        events.setBigUint64(
-          i * size_event + event_fd_readwrite_nbytes_offset,
-          size,
-          true,
-        );
-        events.setUint16(
-          i * size_event + event_fd_readwrite_flags_offset,
-          0,
-          true,
-        );
+        events.setUint16(i * size_event + event_type_offset, wasi.EVENTTYPE_FD_READ, true);
+        events.setBigUint64(i * size_event + event_fd_readwrite_nbytes_offset, size, true);
+        events.setUint16(i * size_event + event_fd_readwrite_flags_offset, 0, true);
       }
       switch (subscription_u_tag) {
         case wasi.EVENTTYPE_CLOCK:
-          events.setUint16(
-            i * size_event + event_type_offset,
-            wasi.EVENTTYPE_CLOCK,
-            true,
-          );
+          events.setUint16(i * size_event + event_type_offset, wasi.EVENTTYPE_CLOCK, true);
           break;
         case wasi.EVENTTYPE_FD_READ:
           const fileR = assertOpenFileAvailable();
@@ -548,11 +529,7 @@ export function patchWasiPollOneoff(self: WASI): void {
     }
 
     const size_size = 4;
-    const outNSize = new DataView(
-      self.inst.exports.memory.buffer,
-      sizeOutPtr,
-      size_size,
-    );
+    const outNSize = new DataView(self.inst.exports.memory.buffer, sizeOutPtr, size_size);
     outNSize.setUint32(0, nsubscriptions, true);
     return wasi.ERRNO_SUCCESS;
   }) as (...args: unknown[]) => unknown;
