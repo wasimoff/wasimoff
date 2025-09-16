@@ -179,7 +179,7 @@ export class WasiWorkerPool {
     try {
       // promise can be rejected if the task is cancelled
       return await new Promise<Wasip1TaskResult>((resolve, reject) => {
-        traceEvent(info, Task_TraceEvent_EventType.ProviderSendToWorker);
+        traceEvent(info, Task_TraceEvent_EventType.ProviderPostToWorker);
         const infoproxy = info.trace !== undefined ? proxy(info) : undefined;
         worker.reject = reject;
         worker.link.runWasip1(info.id, task, infoproxy).then(resolve, reject);
@@ -210,7 +210,7 @@ export class WasiWorkerPool {
     try {
       // promise can be rejected if the task is cancelled
       return await new Promise<PyodideTaskResult>((resolve, reject) => {
-        traceEvent(info, Task_TraceEvent_EventType.ProviderSendToWorker);
+        traceEvent(info, Task_TraceEvent_EventType.ProviderPostToWorker);
         const infoproxy = info.trace !== undefined ? proxy(info) : undefined;
         worker.reject = reject;
         worker.link.runPyodide(info.id, task, infoproxy).then(resolve, reject);

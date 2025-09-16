@@ -32,7 +32,7 @@ export class WasiWorker {
     info?: Task_Metadata,
   ): Promise<Wasip1TaskResult> {
     try {
-      traceEvent(info, Task_TraceEvent_EventType.ProviderPrepareExec);
+      traceEvent(info, Task_TraceEvent_EventType.ProviderWorkerPrepare);
 
       // log the overall commandline to dev console
       if (this.verbose) {
@@ -90,9 +90,10 @@ export class WasiWorker {
       // start the instance's main() and wait for it to exit
       let returncode = 0;
       try {
-        traceEvent(info, Task_TraceEvent_EventType.ProviderExecuteTask);
+        traceEvent(info, Task_TraceEvent_EventType.ProviderWorkerExecute);
         type Wasip1Instance = { exports: { memory: WebAssembly.Memory; _start: () => unknown } };
         returncode = shim.start(instance as Wasip1Instance);
+        traceEvent(info, Task_TraceEvent_EventType.ProviderWorkerDone);
       } catch (error) {
         if (String(error).startsWith("exit with exit code")) {
           // parse the exitcode from exit() calls; those shouldn't throw
@@ -131,7 +132,7 @@ export class WasiWorker {
     info?: Task_Metadata,
   ): Promise<PyodideTaskResult> {
     try {
-      traceEvent(info, Task_TraceEvent_EventType.ProviderPrepareExec);
+      traceEvent(info, Task_TraceEvent_EventType.ProviderWorkerPrepare);
 
       // preprocess environment variables by splitting on '='
       const envs = task.envs?.reduce((map, env) => {
@@ -209,7 +210,7 @@ export class WasiWorker {
       // variable to hold the return value of either execution
       let ret: any = undefined;
 
-      traceEvent(info, Task_TraceEvent_EventType.ProviderExecuteTask);
+      traceEvent(info, Task_TraceEvent_EventType.ProviderWorkerExecute);
       if (typeof task.run === "string") {
         // execute a plaintext script
         await py.loadPackagesFromImports(task.run);
@@ -223,6 +224,7 @@ export class WasiWorker {
           },
         );
       }
+      traceEvent(info, Task_TraceEvent_EventType.ProviderWorkerDone);
 
       // prepare result for serialization
       let result: PyodideTaskResult = {

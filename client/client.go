@@ -92,10 +92,12 @@ func (c *WasimoffConnectRpcClient) Upload(buf []byte, name string) (ref string, 
 }
 
 func (c *WasimoffConnectRpcClient) RunWasip1(ctx context.Context, request *wasimoff.Task_Wasip1_Request) (*wasimoff.Task_Wasip1_Response, error) {
+	request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientTransmitRequest)
 	resp, err := c.ConnectRPC.RunWasip1(ctx, connect.NewRequest(request))
 	if err != nil {
 		return nil, err
 	}
+	resp.Msg.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientReceivedResponse)
 	return resp.Msg, nil
 }
 
@@ -108,10 +110,12 @@ func (c *WasimoffConnectRpcClient) RunWasip1Job(ctx context.Context, request *wa
 }
 
 func (c *WasimoffConnectRpcClient) RunPyodide(ctx context.Context, request *wasimoff.Task_Pyodide_Request) (*wasimoff.Task_Pyodide_Response, error) {
+	request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientTransmitRequest)
 	resp, err := c.ConnectRPC.RunPyodide(ctx, connect.NewRequest(request))
 	if err != nil {
 		return nil, err
 	}
+	resp.Msg.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientReceivedResponse)
 	return resp.Msg, nil
 }
 
@@ -173,8 +177,10 @@ func (c *WasimoffWebsocketClient) Upload(buf []byte, name string) (ref string, e
 }
 
 func (c *WasimoffWebsocketClient) RunWasip1(ctx context.Context, request *wasimoff.Task_Wasip1_Request) (response *wasimoff.Task_Wasip1_Response, err error) {
+	request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientTransmitRequest)
 	response = &wasimoff.Task_Wasip1_Response{}
 	err = c.Messenger.RequestSync(ctx, request, response)
+	response.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientReceivedResponse)
 	return
 }
 
@@ -230,8 +236,10 @@ func (c *WasimoffWebsocketClient) RunWasip1Job(ctx context.Context, job *wasimof
 }
 
 func (c *WasimoffWebsocketClient) RunPyodide(ctx context.Context, request *wasimoff.Task_Pyodide_Request) (response *wasimoff.Task_Pyodide_Response, err error) {
+	request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientTransmitRequest)
 	response = &wasimoff.Task_Pyodide_Response{}
 	err = c.Messenger.RequestSync(ctx, request, response)
+	response.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientReceivedResponse)
 	return
 }
 

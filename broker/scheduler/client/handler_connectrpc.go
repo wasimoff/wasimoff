@@ -89,6 +89,7 @@ func (s *ConnectRpcServer) RunWasip1(
 	if call.Error != nil {
 		return nil, call.Error
 	} else {
+		response.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_BrokerTransmitClientResponse)
 		return connect.NewResponse(response), nil
 	}
 
@@ -141,6 +142,7 @@ func (s *ConnectRpcServer) RunPyodide(
 	if call.Error != nil {
 		return nil, call.Error
 	} else {
+		response.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_BrokerTransmitClientResponse)
 		return connect.NewResponse(response), nil
 	}
 
@@ -149,7 +151,7 @@ func (s *ConnectRpcServer) RunPyodide(
 // -------------------- handlers for task metadata --------------------
 
 func (s *ConnectRpcServer) prepareTaskInfo(info *wasimoff.Task_Metadata, peer connect.Peer) *wasimoff.Task_Metadata {
-	info.TraceEvent(wasimoff.Task_TraceEvent_BrokerRequestReceived)
+	info.TraceEvent(wasimoff.Task_TraceEvent_BrokerReceivedClientRequest)
 	return &wasimoff.Task_Metadata{
 		Id:        proto.String(strconv.FormatUint(s.taskSeq.Add(1), 10)),
 		Requester: proto.String(peer.Addr),
@@ -169,5 +171,5 @@ func (s *ConnectRpcServer) copyTaskInfo(info *wasimoff.Task_Metadata, res **wasi
 		r.Reference = info.Reference
 		r.Requester = info.Requester
 	}
-	(*res).TraceEvent(wasimoff.Task_TraceEvent_BrokerResponseReceived)
+	(*res).TraceEvent(wasimoff.Task_TraceEvent_BrokerReceivedProviderResult)
 }

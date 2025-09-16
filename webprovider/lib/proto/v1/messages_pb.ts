@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file proto/v1/messages.proto.
  */
 export const file_proto_v1_messages: GenFile = /*@__PURE__*/
-  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyKKFAoEVGFzaxp2CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkSEQoJcmVmZXJlbmNlGAQgASgJEiYKBXRyYWNlGAUgASgLMhcud2FzaW1vZmYudjEuVGFzay5UcmFjZRpYCgNRb1MSEAoIcHJpb3JpdHkYASABKAgSLAoIZGVhZGxpbmUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCWltbWVkaWF0ZRgDIAEoCBpYCgVUcmFjZRIPCgdjcmVhdGVkGAEgASgDEhAKCGR1cmF0aW9uGAIgASgEEiwKBmV2ZW50cxgDIAMoCzIcLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudBqSBAoKVHJhY2VFdmVudBIQCgh1bml4bmFubxgBIAEoAxI1CgVldmVudBgCIAEoDjImLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudC5FdmVudFR5cGUSDwoHZGV0YWlscxgDIAEoCSKpAwoJRXZlbnRUeXBlEgsKB1VOS05PV04QABIPCgtDbGllbnRFcnJvchAKEhIKDkNsaWVudFRyYW5zbWl0EAsSGgoWQ2xpZW50UmVzcG9uc2VSZWNlaXZlZBAMEg8KC0Jyb2tlckVycm9yEBQSGQoVQnJva2VyUmVxdWVzdFJlY2VpdmVkEBUSEwoPQnJva2VyUXVldWVUYXNrEBYSFgoSQnJva2VyU2NoZWR1bGVUYXNrEBcSEgoOQnJva2VyVHJhbnNtaXQQGBIaChZCcm9rZXJSZXNwb25zZVJlY2VpdmVkEBkSEQoNUHJvdmlkZXJFcnJvchAeEhgKFFByb3ZpZGVyVGFza1JlY2VpdmVkEB8SFQoRUHJvdmlkZXJHZXRXb3JrZXIQIBIYChRQcm92aWRlclNlbmRUb1dvcmtlchAhEhcKE1Byb3ZpZGVyUHJlcGFyZUV4ZWMQIhIXChNQcm92aWRlckV4ZWN1dGVUYXNrECMSGQoVUHJvdmlkZXJFeGVjdXRpb25Eb25lECQSGgoWUHJvdmlkZXJUcmFuc21pdFJlc3VsdBAlGiQKBkNhbmNlbBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkaugYKBldhc2lwMRqMAQoGUGFyYW1zEiEKBmJpbmFyeRgBIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSDAoEYXJncxgCIAMoCRIMCgRlbnZzGAMgAygJEg0KBXN0ZGluGAQgASgMEiEKBnJvb3RmcxgFIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSEQoJYXJ0aWZhY3RzGAYgAygJGl4KBk91dHB1dBIOCgZzdGF0dXMYASABKAUSDgoGc3Rkb3V0GAIgASgMEg4KBnN0ZGVychgDIAEoDBIkCglhcnRpZmFjdHMYBCABKAsyES53YXNpbW9mZi52MS5GaWxlGogBCgdSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEi8KBnBhcmFtcxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxq7AQoKSm9iUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIvCgZwYXJlbnQYAyABKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5QYXJhbXMSLgoFdGFza3MYBCADKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5QYXJhbXMafgoIUmVzcG9uc2USKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESDwoFZXJyb3IYAiABKAlIABItCgJvaxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLk91dHB1dEgAQggKBnJlc3VsdBp4CgtKb2JSZXNwb25zZRIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRINCgVlcnJvchgCIAEoCRIwCgV0YXNrcxgDIAMoCzIhLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlGt0GCgdQeW9kaWRlGpgBCgZQYXJhbXMSEAoIcGFja2FnZXMYASADKAkSEAoGc2NyaXB0GAIgASgJSAASEAoGcGlja2xlGAMgASgMSAASDAoEZW52cxgEIAMoCRINCgVzdGRpbhgFIAEoDBIhCgZyb290ZnMYBiABKAsyES53YXNpbW9mZi52MS5GaWxlEhEKCWFydGlmYWN0cxgHIAMoCUIFCgNydW4abwoGT3V0cHV0Eg4KBnBpY2tsZRgBIAEoDBIOCgZzdGRvdXQYAiABKAwSDgoGc3RkZXJyGAMgASgMEg8KB3ZlcnNpb24YBCABKAkSJAoJYXJ0aWZhY3RzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRqJAQoHUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIwCgZwYXJhbXMYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGr0BCgpKb2JSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEjAKBnBhcmVudBgDIAEoCzIgLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5QYXJhbXMSLwoFdGFza3MYBCADKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGn8KCFJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg8KBWVycm9yGAIgASgJSAASLgoCb2sYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0GnkKC0pvYlJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg0KBWVycm9yGAIgASgJEjEKBXRhc2tzGAMgAygLMiIud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlJlc3BvbnNlIjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiqwIKCkZpbGVzeXN0ZW0aLwoHTGlzdGluZxoJCgdSZXF1ZXN0GhkKCFJlc3BvbnNlEg0KBWZpbGVzGAEgAygJGjgKBVByb2JlGhcKB1JlcXVlc3QSDAoEZmlsZRgBIAEoCRoWCghSZXNwb25zZRIKCgJvaxgBIAEoCBpPCgZVcGxvYWQaLAoHUmVxdWVzdBIhCgZ1cGxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlGhcKCFJlc3BvbnNlEgsKA3JlZhgBIAEoCRphCghEb3dubG9hZBoXCgdSZXF1ZXN0EgwKBGZpbGUYASABKAkaPAoIUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSLnAQoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRo3ChFQcm92aWRlclJlc291cmNlcxITCgtjb25jdXJyZW5jeRgBIAEoDRINCgV0YXNrcxgCIAEoDRogCgtDbHVzdGVySW5mbxIRCglwcm92aWRlcnMYASABKA0aLAoKVGhyb3VnaHB1dBIPCgdvdmVyYWxsGAEgASgCEg0KBXlvdXJzGAIgASgCGjIKEEZpbGVTeXN0ZW1VcGRhdGUSDQoFYWRkZWQYASADKAkSDwoHcmVtb3ZlZBgCIAMoCSpcCgtTdWJwcm90b2NvbBILCgdVTktOT1dOEAASIQodd2FzaW1vZmZfcHJvdmlkZXJfdjFfcHJvdG9idWYQARIdChl3YXNpbW9mZl9wcm92aWRlcl92MV9qc29uEAIy7AIKBVRhc2tzElIKCVJ1bldhc2lwMRIgLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlcXVlc3QaIS53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5SZXNwb25zZSIAElsKDFJ1bldhc2lwMUpvYhIjLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLkpvYlJlcXVlc3QaJC53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5Kb2JSZXNwb25zZSIAElUKClJ1blB5b2RpZGUSIS53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUmVxdWVzdBoiLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXNwb25zZSIAElsKBlVwbG9hZBImLndhc2ltb2ZmLnYxLkZpbGVzeXN0ZW0uVXBsb2FkLlJlcXVlc3QaJy53YXNpbW9mZi52MS5GaWxlc3lzdGVtLlVwbG9hZC5SZXNwb25zZSIAQh9aHXdhc2kudGVhbS9wcm90by92MTt3YXNpbW9mZnYxYghlZGl0aW9uc3DoBw", [file_google_protobuf_any, file_google_protobuf_timestamp]);
+  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyLMFAoEVGFzaxp2CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkSEQoJcmVmZXJlbmNlGAQgASgJEiYKBXRyYWNlGAUgASgLMhcud2FzaW1vZmYudjEuVGFzay5UcmFjZRpYCgNRb1MSEAoIcHJpb3JpdHkYASABKAgSLAoIZGVhZGxpbmUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCWltbWVkaWF0ZRgDIAEoCBpYCgVUcmFjZRIPCgdjcmVhdGVkGAEgASgDEhAKCGR1cmF0aW9uGAIgASgEEiwKBmV2ZW50cxgDIAMoCzIcLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudBrUBAoKVHJhY2VFdmVudBIQCgh1bml4bmFubxgBIAEoAxI1CgVldmVudBgCIAEoDjImLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudC5FdmVudFR5cGUSDwoHZGV0YWlscxgDIAEoCSLrAwoJRXZlbnRUeXBlEgsKB1VOS05PV04QABIPCgtDbGllbnRFcnJvchAKEhkKFUNsaWVudFRyYW5zbWl0UmVxdWVzdBALEhoKFkNsaWVudFJlY2VpdmVkUmVzcG9uc2UQDBIPCgtCcm9rZXJFcnJvchAUEh8KG0Jyb2tlclJlY2VpdmVkQ2xpZW50UmVxdWVzdBAVEhMKD0Jyb2tlclF1ZXVlVGFzaxAWEhYKEkJyb2tlclNjaGVkdWxlVGFzaxAXEh4KGkJyb2tlclRyYW5zbWl0UHJvdmlkZXJUYXNrEBgSIAocQnJva2VyUmVjZWl2ZWRQcm92aWRlclJlc3VsdBAZEiAKHEJyb2tlclRyYW5zbWl0Q2xpZW50UmVzcG9uc2UQGhIRCg1Qcm92aWRlckVycm9yEB4SGAoUUHJvdmlkZXJUYXNrUmVjZWl2ZWQQHxIVChFQcm92aWRlckdldFdvcmtlchAgEhgKFFByb3ZpZGVyUG9zdFRvV29ya2VyECESGQoVUHJvdmlkZXJXb3JrZXJQcmVwYXJlECISGQoVUHJvdmlkZXJXb3JrZXJFeGVjdXRlECMSFgoSUHJvdmlkZXJXb3JrZXJEb25lECQSGgoWUHJvdmlkZXJUcmFuc21pdFJlc3VsdBAlGiQKBkNhbmNlbBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkaugYKBldhc2lwMRqMAQoGUGFyYW1zEiEKBmJpbmFyeRgBIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSDAoEYXJncxgCIAMoCRIMCgRlbnZzGAMgAygJEg0KBXN0ZGluGAQgASgMEiEKBnJvb3RmcxgFIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSEQoJYXJ0aWZhY3RzGAYgAygJGl4KBk91dHB1dBIOCgZzdGF0dXMYASABKAUSDgoGc3Rkb3V0GAIgASgMEg4KBnN0ZGVychgDIAEoDBIkCglhcnRpZmFjdHMYBCABKAsyES53YXNpbW9mZi52MS5GaWxlGogBCgdSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEi8KBnBhcmFtcxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxq7AQoKSm9iUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIvCgZwYXJlbnQYAyABKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5QYXJhbXMSLgoFdGFza3MYBCADKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5QYXJhbXMafgoIUmVzcG9uc2USKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESDwoFZXJyb3IYAiABKAlIABItCgJvaxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLk91dHB1dEgAQggKBnJlc3VsdBp4CgtKb2JSZXNwb25zZRIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRINCgVlcnJvchgCIAEoCRIwCgV0YXNrcxgDIAMoCzIhLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlGt0GCgdQeW9kaWRlGpgBCgZQYXJhbXMSEAoIcGFja2FnZXMYASADKAkSEAoGc2NyaXB0GAIgASgJSAASEAoGcGlja2xlGAMgASgMSAASDAoEZW52cxgEIAMoCRINCgVzdGRpbhgFIAEoDBIhCgZyb290ZnMYBiABKAsyES53YXNpbW9mZi52MS5GaWxlEhEKCWFydGlmYWN0cxgHIAMoCUIFCgNydW4abwoGT3V0cHV0Eg4KBnBpY2tsZRgBIAEoDBIOCgZzdGRvdXQYAiABKAwSDgoGc3RkZXJyGAMgASgMEg8KB3ZlcnNpb24YBCABKAkSJAoJYXJ0aWZhY3RzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRqJAQoHUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIwCgZwYXJhbXMYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGr0BCgpKb2JSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEjAKBnBhcmVudBgDIAEoCzIgLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5QYXJhbXMSLwoFdGFza3MYBCADKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGn8KCFJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg8KBWVycm9yGAIgASgJSAASLgoCb2sYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0GnkKC0pvYlJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg0KBWVycm9yGAIgASgJEjEKBXRhc2tzGAMgAygLMiIud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlJlc3BvbnNlIjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiqwIKCkZpbGVzeXN0ZW0aLwoHTGlzdGluZxoJCgdSZXF1ZXN0GhkKCFJlc3BvbnNlEg0KBWZpbGVzGAEgAygJGjgKBVByb2JlGhcKB1JlcXVlc3QSDAoEZmlsZRgBIAEoCRoWCghSZXNwb25zZRIKCgJvaxgBIAEoCBpPCgZVcGxvYWQaLAoHUmVxdWVzdBIhCgZ1cGxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlGhcKCFJlc3BvbnNlEgsKA3JlZhgBIAEoCRphCghEb3dubG9hZBoXCgdSZXF1ZXN0EgwKBGZpbGUYASABKAkaPAoIUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSLnAQoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRo3ChFQcm92aWRlclJlc291cmNlcxITCgtjb25jdXJyZW5jeRgBIAEoDRINCgV0YXNrcxgCIAEoDRogCgtDbHVzdGVySW5mbxIRCglwcm92aWRlcnMYASABKA0aLAoKVGhyb3VnaHB1dBIPCgdvdmVyYWxsGAEgASgCEg0KBXlvdXJzGAIgASgCGjIKEEZpbGVTeXN0ZW1VcGRhdGUSDQoFYWRkZWQYASADKAkSDwoHcmVtb3ZlZBgCIAMoCSpcCgtTdWJwcm90b2NvbBILCgdVTktOT1dOEAASIQodd2FzaW1vZmZfcHJvdmlkZXJfdjFfcHJvdG9idWYQARIdChl3YXNpbW9mZl9wcm92aWRlcl92MV9qc29uEAIy7AIKBVRhc2tzElIKCVJ1bldhc2lwMRIgLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlcXVlc3QaIS53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5SZXNwb25zZSIAElsKDFJ1bldhc2lwMUpvYhIjLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLkpvYlJlcXVlc3QaJC53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5Kb2JSZXNwb25zZSIAElUKClJ1blB5b2RpZGUSIS53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUmVxdWVzdBoiLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXNwb25zZSIAElsKBlVwbG9hZBImLndhc2ltb2ZmLnYxLkZpbGVzeXN0ZW0uVXBsb2FkLlJlcXVlc3QaJy53YXNpbW9mZi52MS5GaWxlc3lzdGVtLlVwbG9hZC5SZXNwb25zZSIAQh9aHXdhc2kudGVhbS9wcm90by92MTt3YXNpbW9mZnYxYghlZGl0aW9uc3DoBw", [file_google_protobuf_any, file_google_protobuf_timestamp]);
 
 /**
  * Envelope is a generic message wrapper with a sequence counter and message type.
@@ -455,14 +455,18 @@ export enum Task_TraceEvent_EventType {
   ClientError = 10,
 
   /**
-   * @generated from enum value: ClientTransmit = 11;
+   * transmit request to broker
+   *
+   * @generated from enum value: ClientTransmitRequest = 11;
    */
-  ClientTransmit = 11,
+  ClientTransmitRequest = 11,
 
   /**
-   * @generated from enum value: ClientResponseReceived = 12;
+   * received response from broker
+   *
+   * @generated from enum value: ClientReceivedResponse = 12;
    */
-  ClientResponseReceived = 12,
+  ClientReceivedResponse = 12,
 
   /**
    * @generated from enum value: BrokerError = 20;
@@ -470,29 +474,46 @@ export enum Task_TraceEvent_EventType {
   BrokerError = 20,
 
   /**
-   * @generated from enum value: BrokerRequestReceived = 21;
+   * received request from client
+   *
+   * @generated from enum value: BrokerReceivedClientRequest = 21;
    */
-  BrokerRequestReceived = 21,
+  BrokerReceivedClientRequest = 21,
 
   /**
+   * queued task the task for scheduling
+   *
    * @generated from enum value: BrokerQueueTask = 22;
    */
   BrokerQueueTask = 22,
 
   /**
+   * attempt to schedule on a provider
+   *
    * @generated from enum value: BrokerScheduleTask = 23;
    */
   BrokerScheduleTask = 23,
 
   /**
-   * @generated from enum value: BrokerTransmit = 24;
+   * transmit the task to selected provider
+   *
+   * @generated from enum value: BrokerTransmitProviderTask = 24;
    */
-  BrokerTransmit = 24,
+  BrokerTransmitProviderTask = 24,
 
   /**
-   * @generated from enum value: BrokerResponseReceived = 25;
+   * received a result from provider
+   *
+   * @generated from enum value: BrokerReceivedProviderResult = 25;
    */
-  BrokerResponseReceived = 25,
+  BrokerReceivedProviderResult = 25,
+
+  /**
+   * transmit the response to client
+   *
+   * @generated from enum value: BrokerTransmitClientResponse = 26;
+   */
+  BrokerTransmitClientResponse = 26,
 
   /**
    * @generated from enum value: ProviderError = 30;
@@ -500,36 +521,50 @@ export enum Task_TraceEvent_EventType {
   ProviderError = 30,
 
   /**
+   * received task from broker
+   *
    * @generated from enum value: ProviderTaskReceived = 31;
    */
   ProviderTaskReceived = 31,
 
   /**
+   * get an idle worker
+   *
    * @generated from enum value: ProviderGetWorker = 32;
    */
   ProviderGetWorker = 32,
 
   /**
-   * @generated from enum value: ProviderSendToWorker = 33;
+   * post the task details to worker
+   *
+   * @generated from enum value: ProviderPostToWorker = 33;
    */
-  ProviderSendToWorker = 33,
+  ProviderPostToWorker = 33,
 
   /**
-   * @generated from enum value: ProviderPrepareExec = 34;
+   * worker prepares execution environment
+   *
+   * @generated from enum value: ProviderWorkerPrepare = 34;
    */
-  ProviderPrepareExec = 34,
+  ProviderWorkerPrepare = 34,
 
   /**
-   * @generated from enum value: ProviderExecuteTask = 35;
+   * instance spawned, execute the task
+   *
+   * @generated from enum value: ProviderWorkerExecute = 35;
    */
-  ProviderExecuteTask = 35,
+  ProviderWorkerExecute = 35,
 
   /**
-   * @generated from enum value: ProviderExecutionDone = 36;
+   * execution is done, post result to provider
+   *
+   * @generated from enum value: ProviderWorkerDone = 36;
    */
-  ProviderExecutionDone = 36,
+  ProviderWorkerDone = 36,
 
   /**
+   * transmit the result to broker
+   *
    * @generated from enum value: ProviderTransmitResult = 37;
    */
   ProviderTransmitResult = 37,
@@ -538,7 +573,7 @@ export enum Task_TraceEvent_EventType {
 /**
  * @generated from enum wasimoff.v1.Task.TraceEvent.EventType
  */
-export type Task_TraceEvent_EventTypeJson = "UNKNOWN" | "ClientError" | "ClientTransmit" | "ClientResponseReceived" | "BrokerError" | "BrokerRequestReceived" | "BrokerQueueTask" | "BrokerScheduleTask" | "BrokerTransmit" | "BrokerResponseReceived" | "ProviderError" | "ProviderTaskReceived" | "ProviderGetWorker" | "ProviderSendToWorker" | "ProviderPrepareExec" | "ProviderExecuteTask" | "ProviderExecutionDone" | "ProviderTransmitResult";
+export type Task_TraceEvent_EventTypeJson = "UNKNOWN" | "ClientError" | "ClientTransmitRequest" | "ClientReceivedResponse" | "BrokerError" | "BrokerReceivedClientRequest" | "BrokerQueueTask" | "BrokerScheduleTask" | "BrokerTransmitProviderTask" | "BrokerReceivedProviderResult" | "BrokerTransmitClientResponse" | "ProviderError" | "ProviderTaskReceived" | "ProviderGetWorker" | "ProviderPostToWorker" | "ProviderWorkerPrepare" | "ProviderWorkerExecute" | "ProviderWorkerDone" | "ProviderTransmitResult";
 
 /**
  * Describes the enum wasimoff.v1.Task.TraceEvent.EventType.
