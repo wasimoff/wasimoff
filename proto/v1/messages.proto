@@ -82,26 +82,26 @@ message Task {
       UNKNOWN = 0;
 
       ClientError = 10;
-      ClientTransmit = 11;
-      ClientResponseReceived = 12;
+      ClientTransmitRequest = 11; // transmit request to broker
+      ClientReceivedResponse = 12; // received response from broker
 
       BrokerError = 20;
-      BrokerRequestReceived = 21;
-      BrokerQueueTask = 22;
-      BrokerScheduleTask = 23;
-      BrokerTransmit = 24;
-      BrokerResponseReceived = 25;
+      BrokerReceivedClientRequest = 21; // received request from client
+      BrokerQueueTask = 22; // queued task the task for scheduling
+      BrokerScheduleTask = 23; // attempt to schedule on a provider
+      BrokerTransmitProviderTask = 24; // transmit the task to selected provider
+      BrokerReceivedProviderResult = 25; // received a result from provider
+      BrokerTransmitClientResponse = 26; // transmit the response to client
 
       ProviderError = 30;
-      ProviderTaskReceived = 31;
-      ProviderGetWorker = 32;
-      ProviderSendToWorker = 33;
-      ProviderPrepareExec = 34;
-      ProviderExecuteTask = 35;
-      ProviderExecutionDone = 36;
-      ProviderTransmitResult = 37;
+      ProviderTaskReceived = 31; // received task from broker
+      ProviderGetWorker = 32; // get an idle worker
+      ProviderPostToWorker = 33; // post the task details to worker
+      ProviderWorkerPrepare = 34; // worker prepares execution environment
+      ProviderWorkerExecute = 35; // instance spawned, execute the task
+      ProviderWorkerDone = 36; // execution is done, post result to provider
+      ProviderTransmitResult = 37; // transmit the result to broker
 
-      // TODO: deco events starting with 40
     }
   }
 

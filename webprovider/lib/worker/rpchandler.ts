@@ -33,9 +33,7 @@ export async function rpchandler(
         if (info === undefined || params === undefined) {
           throw "info and params cannot be undefined";
         }
-
         traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderTaskReceived);
-
         const task = params;
         if (task.binary === undefined) {
           throw "wasip1.binary cannot be undefined";
@@ -75,7 +73,7 @@ export async function rpchandler(
           }
         }
 
-        console.debug(...rpcHandlerPrefix, info, task);
+        console.debug(...rpcHandlerPrefix, info.id, task);
         try {
           // execute the module in a worker
           let run = await this.pool.runWasip1(info, {
@@ -87,7 +85,7 @@ export async function rpchandler(
             artifacts: task.artifacts,
           } as Wasip1TaskParams);
           // send back the result
-          traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderExecutionDone);
+          traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderTransmitResult);
           return create(wasimoff.Task_Wasip1_ResponseSchema, {
             info: info,
             result: {
@@ -118,6 +116,7 @@ export async function rpchandler(
         if (info === undefined || params === undefined) {
           throw "info and params cannot be undefined";
         }
+        traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderTaskReceived);
         if (params.run.case === undefined) {
           throw "pyodide.run cannot be undefined";
         }
@@ -133,6 +132,7 @@ export async function rpchandler(
         console.debug(...rpcHandlerPrefix, info.id, task);
         try {
           let run = await this.pool.runPyodide(info, task);
+          traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderTransmitResult);
           return create(wasimoff.Task_Pyodide_ResponseSchema, {
             result: {
               case: "ok",
@@ -147,7 +147,9 @@ export async function rpchandler(
           });
         } catch (err) {
           // format exceptions as WasiResponse.Error
+          traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderError);
           return create(wasimoff.Task_Pyodide_ResponseSchema, {
+            info: info,
             result: { case: "error", value: String(err) },
           });
         }

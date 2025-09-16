@@ -163,7 +163,6 @@ func Execute(args, envs []string) {
 		request.Info.Trace = &wasimoff.Task_Trace{
 			Created: proto.Int64(time.Now().UnixNano()),
 		}
-		request.Info.TraceEvent(wasimoff.Task_TraceEvent_ClientTransmit)
 	}
 
 	// make the request
@@ -316,7 +315,16 @@ func maybePrintTrace(info *wasimoff.Task_Metadata) {
 		fmt.Fprintf(os.Stderr, "\033[1mTask Metadata:\n\033[0;36m%s\033[0m", prototext.Format(info))
 		fmt.Fprintf(os.Stderr, "\n\033[36m%s START\033[0m\n", time.Unix(0, *trace.Created))
 		for _, ev := range trace.Events {
-			fmt.Fprintf(os.Stderr, "\033[36m+%12.3f ms > %v\033[0m\n", float64(*ev.Unixnano)/1_000_000, ev.Event)
+			e := ev.Event.String()
+			switch true {
+			case strings.HasPrefix(e, "Broker"):
+				e = "\033[32m- " + e
+			case strings.HasPrefix(e, "Provider"):
+				e = "\033[33m--- " + e
+			default:
+				e = "\033[31m" + e
+			}
+			fmt.Fprintf(os.Stderr, "\033[36m+%12.3f ms > %v\033[0m\n", float64(*ev.Unixnano)/1_000_000, e)
 		}
 	}
 }
