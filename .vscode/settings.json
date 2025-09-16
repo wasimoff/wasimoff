@@ -1,16 +1,26 @@
 {
-  "rust-analyzer.linkedProjects": [
-    "wasi-apps/helloworld/rust/Cargo.toml",
-    "wasi-apps/fibonacci/Cargo.toml"
-  ],
-  "ansible.python.interpreterPath": "/bin/python",
-  "deno.enablePaths": [
-    "./denoprovider/",
-    "./deno.json"
-  ],
-  "deno.enable": true,
+
+  // always want the code to look uniformly
   "editor.formatOnSave": true,
+
+  // enable deno only for specific paths
+  "deno.enable": true,
+  "deno.enablePaths": [
+    "denoprovider/",
+    "deno.json",
+  ],
+
+  // use the deno formatter for typescript as well
   "[typescript]": {
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
+
+  // add wasi-apps rust projects explicitly
+  "rust-analyzer.linkedProjects": [
+    "wasi-apps/argonload/Cargo.toml",
+    "wasi-apps/fibonacci/Cargo.toml",
+    "wasi-apps/gaussian_sleeper/Cargo.toml",
+    "wasi-apps/helloworld/rust/Cargo.toml",
+    "wasi-apps/travelling_salesman/Cargo.toml",
+  ],
 }
