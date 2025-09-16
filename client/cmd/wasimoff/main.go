@@ -298,33 +298,62 @@ func maybePrintTrace(info *wasimoff.Task_Metadata) {
 		trace := info.GetTrace()
 		info.Trace = nil
 
-		// compute diffs between steps in milliseconds
-		events := trace.Events
-		for i := len(events) - 1; i >= 0; i-- {
-			ev := events[i]
-			var prev int64
-			if i > 0 {
-				prev = *events[i-1].Unixnano
-			} else {
-				prev = *trace.Created
-			}
-			ev.Unixnano = proto.Int64(*ev.Unixnano - prev)
-		}
+		// perform span correction
+		trace.ClockSkewCorrection()
 
 		// print metadata and the list of steps
-		fmt.Fprintf(os.Stderr, "\033[1mTask Metadata:\n\033[0;36m%s\033[0m", prototext.Format(info))
-		fmt.Fprintf(os.Stderr, "\n\033[36m%s START\033[0m\n", time.Unix(0, *trace.Created))
-		for _, ev := range trace.Events {
-			e := ev.Event.String()
-			switch true {
-			case strings.HasPrefix(e, "Broker"):
-				e = "\033[32m- " + e
-			case strings.HasPrefix(e, "Provider"):
-				e = "\033[33m--- " + e
-			default:
-				e = "\033[31m" + e
+		fmt.Fprintf(os.Stderr, "\033[1mTask Metadata:\n\033[0;36m%s\033[0m\n", prototext.Format(info))
+		fmt.Fprintf(os.Stderr, "\033[36mstart: %s\033[0m\n", time.Unix(0, *trace.Created))
+		fmt.Fprintf(os.Stderr, "\033[36m%14s | %14s    | component\033[0m\n", "absolute", "relative")
+		for i, ev := range trace.Events {
+
+			// compute time diffs from start and to last
+			fromStart := *ev.Unixnano - *trace.Created
+			fromLast := fromStart
+			if i > 0 {
+				fromLast = *ev.Unixnano - *trace.Events[i-1].Unixnano
 			}
-			fmt.Fprintf(os.Stderr, "\033[36m+%12.3f ms > %v\033[0m\n", float64(*ev.Unixnano)/1_000_000, e)
+
+			// make a colorful label depending on component
+			label := ev.Event.String()
+			switch ev.Event.Component() {
+			case wasimoff.Task_TraceEvent_Component_Client:
+				label = "\033[31m" + label
+			case wasimoff.Task_TraceEvent_Component_Broker:
+				label = "\033[32m- " + label
+			case wasimoff.Task_TraceEvent_Component_Provider:
+				label = "\033[33m--- " + label
+			}
+
+			fmt.Fprintf(os.Stderr, "\033[36m%14.3f | %14.3f ms | %v\033[0m\n",
+				float64(fromStart)/1_000_000,
+				float64(fromLast)/1_000_000,
+				label)
+
 		}
+
+		info.Trace = trace
+		maybeDumpJsonTo3(info)
+
 	}
+}
+
+func maybeDumpJsonTo3(msg proto.Message) {
+
+	// try to open fd and check if we can write to it
+	if _, err := os.Stat("/dev/fd/3"); err != nil {
+		return
+	}
+	fd := os.NewFile(3, "/dev/fd/3")
+	if fd == nil {
+		return
+	}
+	defer fd.Close()
+	if _, err := fd.Write([]byte{}); err != nil {
+		return
+	}
+
+	// dump the message into this filedescriptor
+	fd.WriteString(protojson.Format(msg))
+
 }
