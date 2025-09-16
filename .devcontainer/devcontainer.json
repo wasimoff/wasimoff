@@ -1,52 +1,48 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
 {
-	"name": "Node.js",
-	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/typescript-node:22",
-	"features": {
-		"ghcr.io/devcontainers/features/go:1": {},
-		"ghcr.io/devcontainers-extra/features/protoc-asdf:1": {},
-		"ghcr.io/devcontainer-community/devcontainer-features/deno.com:1": {},
-		"ghcr.io/devcontainers-extra/features/gh-release:1": {
-			"repo": "bufbuild/buf",
-			"binaryNames": "buf,protoc-gen-buf-lint,protoc-gen-buf-breaking",
-			"assetRegex": ".*\\.tar\\.gz",
-			"libName": "buf"
-		}
-	},
+  "name": "Node.js",
+  // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:22",
+  "features": {
+    "ghcr.io/devcontainers/features/go:1": {},
+    "ghcr.io/devcontainers-extra/features/protoc-asdf:1": {},
+    "ghcr.io/devcontainer-community/devcontainer-features/deno.com:1": {},
+    "ghcr.io/devcontainers-extra/features/gh-release:1": {
+      "repo": "bufbuild/buf",
+      "binaryNames": "buf,protoc-gen-buf-lint,protoc-gen-buf-breaking",
+      "assetRegex": ".*\\.tar\\.gz",
+      "libName": "buf"
+    }
+  },
 
-	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest",
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "postCreateCommand": "go install google.golang.org/protobuf/cmd/protoc-gen-go@latest && go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest",
 
-	// Configure environment variables
-	"containerEnv": {
-		"YARN_GLOBAL_FOLDER": "/workspaces/wasimoff/webprovider/.yarn"
-	},
+  // Configure environment variables
+  "containerEnv": {
+    "YARN_GLOBAL_FOLDER": "/workspaces/wasimoff/webprovider/.yarn"
+  },
 
-	// Set the default shell to bash
-	"customizations": {
-		"vscode": {
-			"settings": {
-				"terminal.integrated.defaultProfile.linux": "bash"
-			},
-			"extensions": [
-				"denoland.vscode-deno",
-				"Vue.volar",
-				"bufbuild.vscode-buf"
-			]
-		}
-	}
+  // Set the default shell to bash
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": ["denoland.vscode-deno", "Vue.volar", "bufbuild.vscode-buf"]
+    }
+  }
 
-	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
 
-	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
 
-	// Configure tool-specific properties.
-	// "customizations": {},
+  // Configure tool-specific properties.
+  // "customizations": {},
 
-	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
 }

@@ -121,10 +121,9 @@ export class WebSocketTransport implements Transport {
       case WebSocketTransport.provider_v1_json:
         if (typeof data === "string") {
           return fromJsonString(EnvelopeSchema, data, { registry: this.registry });
-        } else {throw WebSocketTransport.Err.ProtocolViolation.MessageType(
-            "binary",
-            this.ws.protocol,
-          );}
+        } else {
+          throw WebSocketTransport.Err.ProtocolViolation.MessageType("binary", this.ws.protocol);
+        }
 
       default: // oops?
         let err = WebSocketTransport.Err.ProtocolViolation.Negotiation(this.ws.protocol);
@@ -175,7 +174,10 @@ export namespace WebSocketTransport {
 
     // unsupported protocol on the wire
     export class ProtocolViolation extends Error {
-      constructor(message: string, public protocol: string) {
+      constructor(
+        message: string,
+        public protocol: string,
+      ) {
         super(`${message}: ${protocol}`);
         this.name = this.constructor.name;
       }

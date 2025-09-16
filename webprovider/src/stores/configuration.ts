@@ -45,15 +45,9 @@ export const useConfiguration = defineStore("Configuration", () => {
   };
 
   // ---------- overall getters; mostly fragment > serverfetch > defaults --------- //
-  const autoconnect = computed(() =>
-    firstOf(fragmentconf.autoconnect, defaultconf.autoconnect)
-  );
-  const workers = computed(() =>
-    firstOf(fragmentconf.workers, defaultconf.workers)
-  );
-  const transport = computed(() =>
-    firstOf(fragmentconf.transport, defaultconf.transport)
-  );
+  const autoconnect = computed(() => firstOf(fragmentconf.autoconnect, defaultconf.autoconnect));
+  const workers = computed(() => firstOf(fragmentconf.workers, defaultconf.workers));
+  const transport = computed(() => firstOf(fragmentconf.transport, defaultconf.transport));
 
   return { fragmentconf, defaultconf, autoconnect, workers, transport };
 });

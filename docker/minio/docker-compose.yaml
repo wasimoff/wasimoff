@@ -1,5 +1,4 @@
 services:
-
   minio:
     image: quay.io/minio/minio
     container_name: minio
@@ -14,12 +13,8 @@ services:
   createbuckets:
     image: quay.io/minio/minio
     container_name: minio-createbuckets
-    depends_on: [ minio ]
+    depends_on: [minio]
     entrypoint: >
-      /bin/bash -c "
-      until curl -s http://minio:9000/minio/health/ready; do echo .; sleep 1; done;
-      mc alias set minio http://minio:9000 admin password;
-      mc mb minio/wasimoff;
-      mc anonymous set download minio/wasimoff;
-      exit 0;
-      "
+      /bin/bash -c " until curl -s http://minio:9000/minio/health/ready; do echo .; sleep 1; done;
+      mc alias set minio http://minio:9000 admin password; mc mb minio/wasimoff; mc anonymous set
+      download minio/wasimoff; exit 0; "

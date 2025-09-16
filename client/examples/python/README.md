@@ -1,6 +1,8 @@
 # Python / Ruby WASI Example
 
-Use the precompiled Python releases from [vmware-labs/webassembly-language-runtimes](https://github.com/vmware-labs/webassembly-language-runtimes/releases), e.g.:
+Use the precompiled Python releases from
+[vmware-labs/webassembly-language-runtimes](https://github.com/vmware-labs/webassembly-language-runtimes/releases),
+e.g.:
 [python/3.12.0+20231211-040d5a6](https://github.com/vmware-labs/webassembly-language-runtimes/releases/download/python%2F3.12.0%2B20231211-040d5a6/python-3.12.0.wasm)
 
 ```

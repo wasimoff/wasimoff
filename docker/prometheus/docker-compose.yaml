@@ -1,5 +1,4 @@
 services:
-
   prometheus:
     image: prom/prometheus
     container_name: wasimoff_prometheus

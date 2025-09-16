@@ -20,7 +20,7 @@ export async function construct<T extends { new (...args: any[]): InstanceType<T
   // wrap the comlink proxy when it's ready
   let proxiedClass = await comlink<T>(worker);
   // call the remote class constructor
-  return await new proxiedClass(...args) as any;
+  return (await new proxiedClass(...args)) as any;
 }
 
 /** Wrap an existing Worker with a Comlink proxy `Remote<T>` asynchronously. The
@@ -45,12 +45,16 @@ export async function comlink<T>(endpoint: Endpoint): Promise<Remote<T>> {
 // https://github.com/GoogleChromeLabs/comlink/blob/dffe9050f63b1b39f30213adeb1dd4b9ed7d2594/src/comlink.ts#L603
 export function whenready(endpoint: Endpoint, callback: (u?: unknown) => void) {
   const controller = new AbortController();
-  endpoint.addEventListener("message", (ev: any) => {
-    if (!!ev.data && (<MessageEvent<typeof workerReady>> ev).data.ready === true) {
-      controller.abort();
-      callback();
-    }
-  }, { signal: controller.signal });
+  endpoint.addEventListener(
+    "message",
+    (ev: any) => {
+      if (!!ev.data && (<MessageEvent<typeof workerReady>>ev).data.ready === true) {
+        controller.abort();
+        callback();
+      }
+    },
+    { signal: controller.signal },
+  );
   if (endpoint.start) endpoint.start();
 }
 

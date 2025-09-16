@@ -2,7 +2,7 @@ name: build container images
 
 on:
   push: # updates on main
-    branches: [ main ]
+    branches: [main]
   pull_request:
   schedule: # nightlies
     - cron: 30 02 * * *
@@ -15,7 +15,6 @@ env:
   PLATFORMS: linux/amd64,linux/arm64
 
 jobs:
-
   container:
     name: build image 📦
     runs-on: ubuntu-latest
@@ -36,7 +35,7 @@ jobs:
           echo "revcount=${COUNT}" | tee -a $GITHUB_OUTPUT
           echo "abbrev=${ABBREV}" | tee -a $GITHUB_OUTPUT
           echo "revision=r${COUNT}-g${ABBREV}" | tee -a $GITHUB_OUTPUT
-          
+
           # branch name and current date for metadata
           echo "head=${GITHUB_REF#refs/heads/}" | tee -a $GITHUB_OUTPUT
           echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" | tee -a $GITHUB_OUTPUT
@@ -83,7 +82,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' && steps.meta.outputs.head == 'main' }}
           tags: >-
             ${{ github.event_name == 'schedule' && 'ghcr.io/wasimoff/provider:nightly' ||
-            format('{0}:latest,{0}:{1}', 'ghcr.io/wasimoff/provider', steps.meta.outputs.revision) }}
+            format('{0}:latest,{0}:{1}', 'ghcr.io/wasimoff/provider', steps.meta.outputs.revision)
+            }}
           labels: |
             org.opencontainers.image.title=${{ github.event.repository.name }} Provider
             org.opencontainers.image.description=${{ github.event.repository.description }}

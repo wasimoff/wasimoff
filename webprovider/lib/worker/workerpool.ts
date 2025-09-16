@@ -21,14 +21,17 @@ export class WasiWorkerPool {
   ) {}
 
   // hold the Workers in an array
-  private pool: WrappedWorker<WasiWorker, {
-    index: number;
-    busy: boolean;
-    taskid?: string;
-    started?: Date;
-    cancelled?: boolean;
-    reject?: () => void;
-  }>[] = [];
+  private pool: WrappedWorker<
+    WasiWorker,
+    {
+      index: number;
+      busy: boolean;
+      taskid?: string;
+      started?: Date;
+      cancelled?: boolean;
+      reject?: () => void;
+    }
+  >[] = [];
 
   /** Incrementing index for new workers. */
   private nextindex = 0;
@@ -58,7 +61,7 @@ export class WasiWorkerPool {
   }
 
   // an asynchronous queue to fetch an available worker
-  private idlequeue = new Queue<typeof this.pool[0]>();
+  private idlequeue = new Queue<(typeof this.pool)[0]>();
 
   // --------->  spawn new workers
 
@@ -118,7 +121,10 @@ export class WasiWorkerPool {
     // take an idle worker from the queue
     const worker = await this.idlequeue.get();
     // remove it from the pool and release resources
-    this.pool.splice(this.pool.findIndex((el) => el === worker), 1);
+    this.pool.splice(
+      this.pool.findIndex((el) => el === worker),
+      1,
+    );
     console.info(...logprefix, "shutdown worker", worker.index);
     worker.link[releaseProxy]();
     worker.worker.terminate();
@@ -148,7 +154,10 @@ export class WasiWorkerPool {
       w.cancelled = true;
       console.warn(...logprefix, `cancel and respawn worker ${w.index}`);
       // terminate and remove from pool
-      this.pool.splice(this.pool.findIndex((el) => el === w), 1);
+      this.pool.splice(
+        this.pool.findIndex((el) => el === w),
+        1,
+      );
       w.link[releaseProxy]();
       w.worker.terminate();
       w.reject?.();
@@ -225,7 +234,10 @@ export class WasiWorkerPool {
       worker.worker.terminate();
       await this.spawn();
       // move splice last to avoid "no workers in pool" errors
-      this.pool.splice(this.pool.findIndex((el) => el === worker), 1);
+      this.pool.splice(
+        this.pool.findIndex((el) => el === worker),
+        1,
+      );
     }
   }
 }

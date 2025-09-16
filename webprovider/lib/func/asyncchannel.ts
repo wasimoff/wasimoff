@@ -37,11 +37,15 @@ export class MessagePackChannel<Message = any> implements AsyncChannel<Message> 
     // close both directional streams in parallel
     await Promise.allSettled([
       // release lock on the generator, then close the readable
-      this.channel.throw("").then(() => this.stream.readable.cancel())
+      this.channel
+        .throw("")
+        .then(() => this.stream.readable.cancel())
         .then(() => console.error("MessagePackChannel `channel` closed")),
 
       // we're holding the lock on writer, so we can close it directly
-      this.writer.close().then(() => this.writer.releaseLock())
+      this.writer
+        .close()
+        .then(() => this.writer.releaseLock())
         .then(() => console.error("MessagePackChannel `writer` closed")),
     ]);
   }

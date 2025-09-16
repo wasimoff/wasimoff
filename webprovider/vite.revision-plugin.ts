@@ -24,7 +24,7 @@ export function gitversion(): Plugin {
   return {
     name: "git-revision-plugin",
     config: () =>
-      <UserConfig> {
+      <UserConfig>{
         define: {
           VERSION: JSON.stringify(version || "unknown"),
         },

@@ -21,13 +21,13 @@ type Sdp =
   | { Offer: RTCSessionDescriptionInit }
   | { Answer: RTCSessionDescriptionInit }
   | {
-    Candidate: {
-      candidate: string;
-      sdpMLineIndex: number | null;
-      sdpMid: string | null;
-      usernameFragment: string | null;
+      Candidate: {
+        candidate: string;
+        sdpMLineIndex: number | null;
+        sdpMid: string | null;
+        usernameFragment: string | null;
+      };
     };
-  };
 
 interface ProviderAnnounce {
   id: string;
@@ -183,11 +183,7 @@ export class WebRTCTransport implements Transport {
           };
 
           dataChannel.onerror = (error) => {
-            console.error(
-              "Data channel error for:",
-              sdpMessage.source,
-              error,
-            );
+            console.error("Data channel error for:", sdpMessage.source, error);
           };
           dataChannel.onmessage = async (event) => {
             // Receive Envelope and push together with the source identifier to the message queue
@@ -230,9 +226,7 @@ export class WebRTCTransport implements Transport {
     this.connectionStates.clear();
 
     // Close NATS connection
-    this.nc
-      .close()
-      .catch((err) => console.error("Error closing NATS connection:", err));
+    this.nc.close().catch((err) => console.error("Error closing NATS connection:", err));
 
     this.messages.close();
     this.signal.reject(err);
