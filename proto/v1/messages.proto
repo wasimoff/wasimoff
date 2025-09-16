@@ -1,16 +1,16 @@
 // best practices: https://protobuf.dev/programming-guides/dos-donts/
 edition = "2023";
 
+package wasimoff.v1;
+
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 
-package wasimoff.v1;
 option go_package = "wasi.team/proto/v1;wasimoffv1";
 
 // enable the new opaque api: https://protobuf.dev/reference/go/opaque-faq/
 // import "google/protobuf/go_features.proto";
 // option features.(pb.go).api_level = API_OPAQUE;
-
 
 // ---------- "topmost" wrapped message format ---------- //
 
@@ -18,7 +18,6 @@ option go_package = "wasi.team/proto/v1;wasimoffv1";
 // The payload can contain a { Request, Response, Event }. When an Error is present
 // on a Response, it indicates that the Request failed badly internally.
 message Envelope {
-
   // The sequence number is incremented for each message but Request and Event
   // count independently. Responses must always reuse the Request's sequence
   // number so they can be routed to the caller correctly.
@@ -26,7 +25,12 @@ message Envelope {
 
   // The message type indicates the payload contents: { Request, Response, Event }.
   MessageType type = 2;
-  enum MessageType { UNKNOWN = 0; Request = 1; Response = 2; Event = 3; }
+  enum MessageType {
+    UNKNOWN = 0;
+    Request = 1;
+    Response = 2;
+    Event = 3;
+  }
 
   // The presence of an error string indicates a fatal failure with a request.
   // Responses should encode specific errors within the payload, if possible.
@@ -38,9 +42,7 @@ message Envelope {
   // to name the Request and Result pairs absolutely clearly. Avoid using a generic
   // response message for different requests, even if their fields are identical.
   google.protobuf.Any payload = 4;
-
 }
-
 
 // ---------- task offloading requests ---------- //
 
@@ -48,7 +50,6 @@ message Envelope {
 // and return the output upon successful execution. The Request and Response herein
 // are the smallest unit of work that should be sent on the wire.
 message Task {
-
   // Information about this task for identification and tracing.
   message Metadata {
     string id = 1; // unique identifier for this task
@@ -67,16 +68,16 @@ message Task {
   }
 
   message Trace {
-    int64 created = 1;   // unixnano
+    int64 created = 1; // unixnano
     uint64 duration = 2; // total duration equivalent to client-observed delay
     repeated TraceEvent events = 3; // log of events
   }
 
   // Trace certain events throughout a task lifetime
   message TraceEvent {
-    int64 unixnano = 1;  // timestamp in nanoseconds (start instant of event)
+    int64 unixnano = 1; // timestamp in nanoseconds (start instant of event)
     EventType event = 2; // event identifier
-    string details = 3;  // optional freetext details
+    string details = 3; // optional freetext details
 
     enum EventType {
       UNKNOWN = 0;
@@ -101,7 +102,6 @@ message Task {
       ProviderWorkerExecute = 35; // instance spawned, execute the task
       ProviderWorkerDone = 36; // execution is done, post result to provider
       ProviderTransmitResult = 37; // transmit the result to broker
-
     }
   }
 
@@ -111,11 +111,9 @@ message Task {
     string reason = 2; // freeform reason for logging
   }
 
-
   //  WebAssembly System Interface (WASI), preview1
   // ===============================================
   message Wasip1 {
-
     // Parameters to instantiate a WebAssembly WASI preview 1 task.
     message Params {
       File binary = 1;
@@ -168,20 +166,17 @@ message Task {
       string error = 2;
       repeated Response tasks = 3;
     }
-
   }
-
 
   //  Pyodide Python scripts
   // ========================
   message Pyodide {
-
     // Parameters to instantiate a Pyodide task.
     message Params {
       repeated string packages = 1; // preloaded packages
       oneof run {
         string script = 2; // plaintext script
-        bytes pickle = 3;  // serialized [ func, [args], {kwargs} ]
+        bytes pickle = 3; // serialized [ func, [args], {kwargs} ]
       }
       repeated string envs = 4; // environment as ENV=var strings
       bytes stdin = 5; // buffer for stdin, reading errors if none
@@ -232,14 +227,11 @@ message Task {
       string error = 2;
       repeated Response tasks = 3;
     }
-
   }
-
 }
 
 // The Client service defines RPC interfaces for clients connecting to a Broker.
 service Tasks {
-
   // offload a WebAssembly WASI preview 1 tasks
   rpc RunWasip1(Task.Wasip1.Request) returns (Task.Wasip1.Response) {}
   rpc RunWasip1Job(Task.Wasip1.JobRequest) returns (Task.Wasip1.JobResponse) {}
@@ -250,9 +242,7 @@ service Tasks {
 
   // upload a file to the broker
   rpc Upload(Filesystem.Upload.Request) returns (Filesystem.Upload.Response) {}
-
 }
-
 
 // ---------- filesystem ---------- //
 
@@ -266,7 +256,6 @@ message File {
 }
 
 message Filesystem {
-
   // Listing asks for a listing of all available files on Provider
   message Listing {
     message Request {
@@ -307,13 +296,11 @@ message Filesystem {
       string err = 2;
     }
   }
-
 }
 
 // ---------- event messages ---------- //
 
 message Event {
-
   // GenericMessage is just a generic piece of text for logging
   message GenericMessage {
     string message = 1;
@@ -341,9 +328,7 @@ message Event {
     repeated string added = 1;
     repeated string removed = 2;
   }
-
 }
-
 
 // ---------- identifiers for websocket codecs ---------- //
 
@@ -351,5 +336,5 @@ message Event {
 enum Subprotocol {
   UNKNOWN = 0;
   wasimoff_provider_v1_protobuf = 1; // binary messages with Protobuf encoding
-  wasimoff_provider_v1_json     = 2; // text messages with JSON encoding
+  wasimoff_provider_v1_json = 2; // text messages with JSON encoding
 }

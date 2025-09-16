@@ -8,13 +8,10 @@ const targets = [
   "x86_64-apple-darwin",
   "aarch64-apple-darwin",
 ] as const;
-type Target = typeof targets[number];
+type Target = (typeof targets)[number];
 
 // func to compile for a single target
-async function compile(
-  target: Target = Deno.build.target as Target,
-  alias?: string,
-) {
+async function compile(target: Target = Deno.build.target as Target, alias?: string) {
   const cmd = new Deno.Command("deno", {
     args: [
       "compile",
@@ -37,9 +34,7 @@ async function compile(
 
 // check if arguments exist
 if (Deno.args.length === 0) {
-  console.warn(
-    "pick a target: {linux,windows,darwin}/{amd64,arm64}, native or all",
-  );
+  console.warn("pick a target: {linux,windows,darwin}/{amd64,arm64}, native or all");
   Deno.exit(1);
 }
 

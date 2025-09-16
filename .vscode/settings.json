@@ -1,19 +1,20 @@
 {
-
   // always want the code to look uniformly
   "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
 
-  // enable deno only for specific paths
-  "deno.enable": true,
-  "deno.enablePaths": [
-    "denoprovider/",
-    "deno.json",
-  ],
+  // use the typescript version from webprovider
+  "typescript.tsdk": "webprovider/node_modules/typescript/lib",
 
-  // use the deno formatter for typescript as well
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
+  // enable deno only for specific path
+  "deno.enablePaths": ["denoprovider/", "deno.json"],
+
+  // avoid prettier for some filetypes
+  "[go.work]": { "editor.defaultFormatter": "golang.go" },
+  "[go]": { "editor.defaultFormatter": "golang.go" },
+  "[proto]": { "editor.defaultFormatter": "bufbuild.vscode-buf" },
+  "[rust]": { "editor.defaultFormatter": "rust-lang.rust-analyzer" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
 
   // add wasi-apps rust projects explicitly
   "rust-analyzer.linkedProjects": [
@@ -21,6 +22,6 @@
     "wasi-apps/fibonacci/Cargo.toml",
     "wasi-apps/gaussian_sleeper/Cargo.toml",
     "wasi-apps/helloworld/rust/Cargo.toml",
-    "wasi-apps/travelling_salesman/Cargo.toml",
-  ],
+    "wasi-apps/travelling_salesman/Cargo.toml"
+  ]
 }

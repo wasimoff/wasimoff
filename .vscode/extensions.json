@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "denoland.vscode-deno",
+    "aaron-bond.better-comments",
+    "golang.go",
+    "rust-lang.rust-analyzer",
+    "Vue.volar",
+    "bufbuild.vscode-buf"
+  ]
+}
