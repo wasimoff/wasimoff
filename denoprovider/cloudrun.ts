@@ -29,7 +29,8 @@ const port = Number(Deno.env.get("PORT")) || 8000;
 
 // create the oak app for request handler
 const app = new Application({ state: { shutdown: false, counter: 0 } });
-app.use(async (ctx) => { // https://jsr.io/@oak/oak/doc/context/~/Context
+app.use(async (ctx) => {
+  // https://jsr.io/@oak/oak/doc/context/~/Context
   // request counter for readable logging
   const i = `task[${app.state.counter++}]`;
 
@@ -50,10 +51,7 @@ app.use(async (ctx) => { // https://jsr.io/@oak/oak/doc/context/~/Context
     let request: wasimoff.Task_Wasip1_Request;
     switch (content_type) {
       case "application/json":
-        request = pb.fromJson(
-          wasimoff.Task_Wasip1_RequestSchema,
-          await ctx.request.body.json(),
-        );
+        request = pb.fromJson(wasimoff.Task_Wasip1_RequestSchema, await ctx.request.body.json());
         break;
 
       case "application/proto":
@@ -64,9 +62,7 @@ app.use(async (ctx) => { // https://jsr.io/@oak/oak/doc/context/~/Context
         break;
 
       default:
-        throw new Error(
-          "only accepting Task_Wasip1_Request in JSON or Protobuf encoding",
-        );
+        throw new Error("only accepting Task_Wasip1_Request in JSON or Protobuf encoding");
     }
 
     // mostly copied from rpchandler.ts from here on ...
@@ -129,18 +125,12 @@ app.use(async (ctx) => { // https://jsr.io/@oak/oak/doc/context/~/Context
       switch (content_type) {
         case "application/json":
           ctx.response.type = "json";
-          ctx.response.body = pb.toJson(
-            wasimoff.Task_Wasip1_ResponseSchema,
-            response,
-          );
+          ctx.response.body = pb.toJson(wasimoff.Task_Wasip1_ResponseSchema, response);
           break;
 
         case "application/proto":
           ctx.response.type = content_type;
-          ctx.response.body = pb.toBinary(
-            wasimoff.Task_Wasip1_ResponseSchema,
-            response,
-          );
+          ctx.response.body = pb.toBinary(wasimoff.Task_Wasip1_ResponseSchema, response);
           break;
 
         default:

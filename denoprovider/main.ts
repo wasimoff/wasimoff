@@ -13,44 +13,47 @@ import { MemoryFileSystem } from "@wasimoff/storage/fs_memory.ts";
 import { DenoFileSystem } from "./fs_denonative.ts";
 import { Terminator } from "./util.ts";
 
-const flags: (FlagOptions & { help?: string })[] = [{
-  name: "help",
-  type: "boolean",
-  aliases: ["h"],
-  optionalValue: true,
-}, {
-  name: "workers",
-  type: "integer",
-  aliases: ["w"],
-  default: navigator.hardwareConcurrency,
-  help: "Number of Worker threads to spawn",
-  value(v: number) {
-    if (Number.isNaN(v) || v < 1) {
-      throw new ValidationError("Number of Workers must be positive.");
-    }
-    return v;
+const flags: (FlagOptions & { help?: string })[] = [
+  {
+    name: "help",
+    type: "boolean",
+    aliases: ["h"],
+    optionalValue: true,
   },
-}, {
-  name: "url",
-  type: "string",
-  aliases: ["u"],
-  default: "http://localhost:4080",
-  help: "URL to the Broker",
-  value(v: string) {
-    if (!/^(https?|ads?):\/\//.test(v)) {
-      throw new ValidationError(
-        "Broker URL must be a http(s):// or ad(s):// scheme",
-      );
-    }
-    return v;
+  {
+    name: "workers",
+    type: "integer",
+    aliases: ["w"],
+    default: navigator.hardwareConcurrency,
+    help: "Number of Worker threads to spawn",
+    value(v: number) {
+      if (Number.isNaN(v) || v < 1) {
+        throw new ValidationError("Number of Workers must be positive.");
+      }
+      return v;
+    },
   },
-}, {
-  name: "storage",
-  type: "string",
-  aliases: ["d"],
-  default: undefined,
-  help: "Path to storage directory",
-}];
+  {
+    name: "url",
+    type: "string",
+    aliases: ["u"],
+    default: "http://localhost:4080",
+    help: "URL to the Broker",
+    value(v: string) {
+      if (!/^(https?|ads?):\/\//.test(v)) {
+        throw new ValidationError("Broker URL must be a http(s):// or ad(s):// scheme");
+      }
+      return v;
+    },
+  },
+  {
+    name: "storage",
+    type: "string",
+    aliases: ["d"],
+    default: undefined,
+    help: "Path to storage directory",
+  },
+];
 
 function manual() {
   console.log(`$ ${import.meta.filename?.replace(/.*\//, "")} ...`);
@@ -88,15 +91,9 @@ try {
 
 // initialize the provider
 console.log("%c[Wasimoff]", "color: red;", "starting Deno Provider");
-const fs = args.storage !== undefined
-  ? await DenoFileSystem.open(args.storage)
-  : new MemoryFileSystem();
-const provider: WasimoffProvider = await WasimoffProvider.init(
-  args.workers,
-  args.url,
-  fs,
-  id,
-);
+const fs =
+  args.storage !== undefined ? await DenoFileSystem.open(args.storage) : new MemoryFileSystem();
+const provider: WasimoffProvider = await WasimoffProvider.init(args.workers, args.url, fs, id);
 
 const workers = await provider.pool.scale();
 await provider.sendConcurrency(workers);
