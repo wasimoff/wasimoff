@@ -20,14 +20,12 @@ export const useClusterState = defineStore("ClusterState", () => {
     () => providerstore.$messenger,
     async (messenger) => {
       if (messenger !== undefined && providerstore.$provider !== undefined) {
-        // transfer a readablestream from the provider directly
-        // const stream = await wasimoff.$provider.getEventstream();
-
-        // get the event iterator's next function and create a stream ourselves
-        const next = await providerstore.$provider.getEventIteratorNext();
+        // get the event iterator directly from the messenger (no proxy needed)
+        const iterator = messenger.events[Symbol.asyncIterator]();
+        
         const stream = new ReadableStream<Message>({
           async pull(controller) {
-            let { done, value } = await next();
+            let { done, value } = await iterator.next();
             if (done) return controller.close();
             if (value) controller.enqueue(value);
           },

@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-import { construct, Remote } from "@wasimoff/worker/comlink";
+// Remove comlink imports since we're running in main thread
 import { WasimoffProvider } from "@wasimoff/worker/provider";
 import { WasiWorkerPool } from "@wasimoff/worker/workerpool";
 import { ProviderStorage } from "@wasimoff/storage";
@@ -19,15 +19,14 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   // update busy map on interval
   setInterval(async () => {
     // this interval slows my devtools inspector to a crawl but works fine when closed
-    if ($pool.value) workers.value = await $pool.value.busy;
+    if (pool.value) workers.value = await pool.value.busy;
   }, 50);
 
-  // keep various proxies in refs ($ = Remote)
-  const worker = ref<Worker>();
-  const $provider = ref<Remote<WasimoffProvider>>();
-  const $pool = ref<Remote<WasiWorkerPool>>();
-  const $messenger = ref<Remote<Messenger>>();
-  const $storage = ref<Remote<ProviderStorage>>();
+  // keep direct references instead of proxies (no $ prefix needed)
+  const provider = ref<WasimoffProvider>();
+  const pool = ref<WasiWorkerPool>();
+  const messenger = ref<Messenger>();
+  const storage = ref<ProviderStorage>();
 
   // have a terminal for logging
   const terminal = useTerminal();
@@ -54,17 +53,17 @@ export const useProvider = defineStore("WasimoffProvider", () => {
     }
   });
 
-  // start the worker when the lock has been acquired
+  // start the provider when the lock has been acquired
   exclusive.then(async () => {
-    // start a worker and connect the comlink proxy
+    // instantiate the provider directly in the main thread
     connected.value = false;
-    worker.value = new Worker(new URL("@wasimoff/worker/provider.ts", import.meta.url), {
-      type: "module",
-    });
-    $provider.value = await construct<typeof WasimoffProvider>(worker.value, config.workers);
+    provider.value = new WasimoffProvider(config.workers);
 
-    // wrap the pool proxy in another proxy to keep worker count updated
-    $pool.value = new Proxy(await $provider.value.poolProxy(), {
+    // get direct reference to the pool (no proxy needed)
+    pool.value = provider.value.pool;
+
+    // wrap the pool in a proxy to keep worker count updated
+    pool.value = new Proxy(provider.value.pool, {
       // trap property accesses that return methods which can change the pool length
       get: (target, prop, receiver) => {
         const traps = ["spawn", "scale", "drop", "killall"];
@@ -101,36 +100,36 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   });
 
   async function open(...args: Parameters<WasimoffProvider["open"]>) {
-    if (!$provider.value) throw "no provider connected yet";
-    // open the filesystem, get a proxy
-    await $provider.value.open(...args);
-    $storage.value = await $provider.value.storageProxy();
+    if (!provider.value) throw "no provider connected yet";
+    // open the filesystem, get direct reference to storage
+    await provider.value.open(...args);
+    storage.value = provider.value.storage;
   }
 
   async function connect(...args: Parameters<WasimoffProvider["connect"]>) {
-    if (!$provider.value) throw "no provider connected yet";
-    // connect the transport (waits for readiness), get a proxy
-    await $provider.value.connect(...args);
-    $messenger.value = await $provider.value.messengerProxy();
+    if (!provider.value) throw "no provider connected yet";
+    // connect the transport (waits for readiness), get direct reference to messenger
+    await provider.value.connect(...args);
+    messenger.value = provider.value.messenger;
     connected.value = true;
     // fill the pool it it's empty
-    if (workers.value.length === 0 && $pool.value) {
+    if (workers.value.length === 0 && pool.value) {
       // doing it manually here is more responsive, because
       // each spawn updates the workers ref
-      let capacity = await $pool.value.capacity;
-      while ((await $pool.value.length) < capacity) await $pool.value.spawn();
+      let capacity = await pool.value.capacity;
+      while ((await pool.value.length) < capacity) await pool.value.spawn();
     }
   }
 
   async function disconnect() {
-    if (!$provider.value) throw "no provider connected yet";
-    await $provider.value.disconnect();
+    if (!provider.value) throw "no provider connected yet";
+    await provider.value.disconnect();
     connected.value = false;
   }
 
   async function handlerequests() {
-    if (!$provider.value) throw "no provider connected yet";
-    await $provider.value.handlerequests();
+    if (!provider.value) throw "no provider connected yet";
+    await provider.value.handlerequests();
     // the above promise only returns when the loop dies
     connected.value = false;
   }
@@ -140,11 +139,11 @@ export const useProvider = defineStore("WasimoffProvider", () => {
     // plain refs
     connected,
     workers,
-    // comlink proxies
-    $provider,
-    $pool,
-    $messenger,
-    $storage,
+    // direct references (no comlink proxies)
+    $provider: provider, // Keep $ naming for compatibility
+    $pool: pool,
+    $messenger: messenger,
+    $storage: storage,
     // special-cased methods
     open,
     connect,
