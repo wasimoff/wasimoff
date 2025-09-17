@@ -67,7 +67,8 @@ export class WebRTCTransport implements Transport {
     this.signal.resolve();
   }
 
-  public static async connect(url: URL): Promise<WebRTCTransport> {
+  public static async connect(url: URL | string): Promise<WebRTCTransport> {
+    url = typeof url === "string" ? new URL(url) : url;
     // Parse and validate URL parameters
     const id = url.searchParams.get("id");
     if (!id) {

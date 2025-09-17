@@ -1,11 +1,17 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-import { construct, Remote } from "@wasimoff/worker/comlink";
+import { construct, proxy, Remote } from "@wasimoff/worker/comlink";
 import { WasimoffProvider } from "@wasimoff/worker/provider";
 import { WasiWorkerPool } from "@wasimoff/worker/workerpool";
 import { ProviderStorage } from "@wasimoff/storage";
-import { Messenger } from "@wasimoff/transport";
+import {
+  Messenger,
+  Transport,
+  TransportKind,
+  WebRTCTransport,
+  WebSocketTransport,
+} from "@wasimoff/transport";
 import { useTerminal } from "./terminal";
 import { useConfiguration } from "./configuration";
 
@@ -26,7 +32,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   const worker = ref<Worker>();
   const $provider = ref<Remote<WasimoffProvider>>();
   const $pool = ref<Remote<WasiWorkerPool>>();
-  const $messenger = ref<Remote<Messenger>>();
+  const $messenger = ref<Messenger>();
   const $storage = ref<Remote<ProviderStorage>>();
 
   // have a terminal for logging
@@ -110,8 +116,26 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   async function connect(...args: Parameters<WasimoffProvider["connect"]>) {
     if (!$provider.value) throw "no provider connected yet";
     // connect the transport (waits for readiness), get a proxy
-    await $provider.value.connect(...args);
-    $messenger.value = await $provider.value.messengerProxy();
+    await $provider.value.connect(
+      args[0],
+      args[1],
+      proxy(async (url: string, kind: TransportKind) => {
+        let transport: Transport;
+        switch (kind) {
+          case TransportKind.WebSocket:
+            transport = WebSocketTransport.connect(url);
+            break;
+          case TransportKind.WebRTC:
+            transport = await WebRTCTransport.connect(url);
+            break;
+        }
+        await transport.ready;
+        const messenger = new Messenger(transport);
+        $messenger.value = messenger;
+        return proxy(messenger);
+      }),
+    );
+    //$messenger.value = await $provider.value.messengerProxy();
     connected.value = true;
     // fill the pool it it's empty
     if (workers.value.length === 0 && $pool.value) {

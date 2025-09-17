@@ -23,6 +23,11 @@ export interface Transmit {
   identifier?: string;
 }
 
+export enum TransportKind {
+  WebSocket,
+  WebRTC,
+}
+
 export { Messenger } from "./messenger";
 export { WebSocketTransport } from "./websocket";
 export { WebRTCTransport } from "./webrtc";

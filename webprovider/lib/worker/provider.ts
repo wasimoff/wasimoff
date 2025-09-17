@@ -3,7 +3,13 @@ declare var self: DedicatedWorkerGlobalScope | SharedWorkerGlobalScope;
 export {};
 
 import { ProviderStorage, ProviderStorageFileSystem } from "@wasimoff/storage/index";
-import { Messenger, WebRTCTransport, WebSocketTransport } from "@wasimoff/transport/index";
+import {
+  Messenger,
+  Transport,
+  TransportKind,
+  WebRTCTransport,
+  WebSocketTransport,
+} from "@wasimoff/transport/index";
 import { WasiWorkerPool } from "./workerpool";
 import { create, Message } from "@bufbuild/protobuf";
 import {
@@ -165,8 +171,26 @@ export class WasimoffProvider {
     return proxy(this.messenger);
   }
 
+  private async constructMessenger(url: string, kind: TransportKind): Promise<Messenger> {
+    let transport: Transport;
+    switch (kind) {
+      case TransportKind.WebSocket:
+        transport = WebSocketTransport.connect(url);
+        break;
+      case TransportKind.WebRTC:
+        transport = await WebRTCTransport.connect(url);
+        break;
+    }
+    await transport.ready;
+    return new Messenger(transport);
+  }
+
   // (re)connect to a broker by url
-  async connect(origin: string, id?: string) {
+  async connect(
+    origin: string,
+    id?: string,
+    messenger: (url: string, kind: TransportKind) => Promise<Messenger> = this.constructMessenger,
+  ) {
     // close previous connections
     if (this.messenger !== undefined && !this.messenger.closed.aborted) {
       this.messenger.close("reconnecting");
@@ -182,16 +206,12 @@ export class WasimoffProvider {
       let href = url.href.replace(/^ads?:/, url.protocol === "ads:" ? "wss:" : "ws:");
       url = new URL(href);
       console.debug("connecting to ad", url);
-      const rtcTransport = await WebRTCTransport.connect(url);
-      this.messenger = new Messenger(rtcTransport);
-      await rtcTransport.ready;
+      this.messenger = await messenger(url.href, TransportKind.WebRTC);
     } else {
       url.protocol = url.protocol.replace("http", "ws");
       url.pathname = "/api/provider/ws";
       console.debug("connecting to wasimoff", url);
-      const wst = WebSocketTransport.connect(url);
-      this.messenger = new Messenger(wst);
-      await wst.ready;
+      this.messenger = await messenger(url.href, TransportKind.WebSocket);
     }
 
     // send current concurrency
