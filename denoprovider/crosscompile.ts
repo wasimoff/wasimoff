@@ -15,12 +15,13 @@ async function compile(target: Target = Deno.build.target as Target, alias?: str
   const cmd = new Deno.Command("deno", {
     args: [
       "compile",
-      "--unstable-sloppy-imports",
+      "--sloppy-imports",
       "--no-check",
       "--allow-env",
       "--allow-net",
       "--allow-read",
       "--allow-write",
+      "--allow-ffi",
       "--target",
       target,
       "--output",

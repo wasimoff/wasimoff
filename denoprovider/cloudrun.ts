@@ -1,10 +1,10 @@
-#!/usr/bin/env -S deno run --allow-env --allow-read --allow-write --allow-net --no-prompt --unstable-sloppy-imports
+#!/usr/bin/env -S deno run --allow-env --allow-read --allow-write --allow-net --no-prompt --sloppy-imports
 
 import { Application } from "@oak/oak";
 import { Wasip1TaskParams } from "@wasimoff/worker/wasiworker.ts";
 import { WasiWorkerPool } from "@wasimoff/worker/workerpool.ts";
 import { ProviderStorage } from "@wasimoff/storage/index.ts";
-import { MemoryFileSystem } from "@wasimoff/storage/memory.ts";
+import { MemoryFileSystem } from "@wasimoff/storage/fs_memory.ts";
 import { getRootfsZip } from "@wasimoff/worker/rpchandler.ts";
 import { Terminator } from "./util.ts";
 
@@ -81,7 +81,7 @@ app.use(async (ctx) => {
     // get or compile the webassembly module
     let wasm: WebAssembly.Module;
     if (task.binary.blob.length !== 0) {
-      wasm = await WebAssembly.compile(task.binary.blob);
+      wasm = await WebAssembly.compile(task.binary.blob as Uint8Array<ArrayBuffer>);
     } else if (task.binary.ref !== "") {
       const m = await storage.getWasmModule(task.binary.ref);
       if (m === undefined) throw "binary not found in storage";
