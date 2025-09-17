@@ -1,7 +1,7 @@
 name: build container images
 
 on:
-  push: # updates on main
+  push:
     branches: [main]
   pull_request:
   schedule: # nightlies
@@ -12,7 +12,9 @@ permissions:
   packages: write
 
 env:
-  PLATFORMS: linux/amd64,linux/arm64
+  PLATFORMS: # only native for pull requests
+    ${{ fromJSON('[ "linux/amd64", "linux/amd64,linux/arm64" ]')[ github.event_name !=
+    'pull_request' ] }}
 
 jobs:
   container:
