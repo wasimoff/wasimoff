@@ -8,7 +8,7 @@ TypeScript code directly, you can entirely reuse the Provider implementation fro
 ```
 ./main.ts --url http://localhost:4080
 # or:
-deno run --allow-all --unstable-sloppy-imports main.ts --url http://localhost:4080
+deno run --allow-all --sloppy-imports main.ts --url http://localhost:4080
 ```
 
 One of Deno's features is the permissions model to deny certain accesses by default but we end up

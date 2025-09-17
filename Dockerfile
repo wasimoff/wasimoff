@@ -28,7 +28,7 @@ COPY ./webprovider   /app/webprovider
 WORKDIR /app/deno
 
 # cache required dependencies
-RUN ["deno", "install", "--allow-scripts=npm:node-datachannel", "--entrypoint", "main.ts" ]
+RUN ["deno", "install", "--sloppy-imports", "--allow-scripts=npm:node-datachannel", "--entrypoint", "main.ts" ]
 RUN ["deno", "cache", "--sloppy-imports", "main.ts"]
 
 # launch configuration
