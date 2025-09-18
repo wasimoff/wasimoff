@@ -15,6 +15,7 @@
   "[proto]": { "editor.defaultFormatter": "bufbuild.vscode-buf" },
   "[rust]": { "editor.defaultFormatter": "rust-lang.rust-analyzer" },
   "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[python]": { "editor.defaultFormatter": "ms-python.black-formatter" },
 
   // add wasi-apps rust projects explicitly
   "rust-analyzer.linkedProjects": [
