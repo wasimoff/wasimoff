@@ -16,70 +16,43 @@ import (
 	"github.com/tobgu/qframe"
 )
 
-// The CSV files in 2023 data release all have the same format, where each cell means
-// something different though:  day,time,0,1,2,3,4,5,[...],195,196,197,198,199
+// Huawei 2023 private dataset: https://github.com/sir-lab/data-release/
+// The CSV files all have the same format, where each cell means something different
+// though:  day,time,0,1,2,3,4,5,[...],195,196,197,198,199
 // Day increments in each file, time is a continious second range from 0 to 20303940.
 // Some floats need float64 to be represented exactly but float32 should suffice.
+// Note that there are "holes" in the days: there are 141 files spanning 234 days.
 
-// TODO: I wanted to concatenate all days in a directory to have a continious file
-// but a) there are "holes" in the days (141 files spanning 234 days) and b) the
-// necessary qframe.Append() function is not implemented yet; it just silently
-// fails with an empty frame.
-
-type DayTrace struct {
-
+type HuaweiDataset struct {
 	// request rate for replaying
-	RequestsPerSecond qframe.QFrame
 	RequestsPerMinute qframe.QFrame
-
 	// average length of each function invocation
 	FunctionDelayAvgPerMinute qframe.QFrame
-	PlatformDelayAvgPerMinute qframe.QFrame
-
-	// what load was observed on the cluster for comparison
-	CPUUsagePerMinute    qframe.QFrame
-	MemoryUsagePerMinute qframe.QFrame
-	InstancesPerMinute   qframe.QFrame
 }
 
 // Read all datafiles belonging to a given day and return as frames.
-func ReadDay(basedir string, day int) (trace DayTrace) {
+func ReadDataset(directory string) (trace HuaweiDataset) {
 
-	// day files are named the same for all datasets
-	filename := fmt.Sprintf("day_%03d.csv.gz", day)
-	load := func(dir string) qframe.QFrame {
-		log.Printf("loading %s/%s ...", dir, filename)
-		return ReadQframe(path.Join(basedir, dir, filename))
+	load := func(dataset string) qframe.QFrame {
+		// construct filename and read qframe
+		filename := path.Join(directory, fmt.Sprintf("%s.csv.gz", dataset))
+		log.Printf("loading %s ...", filename)
+		return ReadQframe(filename)
 	}
 
-	// TODO: maybe we'll need to convert the PerMinute traces to PerSecond manually
-	// frame = frame.Apply(
-	// 	qframe.Instruction{Fn: func(f float64) float64 { return f / 60 }, SrcCol1: coln, DstCol: coln},
-	// )
-
-	// using hardcoded directory names (from ZIP filename) load all files for this day
-	return DayTrace{
-		RequestsPerSecond:         load("requests_second"),
+	return HuaweiDataset{
 		RequestsPerMinute:         load("requests_minute"),
 		FunctionDelayAvgPerMinute: load("function_delay_minute"),
-		PlatformDelayAvgPerMinute: load("platform_delay_minute"),
-		CPUUsagePerMinute:         load("cpu_usage_minute"),
-		MemoryUsagePerMinute:      load("memory_usage_minute"),
-		InstancesPerMinute:        load("instances_minute"),
 	}
 
 }
 
 // Select only specific columns from the datasets.
-func (t *DayTrace) SelectColumns(cols []string) {
+func (t *HuaweiDataset) SelectColumns(cols []string) *HuaweiDataset {
 	cols = append([]string{"time"}, cols...)
-	t.RequestsPerSecond = t.RequestsPerSecond.Select(cols...)
 	t.RequestsPerMinute = t.RequestsPerMinute.Select(cols...)
 	t.FunctionDelayAvgPerMinute = t.FunctionDelayAvgPerMinute.Select(cols...)
-	t.PlatformDelayAvgPerMinute = t.PlatformDelayAvgPerMinute.Select(cols...)
-	t.CPUUsagePerMinute = t.CPUUsagePerMinute.Select(cols...)
-	t.MemoryUsagePerMinute = t.MemoryUsagePerMinute.Select(cols...)
-	t.InstancesPerMinute = t.InstancesPerMinute.Select(cols...)
+	return t
 }
 
 func ReadQframe(filename string) (frame qframe.QFrame) {
@@ -104,12 +77,7 @@ func ReadQframe(filename string) (frame qframe.QFrame) {
 		reader = zr
 	}
 
-	frame = qframe.ReadCSV(reader,
-		qcsv.EmptyNull(false),
-		allYourColumnsAreFloat(),
-	)
-
-	return
+	return qframe.ReadCSV(reader, allYourColumnsAreFloat())
 }
 
 // set the types map to float64 for all expected column names

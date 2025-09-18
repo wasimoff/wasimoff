@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"sync"
 	"time"
 
@@ -17,53 +16,49 @@ const broker = "http://localhost:4080/"
 func main() {
 
 	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "usage: tracebench <download:dir> <day:int> <col:str>")
+		fmt.Fprintln(os.Stderr, "usage: tracebench dataset/ col [col ...]")
 		os.Exit(1)
 	}
 
 	// parse args
-	file := os.Args[1]
-	day := must(strconv.Atoi(os.Args[2]))
-	columns := os.Args[3:]
+	// TODO: offset into dataset
+	dir := os.Args[1]
+	columns := os.Args[2:]
 
 	// read input file
-	trace := ReadDay(file, day)
-	trace.SelectColumns(columns)
+	dataset := ReadDataset(dir)
+	dataset.SelectColumns(columns)
 
-	timeout, _ := context.WithTimeout(context.Background(), 120*time.Second)
+	timeout, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	defer cancel()
 
-	tb := Connect(timeout, broker)
-
-	start := time.Now()
+	wasimoffClient := Connect(timeout, broker)
 
 	responses := make(chan *transport.PendingCall, 2048)
 
-	wg := sync.WaitGroup{}
+	threads := sync.WaitGroup{}
+	starter := NewStarter[time.Time]()
+
 	for _, col := range columns {
-		wg.Add(1)
+		threads.Add(1)
+		starter.Add(1)
 
-		rps := FitInterpolator(trace.RequestsPerSecond, col)
-		delay := FitInterpolator(trace.FunctionDelayAvgPerMinute, col)
-		ticker := make(chan Tick, 100)
-		at := NewArgonTasker(tb)
-		go InterpolatedRateTicker(timeout, start, rps, ticker)
+		ticker := make(chan Tick, 10)
+		argon := NewArgonTasker(wasimoffClient)
 
-		go func() {
-			i := 0
-			for t := range ticker {
-				i += 1
-				diff := time.Since(t.Scheduled)
-				funcdelay := delay.Predict(t.Elapsed.Seconds())
-				if diff > 10*time.Millisecond {
-					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, i, diff)
+		go dataset.InterpolatedRateTicker(timeout, col, starter, ticker)
+
+		go func() { // TODO: make this a func on ArgonTasker
+			defer threads.Done()
+			for tick := range ticker {
+				if diff := time.Since(tick.Scheduled); diff > 10*time.Millisecond {
+					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, tick.Sequence, diff)
 				}
-				fmt.Printf("tick[ %3s ]  %s --> %f ms\n", col, t.Elapsed, funcdelay)
+				fmt.Printf("[ %3s ] tick %8d / %10s --> %f\n", col, tick.Sequence, tick.Elapsed, tick.Tasklen)
 				// TODO: needs to actually vary the task duration now
-				at.Run(responses, 10)
+				argon.Run(responses, 10)
 			}
-			wg.Done()
 		}()
-
 	}
 
 	go func() {
@@ -80,7 +75,11 @@ func main() {
 		}
 	}()
 
-	wg.Wait()
+	// everyone should be set up, start!
+	starter.Wait()
+	starter.Broadcast(time.Now())
+
+	threads.Wait()
 
 }
 

@@ -3,19 +3,25 @@ package main
 import (
 	"context"
 	"math"
+	"sync"
 	"time"
 
 	"github.com/tobgu/qframe"
 	"gonum.org/v1/gonum/interp"
 )
 
-func InterpolatedRateTicker(ctx context.Context, start time.Time, rate interp.Predictor, ticker chan<- Tick) {
+func (h *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column string, starter *Starter[time.Time], ticker chan<- Tick) {
+
+	// fit interpolators on function column
+	requestsPerMinute := FitInterpolator(h.RequestsPerMinute, column)
+	taskDuration := FitInterpolator(h.FunctionDelayAvgPerMinute, column)
 
 	// use deteministic step instants and try to tick as close to it as possible
+	start := starter.WaitForValue()
 	instant := start
 
 	// only tick when armed (i.e. rate is below the maximum sleep length)
-	maxstep := time.Second
+	maxSleep := 60 * time.Second
 	armed := false
 	seq := uint(0)
 
@@ -34,7 +40,8 @@ func InterpolatedRateTicker(ctx context.Context, start time.Time, rate interp.Pr
 
 		// tick the channel if armed
 		if armed {
-			ticker <- Tick{instant, elapsed, seq}
+			dur := taskDuration.Predict(elapsed.Seconds())
+			ticker <- Tick{instant, elapsed, dur, seq}
 			seq += 1
 			// detect overflow
 			if seq == 0 {
@@ -43,14 +50,14 @@ func InterpolatedRateTicker(ctx context.Context, start time.Time, rate interp.Pr
 		}
 
 		// interpolate the requests/sec and compute time until next tick
-		rps := math.Max(rate.Predict(elapsed.Seconds()), 0)
-		waitns := float64(time.Second) / rps
-		wait := time.Duration(waitns)
+		requestsPerSecond := math.Max(requestsPerMinute.Predict(elapsed.Seconds())/60.0, 0)
+		waitNano := float64(time.Second) / requestsPerSecond
+		wait := time.Duration(waitNano)
 
 		// if the step is too long, do not tick on next loop
-		if math.IsInf(waitns, 0) || wait > maxstep {
+		if math.IsInf(waitNano, 0) || wait > maxSleep {
 			armed = false
-			wait = maxstep
+			wait = maxSleep
 		} else {
 			armed = true
 		}
@@ -68,6 +75,7 @@ func InterpolatedRateTicker(ctx context.Context, start time.Time, rate interp.Pr
 type Tick struct {
 	Scheduled time.Time
 	Elapsed   time.Duration
+	Tasklen   float64
 	Sequence  uint
 }
 
@@ -99,4 +107,34 @@ func clampPositive(f float64) float64 {
 		return 0.0
 	}
 	return f
+}
+
+type Starter[T any] struct {
+	setup  sync.WaitGroup
+	signal chan struct{}
+	value  T
+}
+
+func NewStarter[T any]() *Starter[T] {
+	return &Starter[T]{signal: make(chan struct{})}
+}
+
+func (s *Starter[T]) Add(delta int) {
+	s.setup.Add(delta)
+}
+
+func (s *Starter[T]) Wait() {
+	s.setup.Wait()
+}
+
+func (s *Starter[T]) Broadcast(value T) {
+	s.setup.Wait()
+	s.value = value
+	close(s.signal)
+}
+
+func (s *Starter[T]) WaitForValue() T {
+	s.setup.Done()
+	<-s.signal
+	return s.value
 }
