@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-// Remove comlink imports since we're running in main thread
 import { WasimoffProvider } from "@wasimoff/worker/provider";
 import { WasiWorkerPool } from "@wasimoff/worker/workerpool";
 import { ProviderStorage } from "@wasimoff/storage";
@@ -19,7 +18,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   // update busy map on interval
   setInterval(async () => {
     // this interval slows my devtools inspector to a crawl but works fine when closed
-    if (pool.value) workers.value = await pool.value.busy;
+    if (pool.value) workers.value = pool.value.busy;
   }, 50);
 
   // keep direct references instead of proxies (no $ prefix needed)
@@ -59,9 +58,6 @@ export const useProvider = defineStore("WasimoffProvider", () => {
     connected.value = false;
     provider.value = new WasimoffProvider(config.workers);
 
-    // get direct reference to the pool (no proxy needed)
-    pool.value = provider.value.pool;
-
     // wrap the pool in a proxy to keep worker count updated
     pool.value = new Proxy(provider.value.pool, {
       // trap property accesses that return methods which can change the pool length
@@ -73,7 +69,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
           return async (...args: any[]) => {
             let result = (await (method as any).apply(target, args)) as Promise<number>;
             try {
-              workers.value = await target.busy;
+              workers.value = target.busy;
             } catch {}
             return result;
           };
@@ -116,8 +112,8 @@ export const useProvider = defineStore("WasimoffProvider", () => {
     if (workers.value.length === 0 && pool.value) {
       // doing it manually here is more responsive, because
       // each spawn updates the workers ref
-      let capacity = await pool.value.capacity;
-      while ((await pool.value.length) < capacity) await pool.value.spawn();
+      let capacity = pool.value.capacity;
+      while (pool.value.length < capacity) await pool.value.spawn();
     }
   }
 
