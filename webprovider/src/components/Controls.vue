@@ -44,7 +44,8 @@ async function connect() {
   try {
     const url = transport.value;
     await wasimoff.connect(url, getlocalid());
-    terminal.log(`Connected to Broker at ${url} as id=${getlocalid()}`, LogType.Success);
+    const message = url.startsWith('ad') ? 'Connected to ArtDeco' : 'Connected to Wasimoff Broker';
+    terminal.log(`${message} at ${url} as id=${getlocalid()}`, LogType.Success);
     wasimoff.handlerequests();
   } catch (err) {
     terminal.error(String(err));
