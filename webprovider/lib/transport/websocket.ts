@@ -41,7 +41,7 @@ export class WebSocketTransport implements Transport {
 
     this.ws.addEventListener("error", (event) => {
       // per MDN: "fired when a connection [...] has been closed due to an error"
-      console.error(...prefix.err, "connection closed due to an error", event);
+      console.error(...prefix.err, "connection closed due to", (event as ErrorEvent).error);
     });
 
     this.ws.addEventListener("close", ({ code, reason, wasClean }) => {

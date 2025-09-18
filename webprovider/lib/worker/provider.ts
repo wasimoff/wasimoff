@@ -142,7 +142,7 @@ export class WasimoffProvider {
         try {
           fs = await OriginPrivateFileSystem.open("/wasm");
         } catch (err) {
-          console.error("failed opening OPFS:", err);
+          console.error(...WasimoffProvider.logprefix, "failed opening OPFS:", err);
         }
       }
       if (fs === undefined) {
@@ -181,14 +181,14 @@ export class WasimoffProvider {
       // construct new url because switching from custom to non-custom scheme is not supported
       let href = url.href.replace(/^ads?:/, url.protocol === "ads:" ? "wss:" : "ws:");
       url = new URL(href);
-      console.debug("connecting to ad", url);
+      console.debug(...WasimoffProvider.logprefix, "connecting to ad", url.href);
       const rtcTransport = await WebRTCTransport.connect(url);
       this.messenger = new Messenger(rtcTransport);
       await rtcTransport.ready;
     } else {
       url.protocol = url.protocol.replace("http", "ws");
       url.pathname = "/api/provider/ws";
-      console.debug("connecting to wasimoff", url);
+      console.debug(...WasimoffProvider.logprefix, "connecting to wasimoff", url.href);
       const wst = WebSocketTransport.connect(url);
       this.messenger = new Messenger(wst);
       await wst.ready;

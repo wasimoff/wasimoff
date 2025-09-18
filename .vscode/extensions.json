@@ -6,6 +6,7 @@
     "golang.go",
     "rust-lang.rust-analyzer",
     "Vue.volar",
-    "bufbuild.vscode-buf"
+    "bufbuild.vscode-buf",
+    "ms-python.black-formatter"
   ]
 }
