@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { useProvider } from "./provider";
 import { ref, watch } from "vue";
 import { useTerminal } from "./terminal";
-import { isMessage, Message } from "@bufbuild/protobuf";
+import { isMessage } from "@bufbuild/protobuf";
 import * as wasimoff from "@wasimoff/proto/v1/messages_pb";
 
 export const useClusterState = defineStore("ClusterState", () => {
@@ -20,21 +20,8 @@ export const useClusterState = defineStore("ClusterState", () => {
     () => providerstore.$messenger,
     async (messenger) => {
       if (messenger !== undefined && providerstore.$provider !== undefined) {
-        // transfer a readablestream from the provider directly
-        // const stream = await wasimoff.$provider.getEventstream();
-
-        // get the event iterator's next function and create a stream ourselves
-        const next = await providerstore.$provider.getEventIteratorNext();
-        const stream = new ReadableStream<Message>({
-          async pull(controller) {
-            let { done, value } = await next();
-            if (done) return controller.close();
-            if (value) controller.enqueue(value);
-          },
-        });
-
         // read messages from the event stream
-        for await (const event of stream) {
+        for await (const event of messenger.events) {
           switch (
             true // switch by message type
           ) {
