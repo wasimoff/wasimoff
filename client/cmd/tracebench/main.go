@@ -7,7 +7,12 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"wasi.team/broker/net/transport"
+	wasimoffv1 "wasi.team/proto/v1"
 )
+
+const broker = "http://localhost:4080/"
 
 func main() {
 
@@ -22,14 +27,16 @@ func main() {
 	columns := os.Args[3:]
 
 	// read input file
-	// t0 := time.Now()
 	trace := ReadDay(file, day)
-	// fmt.Printf("read full trace in %s\n", time.Since(t0))
 	trace.SelectColumns(columns)
 
 	timeout, _ := context.WithTimeout(context.Background(), 120*time.Second)
 
+	tb := Connect(timeout, broker)
+
 	start := time.Now()
+
+	responses := make(chan *transport.PendingCall, 2048)
 
 	wg := sync.WaitGroup{}
 	for _, col := range columns {
@@ -38,7 +45,8 @@ func main() {
 		rps := FitInterpolator(trace.RequestsPerSecond, col)
 		delay := FitInterpolator(trace.FunctionDelayAvgPerMinute, col)
 		ticker := make(chan Tick, 100)
-		go InterpolatedFunctionTicker(timeout, start, rps, ticker)
+		at := NewArgonTasker(tb)
+		go InterpolatedRateTicker(timeout, start, rps, ticker)
 
 		go func() {
 			i := 0
@@ -50,11 +58,27 @@ func main() {
 					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, i, diff)
 				}
 				fmt.Printf("tick[ %3s ]  %s --> %f ms\n", col, t.Elapsed, funcdelay)
+				// TODO: needs to actually vary the task duration now
+				at.Run(responses, 10)
 			}
 			wg.Done()
 		}()
 
 	}
+
+	go func() {
+		for c := range responses {
+			if c.Error != nil {
+				fmt.Fprintf(os.Stderr, "ERR: %s\n", c.Error)
+			} else {
+				r, ok := c.Response.(*wasimoffv1.Task_Wasip1_Response)
+				if !ok {
+					panic("can't cast the response to *wasimoffv1.Task_Wasip1_Response")
+				}
+				fmt.Printf("Task OK: %10s on %s\n", *r.Info.Id, *r.Info.Provider)
+			}
+		}
+	}()
 
 	wg.Wait()
 

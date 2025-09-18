@@ -42,6 +42,7 @@ type DayTrace struct {
 	InstancesPerMinute   qframe.QFrame
 }
 
+// Read all datafiles belonging to a given day and return as frames.
 func ReadDay(basedir string, day int) (trace DayTrace) {
 
 	// day files are named the same for all datasets
@@ -69,6 +70,7 @@ func ReadDay(basedir string, day int) (trace DayTrace) {
 
 }
 
+// Select only specific columns from the datasets.
 func (t *DayTrace) SelectColumns(cols []string) {
 	cols = append([]string{"time"}, cols...)
 	t.RequestsPerSecond = t.RequestsPerSecond.Select(cols...)
@@ -107,9 +109,7 @@ func ReadQframe(filename string) (frame qframe.QFrame) {
 		allYourColumnsAreFloat(),
 	)
 
-	// translate all null values to actual zeroes
-	return // TODO
-
+	return
 }
 
 // set the types map to float64 for all expected column names
