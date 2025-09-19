@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"log"
 	"strconv"
 	"sync"
+	"time"
 
+	"google.golang.org/protobuf/proto"
 	"wasi.team/broker/net/transport"
 	"wasi.team/client"
 	wasimoffv1 "wasi.team/proto/v1"
@@ -20,7 +23,7 @@ func Connect(ctx context.Context, broker string) *TraceBenchClient {
 	// connect to wasimoff over websocket
 	w, err := client.NewWasimoffWebsocketClient(ctx, broker)
 	if err != nil {
-		panic(err)
+		log.Fatalf("ERR: can't connect to Wasimoff Broker %q: %s", broker, err)
 	}
 
 	return &TraceBenchClient{
@@ -42,8 +45,11 @@ var argonload = "sha256:a77ee84e1e8b0e9734cc4647b8ee0813c55c697c53a38397cc43e308
 func NewArgonTasker(tb *TraceBenchClient) *ArgonTasker {
 
 	req := &wasimoffv1.Task_Wasip1_Request{
-		Info: &wasimoffv1.Task_Metadata{},
-		Qos:  &wasimoffv1.Task_QoS{},
+		Info: &wasimoffv1.Task_Metadata{
+			Reference: proto.String("argontasker"),
+			Trace:     &wasimoffv1.Task_Trace{},
+		},
+		Qos: &wasimoffv1.Task_QoS{},
 		Params: &wasimoffv1.Task_Wasip1_Params{
 			Binary: &wasimoffv1.File{Ref: &argonload},
 			Args:   []string{"argonload", "-i", "10"},
@@ -66,6 +72,9 @@ func (at *ArgonTasker) Run(calls chan *transport.PendingCall, iterations int) *t
 
 	// set the iteration count to given parameter
 	at.request.Params.Args[2] = strconv.Itoa(iterations)
+
+	// set current start time in trace
+	at.request.Info.Trace.Created = proto.Int64(time.Now().UnixNano())
 
 	// send the request and return async call to unlock mutex quickly again
 	response := &wasimoffv1.Task_Wasip1_Response{}

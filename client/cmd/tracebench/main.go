@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -29,10 +30,13 @@ func main() {
 	dataset := ReadDataset(dir)
 	dataset.SelectColumns(columns)
 
-	timeout, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	timeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	wasimoffClient := Connect(timeout, broker)
+
+	output := OpenOutputLog("tracebench.jsonl")
+	defer output.Close()
 
 	responses := make(chan *transport.PendingCall, 2048)
 
@@ -71,6 +75,9 @@ func main() {
 					panic("can't cast the response to *wasimoffv1.Task_Wasip1_Response")
 				}
 				fmt.Printf("Task OK: %10s on %s\n", *r.Info.Id, *r.Info.Provider)
+				if err := output.EncodeProto(r.Info.Trace); err != nil {
+					log.Fatalf("ERR: failed writing trace log: %s", err)
+				}
 			}
 		}
 	}()
