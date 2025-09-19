@@ -10,6 +10,7 @@ for (const [key, value] of Object.entries(WebRTC)) {
 }
 import { WasimoffProvider } from "@wasimoff/worker/provider.ts";
 import { MemoryFileSystem } from "@wasimoff/storage/fs_memory.ts";
+import { ProviderStorageFileSystem } from "@wasimoff/storage/index.ts";
 import { DenoFileSystem } from "./fs_denonative.ts";
 import { Terminator } from "./util.ts";
 
@@ -53,6 +54,13 @@ const flags: (FlagOptions & { help?: string })[] = [
     default: undefined,
     help: "Path to storage directory",
   },
+  {
+    name: "retry",
+    type: "boolean",
+    aliases: ["r"],
+    optionalValue: true,
+    help: "Retry the connection on errors",
+  },
 ];
 
 function manual() {
@@ -91,30 +99,48 @@ try {
 
 // initialize the provider
 console.log("%c[Wasimoff]", "color: red;", "starting Deno Provider");
-const fs =
-  args.storage !== undefined ? await DenoFileSystem.open(args.storage) : new MemoryFileSystem();
-const provider: WasimoffProvider = await WasimoffProvider.init(args.workers, args.url, fs, id);
-
+let fs: ProviderStorageFileSystem = new MemoryFileSystem();
+if (args.storage !== undefined) fs = await DenoFileSystem.open(args.storage);
+const provider = await WasimoffProvider.init(args.workers, args.url, fs, id);
 const workers = await provider.pool.scale();
-await provider.sendConcurrency(workers);
-
-// log received messages
-(async () => {
-  for await (const event of provider.messenger!.events) {
-    const typename: string = event.$typeName;
-    // @ts-ignore event messages are only logged, it's fine
-    delete event.$typeName;
-    if (!typename.endsWith("Throughput")) {
-      console.log(`%c[${typename}]`, "color: green;", JSON.stringify(event));
-    }
-  }
-})();
 
 // register signal handler for clean exits
 new Terminator(provider.pool, 30_000, (_) => provider.disconnect());
 
-// start handling requests
-await provider.handlerequests();
+// retry loop for provider connection
+for (;;) {
+  // maybe reconnect
+  if (provider.messenger && provider.messenger.closed.aborted) {
+    try {
+      await provider.connect(args.url, id);
+    } catch (_) {
+      console.error("%c[Wasimoff]", "color: red;", "failed to reconnect!");
+      await new Promise((r) => setTimeout(r, 3000));
+      continue;
+    }
+  }
+
+  await provider.sendConcurrency(workers);
+
+  // log received messages
+  (async () => {
+    for await (const event of provider.messenger!.events) {
+      const typename: string = event.$typeName;
+      // @ts-ignore event messages are only logged, it's fine
+      delete event.$typeName;
+      if (!typename.endsWith("Throughput")) {
+        console.log(`%c[${typename}]`, "color: green;", JSON.stringify(event));
+      }
+    }
+  })();
+
+  // start handling requests
+  await provider.handlerequests();
+
+  // exit loop if not retrying
+  if (!args.retry) break;
+  await new Promise((r) => setTimeout(r, 2000));
+}
 
 console.error("ERROR: rpc loop exited, connection lost?");
 Deno.exit(1);
