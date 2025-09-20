@@ -126,84 +126,105 @@ export class WebRTCTransport implements Transport {
 
     const sdpMessage: SdpMessage = JSON.parse(new TextDecoder().decode(m.data));
 
-    if ("Offer" in sdpMessage.msg && sdpMessage.destination === this.id) {
-      const sdpOffer = sdpMessage.msg.Offer;
+    if (sdpMessage.destination === this.id) {
+      if ("Offer" in sdpMessage.msg) {
+        const sdpOffer = sdpMessage.msg.Offer;
 
-      const peerConnection = new RTCPeerConnection({
-        iceServers: this.iceServers,
-      });
-      this.peerConnections.set(sdpMessage.source, peerConnection);
+        const peerConnection = new RTCPeerConnection({
+          iceServers: this.iceServers,
+        });
+        this.peerConnections.set(sdpMessage.source, peerConnection);
 
-      await peerConnection.setRemoteDescription(sdpOffer);
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
+        await peerConnection.setRemoteDescription(sdpOffer);
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
 
-      const answerMessage: SdpMessage = {
-        source: this.id,
-        destination: sdpMessage.source,
-        msg: { Answer: answer },
-      };
+        const answerMessage: SdpMessage = {
+          source: this.id,
+          destination: sdpMessage.source,
+          msg: { Answer: answer },
+        };
 
-      peerConnection.onicecandidate = (event) => {
-        console.debug("ice candidate event", event.candidate);
-        if (event.candidate) {
-          const candidateData = {
-            candidate: event.candidate.candidate,
-            sdpMLineIndex: event.candidate.sdpMLineIndex,
-            sdpMid: event.candidate.sdpMid,
-            usernameFragment: event.candidate.usernameFragment,
-          };
-          // this is necessary because webrtc-polyfill is not spec compliant
-          if (candidateData.candidate.startsWith("a=")) {
-            candidateData.candidate = candidateData.candidate.substring(2);
-          }
-          const iceMessage: SdpMessage = {
-            source: this.id,
-            destination: sdpMessage.source,
-            msg: { Candidate: candidateData },
-          };
-          this.nc.publish("sdp", JSON.stringify(iceMessage));
-        }
-      };
-
-      // Set up data channel event handlers
-      peerConnection.ondatachannel = (event) => {
-        const dataChannel = event.channel;
-        if (dataChannel.label === "wasimoff") {
-          this.dataChannels.set(sdpMessage.source, dataChannel);
-
-          dataChannel.onopen = () => {
-            this.connectionStates.set(sdpMessage.source, "connected");
-            console.info("Data channel opened for:", sdpMessage.source);
-          };
-
-          dataChannel.onclose = () => {
-            this.connectionStates.set(sdpMessage.source, "disconnected");
-            console.info("Data channel closed for:", sdpMessage.source);
-          };
-
-          dataChannel.onerror = (error) => {
-            console.error("Data channel error for:", sdpMessage.source, error);
-          };
-          dataChannel.onmessage = async (event) => {
-            // Receive Envelope and push together with the source identifier to the message queue
-            console.debug!("Received data channel data", event.data);
-            const data = event.data;
-            if (data instanceof Blob) {
-              const array = await data.bytes();
-              const envelope = fromBinary(EnvelopeSchema, array);
-              const transmit: Transmit = {
-                envelope,
-                identifier: sdpMessage.source,
-              };
-              this.messages.push(transmit);
+        peerConnection.onicecandidate = (event) => {
+          console.debug("ice candidate event", event.candidate);
+          if (event.candidate !== null && event.candidate.candidate !== "") {
+            const candidateData = {
+              candidate: event.candidate.candidate,
+              sdpMLineIndex: event.candidate.sdpMLineIndex,
+              sdpMid: event.candidate.sdpMid,
+              usernameFragment: event.candidate.usernameFragment,
+            };
+            // this is necessary because webrtc-polyfill is not spec compliant
+            if (candidateData.candidate.startsWith("a=")) {
+              candidateData.candidate = candidateData.candidate.substring(2);
             }
-          };
-        }
-      };
+            // Skip candidates with masked .local addresses
+            if (candidateData.candidate.includes(".local")) {
+              console.debug("Skipping masked .local candidate:", candidateData.candidate);
+              return;
+            }
+            const iceMessage: SdpMessage = {
+              source: this.id,
+              destination: sdpMessage.source,
+              msg: { Candidate: candidateData },
+            };
+            this.nc.publish("sdp", JSON.stringify(iceMessage));
+          }
+        };
 
-      // Publish the answer back via NATS
-      this.nc.publish("sdp", JSON.stringify(answerMessage));
+        // Set up data channel event handlers
+        peerConnection.ondatachannel = (event) => {
+          const dataChannel = event.channel;
+          if (dataChannel.label === "wasimoff") {
+            this.dataChannels.set(sdpMessage.source, dataChannel);
+
+            dataChannel.onopen = () => {
+              this.connectionStates.set(sdpMessage.source, "connected");
+              console.info("Data channel opened for:", sdpMessage.source);
+            };
+
+            dataChannel.onclose = () => {
+              this.connectionStates.set(sdpMessage.source, "disconnected");
+              console.info("Data channel closed for:", sdpMessage.source);
+            };
+
+            dataChannel.onerror = (error) => {
+              console.error("Data channel error for:", sdpMessage.source, error);
+            };
+            dataChannel.onmessage = async (event) => {
+              // Receive Envelope and push together with the source identifier to the message queue
+              console.debug!("Received data channel data", event.data);
+              const data = event.data;
+              if (data instanceof Blob) {
+                const array = await data.bytes();
+                const envelope = fromBinary(EnvelopeSchema, array);
+                const transmit: Transmit = {
+                  envelope,
+                  identifier: sdpMessage.source,
+                };
+                this.messages.push(transmit);
+              }
+            };
+          }
+        };
+
+        // Publish the answer back via NATS
+        this.nc.publish("sdp", JSON.stringify(answerMessage));
+      } else if ("Candidate" in sdpMessage.msg) {
+        const sdpCandidate = sdpMessage.msg.Candidate;
+        const peerConnection = this.peerConnections.get(sdpMessage.source);
+        if (peerConnection) {
+          const candidate = new RTCIceCandidate({
+            candidate: sdpCandidate.candidate,
+            sdpMLineIndex: sdpCandidate.sdpMLineIndex,
+            sdpMid: sdpCandidate.sdpMid,
+            usernameFragment: sdpCandidate.usernameFragment,
+          });
+          await peerConnection.addIceCandidate(candidate);
+        } else {
+          console.warn("No peer connection found for source:", sdpMessage.source);
+        }
+      }
     }
   }
 
