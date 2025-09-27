@@ -1,11 +1,14 @@
 # =========================================================================== #
-# ---> build the broker binary
-FROM golang:1.24-bookworm AS brokerbuild
+# ---> build the go binaries
+FROM golang:1.24-alpine AS go-build
 
 # compile the binary
 COPY ./ /build
 WORKDIR /build/broker
 RUN CGO_ENABLED=0 go build -o broker
+
+WORKDIR /build/client/cmd/tracebench
+RUN CGO_ENABLED=0 go build -o tracebench
 
 # =========================================================================== #
 # ---> build the webprovider frontend dist
@@ -59,7 +62,7 @@ ENTRYPOINT ["/tini", "--", "deno", "run", \
 # ---> combine broker and frontend dist in default container
 # docker build --target broker -t wasimoff/broker .
 FROM alpine AS broker
-COPY --from=brokerbuild  /build/broker/broker /broker
+COPY --from=go-build  /build/broker/broker /broker
 COPY --from=frontend     /build/webprovider/dist /provider
 ENTRYPOINT [ "/broker" ]
 
@@ -73,3 +76,24 @@ ENV WASIMOFF_HTTP_LISTEN=":4080"
 
 # filesystem path to frontend dist to be served
 ENV WASIMOFF_STATIC_FILES="/provider"
+
+# =========================================================================== #
+FROM python:3.11-slim AS dataset-builder
+
+WORKDIR /build
+
+# Install Python dependencies
+COPY client/cmd/tracebench/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy and run download script
+COPY client/cmd/tracebench/download.py .
+RUN mkdir -p dataset
+RUN python download.py
+
+# =========================================================================== #
+FROM alpine AS tracebench
+COPY --from=go-build /build/client/cmd/tracebench/tracebench /tracebench
+COPY --from=dataset-builder /build/dataset/*.csv.gz /dataset/
+COPY --from=go-build /build/wasi-apps/argonload/argonload.wasm /wasm/
+ENTRYPOINT [ "/tracebench" ]
