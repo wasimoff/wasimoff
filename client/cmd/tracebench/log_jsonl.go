@@ -17,14 +17,18 @@ type JsonLineEncoder struct {
 	protoenc *protojson.MarshalOptions
 }
 
-func OpenOutputLog(filename string) JsonLineEncoder {
+func OpenOutputLog(filename string) *JsonLineEncoder {
+
+	if filename == "" {
+		return nil
+	}
 
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		log.Fatalf("ERR: can't open %q for trace logging: %s", filename, err)
 	}
 
-	return JsonLineEncoder{
+	return &JsonLineEncoder{
 		mutex:   sync.Mutex{},
 		file:    file,
 		encoder: json.NewEncoder(file),
