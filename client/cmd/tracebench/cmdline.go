@@ -12,6 +12,7 @@ type Args struct {
 	Dataset      string
 	Broker       string
 	Tracefile    string
+	Timeout      int
 	DryRun       bool
 	ScaleRate    float64
 	ScaleTasklen float64
@@ -28,6 +29,9 @@ func cmdline() Args {
 
 	tracefile := flag.String("trace", getEnv("FILE", ""),
 		"output file for JSONL formatted task traces")
+
+	timeout := flag.Int("timeout", getInt("TIMEOUT", 60),
+		"terminate trace after this many seconds by cancelling context")
 
 	dryrun := flag.Bool("dryrun", getBool("dryrun", false),
 		"local dry-run without actually sending any tasks to Broker")
@@ -56,6 +60,7 @@ func cmdline() Args {
 		Dataset:      *dataset,
 		Broker:       *broker,
 		Tracefile:    *tracefile,
+		Timeout:      *timeout,
 		DryRun:       *dryrun,
 		ScaleRate:    *scaleRate,
 		ScaleTasklen: *scaleTasklen,
