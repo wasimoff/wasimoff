@@ -175,6 +175,7 @@ export class WebRTCTransport implements Transport {
         // Set up data channel event handlers
         peerConnection.ondatachannel = (event) => {
           const dataChannel = event.channel;
+          dataChannel.binaryType = "arraybuffer";
           if (dataChannel.label === "wasimoff") {
             this.dataChannels.set(sdpMessage.source, dataChannel);
 
@@ -195,15 +196,15 @@ export class WebRTCTransport implements Transport {
               // Receive Envelope and push together with the source identifier to the message queue
               console.debug!("Received data channel data", event.data);
               const data = event.data;
-              if (data instanceof Blob) {
-                const array = await data.bytes();
-                const envelope = fromBinary(EnvelopeSchema, array);
-                const transmit: Transmit = {
-                  envelope,
-                  identifier: sdpMessage.source,
-                };
-                this.messages.push(transmit);
-              }
+              let array: Uint8Array;
+              if (data instanceof Blob) array = await data.bytes();
+              else array = new Uint8Array(data);
+              const envelope = fromBinary(EnvelopeSchema, array);
+              const transmit: Transmit = {
+                envelope,
+                identifier: sdpMessage.source,
+              };
+              this.messages.push(transmit);
             };
           }
         };
