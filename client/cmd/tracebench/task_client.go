@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"math"
 	"strconv"
 	"sync"
 	"time"
@@ -65,13 +66,14 @@ func NewArgonTasker(tb *TraceBenchClient) *ArgonTasker {
 
 }
 
-func (at *ArgonTasker) Run(calls chan *transport.PendingCall, iterations int) *transport.PendingCall {
+func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds float64) *transport.PendingCall {
 
 	at.request_mu.Lock()
 	defer at.request_mu.Unlock()
 
 	// set the iteration count to given parameter
-	at.request.Params.Args[2] = strconv.Itoa(iterations)
+	iter := at.secondsToIterations(seconds)
+	at.request.Params.Args[2] = strconv.Itoa(iter)
 
 	// set current start time in trace
 	at.request.Info.Trace.Created = proto.Int64(time.Now().UnixNano())
@@ -80,4 +82,10 @@ func (at *ArgonTasker) Run(calls chan *transport.PendingCall, iterations int) *t
 	response := &wasimoffv1.Task_Wasip1_Response{}
 	return at.client.Messenger.SendRequest(at.client.ctx, at.request, response, calls)
 
+}
+
+// For argonload/wasm running on an Intel i5-1345U, we get around iter=35 for 1s runtime.
+func (at *ArgonTasker) secondsToIterations(seconds float64) int {
+	itertations := 35 * seconds
+	return int(math.Ceil(itertations))
 }
