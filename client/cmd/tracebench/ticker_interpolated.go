@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"time"
 
@@ -9,18 +10,18 @@ import (
 	"gonum.org/v1/gonum/interp"
 )
 
-func (h *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column string, starter *Starter[time.Time], ticker chan<- Tick) {
+func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column string, starter *Starter[time.Time], ticker chan<- Tick) {
 
 	// fit interpolators on function column
-	requestsPerMinute := FitInterpolator(h.RequestsPerMinute, column)
-	taskDuration := FitInterpolator(h.FunctionDelayAvgPerMinute, column)
+	requestsPerMinute := fitPredictor(t.RequestsPerMinute, column)
+	taskDuration := fitPredictor(t.FunctionDelayAvgPerMinute, column)
 
 	// use deteministic step instants and try to tick as close to it as possible
 	start := starter.WaitForValue()
 	instant := start
 
 	// only tick when armed (i.e. rate is below the maximum sleep length)
-	maxSleep := 60 * time.Second
+	maxSleep := 10 * time.Second
 	armed := false
 	seq := uint(0)
 
@@ -39,8 +40,8 @@ func (h *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 
 		// tick the channel if armed
 		if armed {
-			dur := taskDuration.Predict(elapsed.Seconds())
-			ticker <- Tick{instant, elapsed, dur, seq}
+			tasklen := taskDuration.Predict(elapsed.Seconds())
+			ticker <- Tick{instant, elapsed, tasklen, seq}
 			seq += 1
 			// detect overflow
 			if seq == 0 {
@@ -55,6 +56,9 @@ func (h *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 
 		// if the step is too long, do not tick on next loop
 		if math.IsInf(waitNano, 0) || wait > maxSleep {
+			if armed || seq == 0 {
+				fmt.Printf("[ %3s ] Note: Ticker disarmed because req/s at is zero at %v\n", column, elapsed)
+			}
 			armed = false
 			wait = maxSleep
 		} else {
@@ -71,21 +75,23 @@ func (h *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 
 }
 
+// Tick is a single event that should trigger a request
 type Tick struct {
-	Scheduled time.Time
-	Elapsed   time.Duration
-	Tasklen   float64
-	Sequence  uint
+	Scheduled  time.Time
+	Elapsed    time.Duration
+	TasklenSec float64
+	Sequence   uint
 }
 
-func FitInterpolator(frame qframe.QFrame, col string) interp.Predictor {
+// Fit an AkimaSplite predictor on a given QFrame dataset column
+func fitPredictor(frame qframe.QFrame, col string) interp.Predictor {
 
 	// make sure the column does not contain NaNs or negative numbers
-	frame = frame.Apply(qframe.Instruction{Fn: clampPositive, SrcCol1: col, DstCol: col})
+	fr := frame.Apply(qframe.Instruction{Fn: clampPositive, SrcCol1: col, DstCol: col})
 
 	// get dataset as float slices
-	time := frame.MustFloatView("time").Slice()
-	values := frame.MustFloatView(col).Slice()
+	time := fr.MustFloatView("time").Slice()
+	values := fr.MustFloatView(col).Slice()
 
 	// log.Println("values in column", col, "=>", values[:100], "...")
 
@@ -106,4 +112,11 @@ func clampPositive(f float64) float64 {
 		return 0.0
 	}
 	return f
+}
+
+// Multiply all values in the column with a scalar.
+func scaleColumn(scale float64) func(float64) float64 {
+	return func(f float64) float64 {
+		return f * scale
+	}
 }

@@ -19,12 +19,20 @@ func main() {
 	// read input file
 	dataset := ReadDataset(args.Dataset)
 	dataset.SelectColumns(args.Columns)
+	dataset.ScaleDatasets(args.ScaleRate, args.ScaleTasklen)
 
-	timeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// contexts for app cancellation
+	background, shutdown := context.WithCancel(context.Background())
+	timeout, cancel := context.WithTimeout(background, 10*time.Second)
+	defer shutdown()
 	defer cancel()
+	go func(ctx context.Context) {
+		<-ctx.Done()
+		log.Println("timeout reached, exiting ...")
+	}(timeout)
 
 	// TODO: use args.DryRun to debug without any Broker connection
-	wasimoffClient := Connect(timeout, args.Broker)
+	wasimoffClient := Connect(background, args.Broker)
 
 	output := OpenOutputLog(args.Tracefile)
 	if output != nil {
@@ -51,9 +59,8 @@ func main() {
 				if diff := time.Since(tick.Scheduled); diff > 10*time.Millisecond {
 					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, tick.Sequence, diff)
 				}
-				fmt.Printf("[ %3s ] tick %8d / %10s --> %f\n", col, tick.Sequence, tick.Elapsed, tick.Tasklen)
-				// TODO: needs to actually vary the task duration now
-				argon.Run(responses, 10)
+				fmt.Printf("[ %3s ] tick %8d / %10s --> %f\n", col, tick.Sequence, tick.Elapsed, tick.TasklenSec)
+				argon.Run(responses, tick.TasklenSec*args.ScaleTasklen)
 			}
 		}()
 	}
