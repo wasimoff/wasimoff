@@ -23,6 +23,7 @@ require (
 	github.com/google/s2a-go v0.1.9 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.2 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/mauricelam/genny v0.0.0-20190320071652-0800202903e5 // indirect
 	github.com/tobgu/qframe v0.4.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect

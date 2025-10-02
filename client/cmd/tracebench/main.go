@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"wasi.team/broker/net/transport"
 	wasimoffv1 "wasi.team/proto/v1"
 )
@@ -35,10 +36,8 @@ func main() {
 	// create the request generator
 	argon := NewArgonTasker(background, args.Broker)
 
-	output := OpenOutputLog(args.Tracefile)
-	if output != nil {
-		defer output.Close()
-	}
+	output := NewProtoDelimEncoder(args.Tracefile)
+	defer output.Close()
 
 	responses := make(chan *transport.PendingCall, 2048)
 
@@ -79,9 +78,15 @@ func main() {
 				}
 				fmt.Printf("Task OK: %10s on %s\n", *r.Info.Id, *r.Info.Provider)
 				if output != nil {
-					if err := output.EncodeProto(r.Info.Trace); err != nil {
+					if err := output.Write(r.Info); err != nil {
 						log.Fatalf("ERR: failed writing trace log: %s", err)
 					}
+				} else {
+					buf, err := protojson.Marshal(r.Info)
+					if err != nil {
+						panic(err)
+					}
+					log.Printf("%s", buf)
 				}
 			}
 		}
@@ -92,6 +97,7 @@ func main() {
 	starter.Broadcast(time.Now())
 
 	// wait for tickers to finish for clean exit
+	// TODO: this does NOT wait for all responses to arrive
 	threads.Wait()
 
 }
