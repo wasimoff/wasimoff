@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"math"
-	"sync"
 	"time"
 
 	"github.com/tobgu/qframe"
@@ -107,34 +106,4 @@ func clampPositive(f float64) float64 {
 		return 0.0
 	}
 	return f
-}
-
-type Starter[T any] struct {
-	setup  sync.WaitGroup
-	signal chan struct{}
-	value  T
-}
-
-func NewStarter[T any]() *Starter[T] {
-	return &Starter[T]{signal: make(chan struct{})}
-}
-
-func (s *Starter[T]) Add(delta int) {
-	s.setup.Add(delta)
-}
-
-func (s *Starter[T]) Wait() {
-	s.setup.Wait()
-}
-
-func (s *Starter[T]) Broadcast(value T) {
-	s.setup.Wait()
-	s.value = value
-	close(s.signal)
-}
-
-func (s *Starter[T]) WaitForValue() T {
-	s.setup.Done()
-	<-s.signal
-	return s.value
 }
