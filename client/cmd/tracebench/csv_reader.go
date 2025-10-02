@@ -50,13 +50,12 @@ func ReadDataset(directory string) (trace HuaweiDataset) {
 // Scale all columns in the dataset to simplify downstream usage.
 func (t *HuaweiDataset) ScaleDatasets(rateScale float64, tasklenScale float64) *HuaweiDataset {
 
-	// TODO: fine for now, but we'd actually like to "make the time pass" faster or slower, I think ..
 	if rateScale != 1.0 {
-		log.Printf("scaling the RequestsPerMinute dataset by %f", rateScale)
+		log.Printf("scaling the RequestsPerMinute values (y-axis) by %f", rateScale)
 		t.RequestsPerMinute = scaleEntireQFrame(t.RequestsPerMinute, rateScale)
 	}
 	if tasklenScale != 1.0 {
-		log.Printf("scaling the FunctionDelayAvgPerMinute dataset by %f", tasklenScale)
+		log.Printf("scaling the FunctionDelayAvgPerMinute values (y-axis) by %f", tasklenScale)
 		t.FunctionDelayAvgPerMinute = scaleEntireQFrame(t.FunctionDelayAvgPerMinute, tasklenScale)
 	}
 

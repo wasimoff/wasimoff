@@ -13,6 +13,7 @@ import (
 func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column string, starter *Starter[time.Time], ticker chan<- Tick) {
 
 	// fit interpolators on function column
+	col := column
 	requestsPerMinute := fitPredictor(t.RequestsPerMinute, column)
 	taskDuration := fitPredictor(t.FunctionDelayAvgPerMinute, column)
 
@@ -41,7 +42,13 @@ func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 		// tick the channel if armed
 		if armed {
 			tasklen := taskDuration.Predict(elapsed.Seconds())
-			ticker <- Tick{instant, elapsed, tasklen, seq}
+			ticker <- Tick{
+				Column:     &col,
+				Scheduled:  instant,
+				Elapsed:    elapsed,
+				TasklenSec: tasklen,
+				Sequence:   seq,
+			}
 			seq += 1
 			// detect overflow
 			if seq == 0 {
@@ -77,6 +84,7 @@ func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 
 // Tick is a single event that should trigger a request
 type Tick struct {
+	Column     *string
 	Scheduled  time.Time
 	Elapsed    time.Duration
 	TasklenSec float64

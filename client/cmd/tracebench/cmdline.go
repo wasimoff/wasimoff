@@ -13,7 +13,6 @@ type Args struct {
 	Broker       string
 	Tracefile    string
 	Timeout      int
-	DryRun       bool
 	ScaleRate    float64
 	ScaleTasklen float64
 	Columns      []string
@@ -24,7 +23,7 @@ func cmdline() Args {
 	dataset := flag.String("dataset", getEnv("DATASET", "./dataset"),
 		"directory with the {requests,function_delay}_minute.csv.gz files")
 
-	broker := flag.String("broker", getEnv("BROKER", "http://localhost:4080"),
+	broker := flag.String("broker", getEnv("BROKER", ""),
 		"connection URL to the Wasimoff Broker or ArtDeco client")
 
 	tracefile := flag.String("trace", getEnv("FILE", ""),
@@ -32,9 +31,6 @@ func cmdline() Args {
 
 	timeout := flag.Int("timeout", getInt("TIMEOUT", 60),
 		"terminate trace after this many seconds by cancelling context")
-
-	dryrun := flag.Bool("dryrun", getBool("dryrun", false),
-		"local dry-run without actually sending any tasks to Broker")
 
 	scaleRate := flag.Float64("scale-rate", getFloat("SCALE_RATE", 1.0),
 		"global modifier for the request rate (e.g. to slow down)")
@@ -61,7 +57,6 @@ func cmdline() Args {
 		Broker:       *broker,
 		Tracefile:    *tracefile,
 		Timeout:      *timeout,
-		DryRun:       *dryrun,
 		ScaleRate:    *scaleRate,
 		ScaleTasklen: *scaleTasklen,
 		Columns:      columns,
