@@ -178,7 +178,7 @@ func dynamicSubmit(
 		task.CloudOffloaded = true
 	}
 	if i < len(providers) {
-		log.Printf("task %s: scheduled on provider %s", *task.Request.GetInfo().Id, providers[i].Get(provider.Name))
+		log.Printf("task %v: scheduled on provider %s", task.Request.GetInfo().Id, providers[i].Get(provider.Name))
 	}
 
 	return nil
