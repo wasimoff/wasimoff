@@ -23,7 +23,7 @@ func main() {
 
 	// contexts for app cancellation
 	background, shutdown := context.WithCancel(context.Background())
-	timeout, cancel := context.WithTimeout(background, 10*time.Second)
+	timeout, cancel := context.WithTimeout(background, time.Duration(args.Timeout)*time.Second)
 	defer shutdown()
 	defer cancel()
 	go func(ctx context.Context) {
