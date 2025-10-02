@@ -26,8 +26,10 @@ func main() {
 	// TODO: use args.DryRun to debug without any Broker connection
 	wasimoffClient := Connect(timeout, args.Broker)
 
-	output := OpenOutputLog("tracebench.jsonl")
-	defer output.Close()
+	output := OpenOutputLog(args.Tracefile)
+	if output != nil {
+		defer output.Close()
+	}
 
 	responses := make(chan *transport.PendingCall, 2048)
 
@@ -66,8 +68,10 @@ func main() {
 					panic("can't cast the response to *wasimoffv1.Task_Wasip1_Response")
 				}
 				fmt.Printf("Task OK: %10s on %s\n", *r.Info.Id, *r.Info.Provider)
-				if err := output.EncodeProto(r.Info.Trace); err != nil {
-					log.Fatalf("ERR: failed writing trace log: %s", err)
+				if output != nil {
+					if err := output.EncodeProto(r.Info.Trace); err != nil {
+						log.Fatalf("ERR: failed writing trace log: %s", err)
+					}
 				}
 			}
 		}

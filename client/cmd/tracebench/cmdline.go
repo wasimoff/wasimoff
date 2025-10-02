@@ -11,6 +11,7 @@ import (
 type Args struct {
 	Dataset      string
 	Broker       string
+	Tracefile    string
 	DryRun       bool
 	ScaleRate    float64
 	ScaleTasklen float64
@@ -24,6 +25,9 @@ func cmdline() Args {
 
 	broker := flag.String("broker", getEnv("BROKER", "http://localhost:4080"),
 		"connection URL to the Wasimoff Broker or ArtDeco client")
+
+	tracefile := flag.String("trace", getEnv("FILE", ""),
+		"output file for JSONL formatted task traces")
 
 	dryrun := flag.Bool("dryrun", getBool("dryrun", false),
 		"local dry-run without actually sending any tasks to Broker")
@@ -51,6 +55,7 @@ func cmdline() Args {
 	return Args{
 		Dataset:      *dataset,
 		Broker:       *broker,
+		Tracefile:    *tracefile,
 		DryRun:       *dryrun,
 		ScaleRate:    *scaleRate,
 		ScaleTasklen: *scaleTasklen,
