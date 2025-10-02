@@ -12,28 +12,19 @@ import (
 	wasimoffv1 "wasi.team/proto/v1"
 )
 
-const broker = "http://localhost:4080/"
-
 func main() {
 
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "usage: tracebench dataset/ col [col ...]")
-		os.Exit(1)
-	}
-
-	// parse args
-	// TODO: offset into dataset
-	dir := os.Args[1]
-	columns := os.Args[2:]
+	args := cmdline()
 
 	// read input file
-	dataset := ReadDataset(dir)
-	dataset.SelectColumns(columns)
+	dataset := ReadDataset(args.Dataset)
+	dataset.SelectColumns(args.Columns)
 
 	timeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	wasimoffClient := Connect(timeout, broker)
+	// TODO: use args.DryRun to debug without any Broker connection
+	wasimoffClient := Connect(timeout, args.Broker)
 
 	output := OpenOutputLog("tracebench.jsonl")
 	defer output.Close()
@@ -43,7 +34,7 @@ func main() {
 	threads := sync.WaitGroup{}
 	starter := NewStarter[time.Time]()
 
-	for _, col := range columns {
+	for _, col := range args.Columns {
 		threads.Add(1)
 		starter.Add(1)
 
