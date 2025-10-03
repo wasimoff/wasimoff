@@ -1,4 +1,4 @@
-package main
+package funcgen
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gonum.org/v1/gonum/stat/distuv"
+	"wasi.team/client/tracebench/rng"
 )
 
 // could use (https://pkg.go.dev/gonum.org/v1/gonum/stat/distuv)
@@ -32,11 +33,11 @@ import (
 
 // Match a string prefix to a distuv distribution and parse its function
 // arguments using a regular expression.
-func ParseDistribution(s string, rng rand.Source) (distuv.Rander, error) {
+func ParseDistribution(s string, rngs rand.Source) (distuv.Rander, error) {
 
 	// use deterministic rng
-	if rng == nil {
-		rng = NewRand(0)
+	if rngs == nil {
+		rngs = rng.NewRand(0)
 	}
 
 	// find the correct parser for distribution
@@ -47,19 +48,19 @@ func ParseDistribution(s string, rng rand.Source) (distuv.Rander, error) {
 		return &Never{}, nil
 
 	case strings.HasPrefix(s, "bernoulli("):
-		return ParseBernoulli(s, rng)
+		return ParseBernoulli(s, rngs)
 
 	case strings.HasPrefix(s, "exponential("):
-		return ParseExponential(s, rng)
+		return ParseExponential(s, rngs)
 
 	case strings.HasPrefix(s, "laplace("):
-		return ParseLaplace(s, rng)
+		return ParseLaplace(s, rngs)
 
 	case strings.HasPrefix(s, "normal("):
-		return ParseNormal(s, rng)
+		return ParseNormal(s, rngs)
 
 	case strings.HasPrefix(s, "uniform("):
-		return ParseUniform(s, rng)
+		return ParseUniform(s, rngs)
 
 	default:
 		return nil, fmt.Errorf("unknown distribution: %s", s)
@@ -67,7 +68,7 @@ func ParseDistribution(s string, rng rand.Source) (distuv.Rander, error) {
 }
 
 // parse bernoulli(:time, :probability) into distuv.Bernoulli
-func ParseBernoulli(s string, rng rand.Source) (distuv.Rander, error) {
+func ParseBernoulli(s string, rngs rand.Source) (distuv.Rander, error) {
 	// match the string
 	const re = `^bernoulli\(\s*([-+\d\.nmush]+)\s*,\s*([+-]?\d*\.?\d*)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
@@ -89,7 +90,7 @@ func ParseBernoulli(s string, rng rand.Source) (distuv.Rander, error) {
 	// instantiate distribution
 	return &bernoulliRander{
 		bernoulli: &distuv.Bernoulli{
-			Src: rng,
+			Src: rngs,
 			P:   prob,
 		},
 		seconds: t.Seconds(),
@@ -106,7 +107,7 @@ func (b *bernoulliRander) Rand() float64 {
 }
 
 // parse exponential(:rate) into distuv.Exponential
-func ParseExponential(s string, rng rand.Source) (distuv.Rander, error) {
+func ParseExponential(s string, rngs rand.Source) (distuv.Rander, error) {
 	// match the string
 	const re = `^exponential\(\s*([+-]?\d*\.?\d*)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
@@ -120,13 +121,13 @@ func ParseExponential(s string, rng rand.Source) (distuv.Rander, error) {
 	}
 	// instantiate distribution
 	return &distuv.Exponential{
-		Src:  rng,
+		Src:  rngs,
 		Rate: rate,
 	}, nil
 }
 
 // parse laplace(:mu, :scale) into distuv.Exponential
-func ParseLaplace(s string, rng rand.Source) (distuv.Rander, error) {
+func ParseLaplace(s string, rngs rand.Source) (distuv.Rander, error) {
 	// match the string
 	const re = `^laplace\(\s*([-+\d\.nmush]+)\s*,\s*([-+\d\.nmush]+)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
@@ -147,14 +148,14 @@ func ParseLaplace(s string, rng rand.Source) (distuv.Rander, error) {
 	}
 	// instantiate distribution
 	return &distuv.Laplace{
-		Src:   rng,
+		Src:   rngs,
 		Mu:    mu.Seconds(),
 		Scale: scale.Seconds(),
 	}, nil
 }
 
 // parse normal(mu, sigma) into distuv.Normal
-func ParseNormal(s string, rng rand.Source) (distuv.Rander, error) {
+func ParseNormal(s string, rngs rand.Source) (distuv.Rander, error) {
 	// match the string
 	// const re = `^normal\(\s*([+-]?\d*\.?\d*)\s*,\s*([+-]?\d*\.?\d*)\s*\)$`
 	const re = `^normal\(\s*([-+\d\.nmush]+)\s*,\s*([-+\d\.nmush]+)\s*\)$`
@@ -178,14 +179,14 @@ func ParseNormal(s string, rng rand.Source) (distuv.Rander, error) {
 	}
 	// instantiate distribution
 	return &distuv.Normal{
-		Src:   rng,
+		Src:   rngs,
 		Mu:    mu.Seconds(),
 		Sigma: sigma.Seconds(),
 	}, nil
 }
 
 // parse uniform(min, max) into distuv.Uniform
-func ParseUniform(s string, rng rand.Source) (distuv.Rander, error) {
+func ParseUniform(s string, rngs rand.Source) (distuv.Rander, error) {
 	// match the string
 	// const re = `^uniform\(\s*([+-]?\d*\.?\d*)\s*,\s*([+-]?\d*\.?\d*)\s*\)$`
 	const re = `^uniform\(\s*([-+\d\.nmush]+)\s*,\s*([-+\d\.nmush]+)\s*\)$`
@@ -207,7 +208,7 @@ func ParseUniform(s string, rng rand.Source) (distuv.Rander, error) {
 	}
 	// instantiate distribution
 	return &distuv.Uniform{
-		Src: rng,
+		Src: rngs,
 		Min: min.Seconds(),
 		Max: max.Seconds(),
 	}, nil
@@ -221,9 +222,9 @@ func (*Never) Rand() float64 {
 }
 
 // Boolean coin flip based on a bernoulli distribution.
-func NewCoinFlip(p float64, rng rand.Source) CoinFlip {
-	if rng == nil {
-		rng = NewRand(0)
+func NewCoinFlip(p float64, rngs rand.Source) CoinFlip {
+	if rngs == nil {
+		rngs = rng.NewRand(0)
 	}
 	if p == 0 {
 		return CoinFlip{&Never{}}
@@ -232,7 +233,7 @@ func NewCoinFlip(p float64, rng rand.Source) CoinFlip {
 			panic("Bernoulli probability must be in [0, 1]")
 		}
 		return CoinFlip{distuv.Bernoulli{
-			Src: rng,
+			Src: rngs,
 			P:   p,
 		}}
 	}
