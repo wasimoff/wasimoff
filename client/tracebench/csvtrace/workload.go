@@ -1,7 +1,6 @@
 package csvtrace
 
 import (
-	"fmt"
 	"iter"
 	"log"
 	"time"
@@ -19,8 +18,7 @@ type NextTask struct {
 func (hw HuaweiDataset) TaskIterator(column string) iter.Seq[NextTask] {
 
 	// fit interpolators on function column
-	rpm := fitPredictor(hw.RequestsPerMinute, column)
-	task := fitPredictor(hw.FunctionDelayAvgPerMinute, column)
+	tp := FitTracePredictors(hw, column)
 
 	// get the timestamp from last row to detect (unrealistic) overflow
 	limit := lastRowTime(hw.RequestsPerMinute)
@@ -38,7 +36,7 @@ func (hw HuaweiDataset) TaskIterator(column string) iter.Seq[NextTask] {
 			}
 
 			// use current elapsed to predict interval and next task instant
-			interval := rpm.PredictNextTick(elapsed)
+			interval := tp.IntervalAt(elapsed)
 			if interval > time.Minute {
 				elapsed = elapsed + time.Second
 				continue
@@ -48,7 +46,7 @@ func (hw HuaweiDataset) TaskIterator(column string) iter.Seq[NextTask] {
 			elapsed = elapsed + interval
 			if !yield(NextTask{
 				Elapsed: elapsed,
-				Tasklen: task.PredictDuration(elapsed),
+				Tasklen: tp.TasklenAt(elapsed),
 			}) {
 				return
 			}
@@ -105,6 +103,5 @@ func (hw HuaweiDataset) TaskTriggers(starter *tracebench.Starter[time.Time], col
 func lastRowTime(q qframe.QFrame) time.Duration {
 	t := q.MustFloatView("time")
 	last := t.ItemAt(t.Len() - 1)
-	fmt.Println("last row:", uint64(last))
 	return time.Duration(last * float64(time.Second))
 }

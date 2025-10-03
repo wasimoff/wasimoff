@@ -51,14 +51,9 @@ func main() {
 		threads.Add(1)
 		starter.Add(1)
 
-		// create a ticker channel for this dataset column
-		ticker := make(chan tracebench.TaskTick, 10)
-		go dataset.InterpolatedRateTicker(timeout, col, starter, ticker)
-
-		// another thread to send requests on ticks
 		go func(ar *ArgonTasker) {
 			defer threads.Done()
-			for tick := range ticker {
+			for tick := range dataset.TaskTriggers(starter, col) {
 				if diff := time.Since(tick.Scheduled); diff > 10*time.Millisecond {
 					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, tick.Sequence, diff)
 				}
@@ -102,11 +97,4 @@ func main() {
 	// TODO: this does NOT wait for all responses to arrive
 	threads.Wait()
 
-}
-
-func must[T any](v T, e error) T {
-	if e != nil {
-		panic(e)
-	}
-	return v
 }
