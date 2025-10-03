@@ -1,4 +1,4 @@
-package main
+package csvtrace
 
 import (
 	"context"
@@ -8,14 +8,19 @@ import (
 
 	"github.com/tobgu/qframe"
 	"gonum.org/v1/gonum/interp"
+	"wasi.team/client/tracebench"
 )
 
-func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column string, starter *Starter[time.Time], ticker chan<- Tick) {
+func (hw *HuaweiDataset) InterpolatedRateTicker(
+	ctx context.Context,
+	column string,
+	starter *tracebench.Starter[time.Time],
+	ticker chan<- tracebench.TaskTick,
+) {
 
 	// fit interpolators on function column
-	col := column
-	requestsPerMinute := fitPredictor(t.RequestsPerMinute, column)
-	taskDuration := fitPredictor(t.FunctionDelayAvgPerMinute, column)
+	requestsPerMinute := fitPredictor(hw.RequestsPerMinute, column)
+	taskDuration := fitPredictor(hw.FunctionDelayAvgPerMinute, column)
 
 	// use deteministic step instants and try to tick as close to it as possible
 	start := starter.WaitForValue()
@@ -24,7 +29,7 @@ func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 	// only tick when armed (i.e. rate is below the maximum sleep length)
 	maxSleep := 10 * time.Second
 	armed := false
-	seq := uint(0)
+	seq := uint64(0)
 
 	for {
 
@@ -41,13 +46,11 @@ func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 
 		// tick the channel if armed
 		if armed {
-			tasklen := taskDuration.Predict(elapsed.Seconds())
-			ticker <- Tick{
-				Column:     &col,
-				Scheduled:  instant,
-				Elapsed:    elapsed,
-				TasklenSec: tasklen,
-				Sequence:   seq,
+			ticker <- tracebench.TaskTick{
+				Scheduled: instant,
+				Elapsed:   elapsed,
+				Tasklen:   taskDuration.PredictDuration(elapsed),
+				Sequence:  seq,
 			}
 			seq += 1
 			// detect overflow
@@ -57,7 +60,7 @@ func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 		}
 
 		// interpolate the requests/sec and compute time until next tick
-		requestsPerSecond := math.Max(requestsPerMinute.Predict(elapsed.Seconds())/60.0, 0)
+		requestsPerSecond := requestsPerMinute.PredictRequestsPerSecond(elapsed)
 		waitNano := float64(time.Second) / requestsPerSecond
 		wait := time.Duration(waitNano)
 
@@ -82,17 +85,8 @@ func (t *HuaweiDataset) InterpolatedRateTicker(ctx context.Context, column strin
 
 }
 
-// Tick is a single event that should trigger a request
-type Tick struct {
-	Column     *string
-	Scheduled  time.Time
-	Elapsed    time.Duration
-	TasklenSec float64
-	Sequence   uint
-}
-
 // Fit an AkimaSplite predictor on a given QFrame dataset column
-func fitPredictor(frame qframe.QFrame, col string) interp.Predictor {
+func fitPredictor(frame qframe.QFrame, col string) predictor {
 
 	// make sure the column does not contain NaNs or negative numbers
 	fr := frame.Apply(qframe.Instruction{Fn: clampPositive, SrcCol1: col, DstCol: col})
@@ -110,7 +104,7 @@ func fitPredictor(frame qframe.QFrame, col string) interp.Predictor {
 	if err != nil {
 		panic(err)
 	}
-	return spline
+	return predictor{spline}
 
 }
 
@@ -127,4 +121,32 @@ func scaleColumn(scale float64) func(float64) float64 {
 	return func(f float64) float64 {
 		return f * scale
 	}
+}
+
+// Wrap a predictor to take and return time instants more easily.
+type predictor struct {
+	predictor interp.Predictor
+}
+
+func (ti *predictor) PredictDuration(i time.Duration) time.Duration {
+	p := ti.predictor.Predict(i.Seconds())
+	return time.Duration(p * float64(time.Second))
+}
+
+func (ti *predictor) PredictRequestsPerSecond(i time.Duration) float64 {
+	return math.Max(ti.predictor.Predict(i.Seconds())/60.0, 0)
+}
+
+const maximumDuration = time.Duration(1<<63 - 1)
+const maximumDurationf64 = float64(maximumDuration)
+
+func (ti *predictor) PredictNextTick(i time.Duration) time.Duration {
+	// predict requests/minute at time instant
+	rpm := ti.predictor.Predict(i.Seconds())
+	// and compute time interval in nanoseconds
+	wait := float64(time.Minute) / rpm
+	if rpm <= 0 || wait >= maximumDurationf64 { // infinite duration
+		return maximumDuration
+	}
+	return time.Duration(wait)
 }

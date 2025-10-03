@@ -10,6 +10,8 @@ import (
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"wasi.team/broker/net/transport"
+	"wasi.team/client/tracebench"
+	"wasi.team/client/tracebench/csvtrace"
 	wasimoffv1 "wasi.team/proto/v1"
 )
 
@@ -19,7 +21,7 @@ func main() {
 	args := cmdline()
 
 	// read input file and apply modifiers
-	dataset := ReadDataset(args.Dataset)
+	dataset := csvtrace.ReadDataset(args.Dataset)
 	dataset.SelectColumns(args.Columns)
 	dataset.ScaleDatasets(args.ScaleRate, args.ScaleTasklen)
 
@@ -42,7 +44,7 @@ func main() {
 	responses := make(chan *transport.PendingCall, 2048)
 
 	threads := sync.WaitGroup{}
-	starter := NewStarter[time.Time]()
+	starter := tracebench.NewStarter[time.Time]()
 
 	// spawn ticker threads
 	for _, col := range args.Columns {
@@ -50,7 +52,7 @@ func main() {
 		starter.Add(1)
 
 		// create a ticker channel for this dataset column
-		ticker := make(chan Tick, 10)
+		ticker := make(chan tracebench.TaskTick, 10)
 		go dataset.InterpolatedRateTicker(timeout, col, starter, ticker)
 
 		// another thread to send requests on ticks
@@ -60,8 +62,8 @@ func main() {
 				if diff := time.Since(tick.Scheduled); diff > 10*time.Millisecond {
 					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, tick.Sequence, diff)
 				}
-				fmt.Printf("[ %3s ] tick %8d / %10s --> %f\n", col, tick.Sequence, tick.Elapsed, tick.TasklenSec)
-				ar.Run(responses, tick.TasklenSec)
+				fmt.Printf("[ %3s ] tick %8d / %10s --> %v\n", col, tick.Sequence, tick.Elapsed, tick.Tasklen)
+				ar.Run(responses, float64(tick.Tasklen))
 			}
 		}(argon)
 	}
