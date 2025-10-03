@@ -65,7 +65,7 @@ type NextTask struct {
 	Skip    bool
 }
 
-// Iterator that returns the next task properties without actually sleeping.
+// Iterator that yields the next task properties without actually sleeping.
 func (w WorkloadConfig) TaskIterator() iter.Seq[NextTask] {
 
 	if w.Seed == 0 {
@@ -97,7 +97,7 @@ func (w WorkloadConfig) TaskIterator() iter.Seq[NextTask] {
 }
 
 // Iterator that runs a workload. Attention: that means that this iterator will
-// block and sleep according to the task properties! Use this in a goroutine to
+// block and sleep according to the task instants! Use this in a goroutine to
 // trigger function requests asynchronously.
 func (w WorkloadConfig) TaskTriggers(starter *tracebench.Starter[time.Time]) iter.Seq[tracebench.TaskTick] {
 

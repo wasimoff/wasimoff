@@ -8,6 +8,7 @@ import (
 
 	"gopkg.in/yaml.v3"
 	"wasi.team/client/tracebench"
+	"wasi.team/client/tracebench/csvtrace"
 	"wasi.team/client/tracebench/funcgen"
 	"wasi.team/client/tracebench/rng"
 )
@@ -41,7 +42,7 @@ func main() {
 	case "show":
 		for _, w := range traceconf.Workloads {
 			fmt.Println()
-			printWorkload(w, 10)
+			printWorkload(w, 20)
 		}
 		fmt.Println()
 
@@ -52,6 +53,27 @@ func main() {
 			starter.Add(1)
 			go runWorkload(w, starter)
 		}
+
+		starter.Wait()
+		now := time.Now()
+		starter.Broadcast(now)
+
+		time.Sleep(time.Until(now.Add(traceconf.Duration)))
+
+	case "csv":
+		col := os.Args[3]
+		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/")
+		dataset.SelectColumns([]string{col})
+		printTrace(dataset, col, 20)
+
+	case "trace":
+		col := os.Args[3]
+		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/")
+		dataset.SelectColumns([]string{col})
+
+		starter := tracebench.NewStarter[time.Time]()
+		starter.Add(1)
+		go runTrace(dataset, col, starter)
 
 		starter.Wait()
 		now := time.Now()
@@ -79,6 +101,25 @@ func printWorkload(w funcgen.WorkloadConfig, n int) {
 		i += 1
 		fmt.Printf("%20s [%3d] sleep: %9.6f, task: %9.6f, skip: %v\n", w.Name, i,
 			t.Sleep.Seconds(), t.Tasklen.Seconds(), t.Skip)
+		if i == n {
+			break
+		}
+	}
+}
+
+func runTrace(hw csvtrace.HuaweiDataset, col string, starter *tracebench.Starter[time.Time]) {
+	for t := range hw.TaskTriggers(starter, col) {
+		fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
+			t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
+	}
+}
+
+func printTrace(hw csvtrace.HuaweiDataset, col string, n int) {
+	i := 0
+	for t := range hw.TaskIterator(col) {
+		i += 1
+		fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col, i,
+			t.Elapsed.Seconds(), t.Tasklen.Seconds())
 		if i == n {
 			break
 		}

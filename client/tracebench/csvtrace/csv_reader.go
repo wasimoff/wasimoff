@@ -1,4 +1,4 @@
-package main
+package csvtrace
 
 import (
 	"compress/gzip"
@@ -48,18 +48,18 @@ func ReadDataset(directory string) (trace HuaweiDataset) {
 }
 
 // Scale all columns in the dataset to simplify downstream usage.
-func (t *HuaweiDataset) ScaleDatasets(rateScale float64, tasklenScale float64) *HuaweiDataset {
+func (hw *HuaweiDataset) ScaleDatasets(rateScale float64, tasklenScale float64) *HuaweiDataset {
 
 	if rateScale != 1.0 {
 		log.Printf("scaling the RequestsPerMinute values (y-axis) by %f", rateScale)
-		t.RequestsPerMinute = scaleEntireQFrame(t.RequestsPerMinute, rateScale)
+		hw.RequestsPerMinute = scaleEntireQFrame(hw.RequestsPerMinute, rateScale)
 	}
 	if tasklenScale != 1.0 {
 		log.Printf("scaling the FunctionDelayAvgPerMinute values (y-axis) by %f", tasklenScale)
-		t.FunctionDelayAvgPerMinute = scaleEntireQFrame(t.FunctionDelayAvgPerMinute, tasklenScale)
+		hw.FunctionDelayAvgPerMinute = scaleEntireQFrame(hw.FunctionDelayAvgPerMinute, tasklenScale)
 	}
 
-	return t
+	return hw
 
 }
 
@@ -74,11 +74,11 @@ func scaleEntireQFrame(frame qframe.QFrame, scale float64) qframe.QFrame {
 }
 
 // Select only specific columns from the datasets.
-func (t *HuaweiDataset) SelectColumns(cols []string) *HuaweiDataset {
+func (hw *HuaweiDataset) SelectColumns(cols []string) *HuaweiDataset {
 	cols = append([]string{"time"}, cols...)
-	t.RequestsPerMinute = t.RequestsPerMinute.Select(cols...)
-	t.FunctionDelayAvgPerMinute = t.FunctionDelayAvgPerMinute.Select(cols...)
-	return t
+	hw.RequestsPerMinute = hw.RequestsPerMinute.Select(cols...)
+	hw.FunctionDelayAvgPerMinute = hw.FunctionDelayAvgPerMinute.Select(cols...)
+	return hw
 }
 
 func ReadQframe(filename string) (frame qframe.QFrame) {
