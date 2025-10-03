@@ -1,4 +1,4 @@
-package main
+package funcgen
 
 import (
 	"iter"
@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"gonum.org/v1/gonum/stat/distuv"
+	"wasi.team/client/tracebench"
+	"wasi.team/client/tracebench/rng"
 )
 
 type TraceConfig struct {
@@ -22,6 +24,13 @@ type WorkloadConfig struct {
 	Rate JitterDuration
 	Task JitterDuration
 }
+
+// Predefined seed offsets for the various RNGs needed in a workload.
+const (
+	SeedSkip       uint64 = 10
+	SeedRateJitter uint64 = 20
+	SeedTaskJitter uint64 = 30
+)
 
 type JitterDuration struct {
 	Fixed  time.Duration
@@ -56,23 +65,17 @@ type NextTask struct {
 	Skip    bool
 }
 
-type TaskTick struct {
-	Sequence  uint64
-	Elapsed   time.Duration
-	Scheduled time.Time
-	Tasklen   time.Duration
-}
-
+// Iterator that returns the next task properties without actually sleeping.
 func (w WorkloadConfig) TaskIterator() iter.Seq[NextTask] {
 
 	if w.Seed == 0 {
-		w.Seed = TrueRandom()
+		w.Seed = rng.TrueRandom()
 	}
 
 	// preflight checks for rate and tasklen
-	rate := w.Rate.Prepare(NewOffsetRand(w.Seed, SeedRateJitter))
-	task := w.Task.Prepare(NewOffsetRand(w.Seed, SeedTaskJitter))
-	skip := NewCoinFlip(w.Skip, NewOffsetRand(w.Seed, SeedSkip))
+	rate := w.Rate.Prepare(rng.NewOffsetRand(w.Seed, SeedRateJitter))
+	task := w.Task.Prepare(rng.NewOffsetRand(w.Seed, SeedTaskJitter))
+	skip := NewCoinFlip(w.Skip, rng.NewOffsetRand(w.Seed, SeedSkip))
 
 	return func(yield func(NextTask) bool) {
 		for {
@@ -93,14 +96,10 @@ func (w WorkloadConfig) TaskIterator() iter.Seq[NextTask] {
 
 }
 
-// Predefined seed offsets for the various RNGs needed in a workload.
-const (
-	SeedSkip       uint64 = 10
-	SeedRateJitter uint64 = 20
-	SeedTaskJitter uint64 = 30
-)
-
-func (w WorkloadConfig) TaskTriggers(starter *Starter[time.Time]) iter.Seq[TaskTick] {
+// Iterator that runs a workload. Attention: that means that this iterator will
+// block and sleep according to the task properties! Use this in a goroutine to
+// trigger function requests asynchronously.
+func (w WorkloadConfig) TaskTriggers(starter *tracebench.Starter[time.Time]) iter.Seq[tracebench.TaskTick] {
 
 	tasks := w.TaskIterator()
 	sequence := uint64(0)
@@ -109,7 +108,7 @@ func (w WorkloadConfig) TaskTriggers(starter *Starter[time.Time]) iter.Seq[TaskT
 	instant := start
 	elapsed := time.Duration(0)
 
-	return func(yield func(TaskTick) bool) {
+	return func(yield func(tracebench.TaskTick) bool) {
 		for task := range tasks {
 
 			// compute the next task trigger instant and sleep until then
@@ -123,7 +122,7 @@ func (w WorkloadConfig) TaskTriggers(starter *Starter[time.Time]) iter.Seq[TaskT
 			}
 
 			// yield the next task
-			if !yield(TaskTick{
+			if !yield(tracebench.TaskTick{
 				Sequence:  sequence,
 				Elapsed:   elapsed,
 				Scheduled: instant,

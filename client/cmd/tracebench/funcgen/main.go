@@ -7,6 +7,9 @@ import (
 	"time"
 
 	"gopkg.in/yaml.v3"
+	"wasi.team/client/tracebench"
+	"wasi.team/client/tracebench/funcgen"
+	"wasi.team/client/tracebench/rng"
 )
 
 func main() {
@@ -21,16 +24,16 @@ func main() {
 	}
 	defer file.Close()
 
-	traceconf := TraceConfig{}
+	traceconf := funcgen.TraceConfig{}
 	err = yaml.NewDecoder(file).Decode(&traceconf)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	fmt.Printf("Loaded configuration: %#v\n------------------------------\n", traceconf)
 
-	GlobalSeed = traceconf.Seed
-	if GlobalSeed == 0 {
-		GlobalSeed = TrueRandom()
+	rng.GlobalSeed = traceconf.Seed
+	if rng.GlobalSeed == 0 {
+		rng.GlobalSeed = rng.TrueRandom()
 	}
 
 	switch os.Args[1] {
@@ -43,7 +46,7 @@ func main() {
 		fmt.Println()
 
 	case "run":
-		starter := NewStarter[time.Time]()
+		starter := tracebench.NewStarter[time.Time]()
 
 		for _, w := range traceconf.Workloads {
 			starter.Add(1)
@@ -51,9 +54,10 @@ func main() {
 		}
 
 		starter.Wait()
-		starter.Broadcast(time.Now())
+		now := time.Now()
+		starter.Broadcast(now)
 
-		time.Sleep(time.Until(starter.value.Add(traceconf.Duration)))
+		time.Sleep(time.Until(now.Add(traceconf.Duration)))
 
 	default:
 		log.Fatalf("unknown command, expected {show|run}: %s", os.Args[1])
@@ -62,14 +66,14 @@ func main() {
 
 }
 
-func runWorkload(w WorkloadConfig, starter *Starter[time.Time]) {
+func runWorkload(w funcgen.WorkloadConfig, starter *tracebench.Starter[time.Time]) {
 	for t := range w.TaskTriggers(starter) {
 		fmt.Printf("%20s [%3d] elapsed: %9.6f, task: %9.6f\n", w.Name,
 			t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 	}
 }
 
-func printWorkload(w WorkloadConfig, n int) {
+func printWorkload(w funcgen.WorkloadConfig, n int) {
 	i := 0
 	for t := range w.TaskIterator() {
 		i += 1
