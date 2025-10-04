@@ -1,10 +1,8 @@
 package csvtrace
 
 import (
-	"math"
 	"time"
 
-	"github.com/tobgu/qframe"
 	"gonum.org/v1/gonum/interp"
 )
 
@@ -43,15 +41,11 @@ func FitTracePredictors(dataset HuaweiDataset, col string) TracePredictors {
 	}
 }
 
-// Fit an AkimaSplite predictor on a given QFrame dataset column
-func fitPredictor(frame qframe.QFrame, col string) interp.Predictor {
+// Fit an AkimaSplite predictor on a given dataset column
+func fitPredictor(frame ColumnSet, col string) interp.Predictor {
 
-	// make sure the column does not contain NaNs or negative numbers
-	fr := frame.Apply(qframe.Instruction{Fn: clampPositive, SrcCol1: col, DstCol: col})
-
-	// get dataset as float slices
-	time := fr.MustFloatView("time").Slice()
-	values := fr.MustFloatView(col).Slice()
+	time := frame["time"]
+	values := frame[col]
 
 	// instantiate the predictor and fit
 	spline := &interp.AkimaSpline{}
@@ -62,19 +56,4 @@ func fitPredictor(frame qframe.QFrame, col string) interp.Predictor {
 	}
 	return spline
 
-}
-
-// Basically math.Max(0, f) but returns 0 on NaN as well.
-func clampPositive(f float64) float64 {
-	if math.IsNaN(f) || f < 0 {
-		return 0.0
-	}
-	return f
-}
-
-// Multiply all values in the column with a scalar.
-func scaleColumn(scale float64) func(float64) float64 {
-	return func(f float64) float64 {
-		return f * scale
-	}
 }

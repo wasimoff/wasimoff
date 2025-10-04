@@ -5,7 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/tobgu/qframe"
 	"wasi.team/client/tracebench"
 )
 
@@ -100,8 +99,8 @@ func (hw HuaweiDataset) TaskTriggers(starter *tracebench.Starter[time.Time], col
 }
 
 // Find the last known instant in the frame.
-func lastRowTime(q qframe.QFrame) time.Duration {
-	t := q.MustFloatView("time")
-	last := t.ItemAt(t.Len() - 1)
+func lastRowTime(column ColumnSet) time.Duration {
+	t := column["time"]
+	last := t[len(t)-1]
 	return time.Duration(last * float64(time.Second))
 }
