@@ -59,13 +59,13 @@ func NewArgonTasker(ctx context.Context, broker string) *ArgonTasker {
 
 }
 
-func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds float64) {
+func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds time.Duration) {
 
 	at.request_mu.Lock()
 	defer at.request_mu.Unlock()
 
 	// set the iteration count to given parameter
-	iter := secondsToIterations(seconds)
+	iter := durationToIterations(seconds)
 	at.request.Params.Args[2] = strconv.Itoa(iter)
 
 	// set current start time in trace
@@ -88,7 +88,7 @@ func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds float64) {
 }
 
 // For argonload/wasm running on an Intel i5-1345U, we get around iter=35 for 1s runtime.
-func secondsToIterations(seconds float64) int {
-	itertations := 35 * seconds
+func durationToIterations(d time.Duration) int {
+	itertations := 35 * d.Seconds()
 	return int(math.Ceil(itertations))
 }

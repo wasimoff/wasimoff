@@ -28,7 +28,7 @@ func (tp *TracePredictors) IntervalAt(i time.Duration) time.Duration {
 	const maximumDurationf64 = float64(maximumDuration)
 
 	// predict requests/minute and time interval in nanoseconds
-	rpm := tp.Tasklen.Predict(i.Seconds())
+	rpm := tp.RequestsPerMinute.Predict(i.Seconds())
 	waitns := float64(time.Minute) / rpm
 	if rpm <= 0 || waitns >= maximumDurationf64 { // infinite duration
 		return maximumDuration

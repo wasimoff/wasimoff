@@ -58,7 +58,7 @@ func main() {
 					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, tick.Sequence, diff)
 				}
 				fmt.Printf("[ %3s ] tick %8d / %10s --> %v\n", col, tick.Sequence, tick.Elapsed, tick.Tasklen)
-				ar.Run(responses, float64(tick.Tasklen))
+				ar.Run(responses, tick.Tasklen)
 			}
 		}(argon)
 	}
