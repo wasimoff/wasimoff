@@ -21,8 +21,7 @@ func main() {
 	args := cmdline()
 
 	// read input file and apply modifiers
-	dataset := csvtrace.ReadDataset(args.Dataset)
-	dataset.SelectColumns(args.Columns)
+	dataset := csvtrace.ReadDataset(args.Dataset, args.Columns)
 	dataset.ScaleDatasets(args.ScaleRate, args.ScaleTasklen)
 
 	// contexts for app cancellation

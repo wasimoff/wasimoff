@@ -62,14 +62,12 @@ func main() {
 
 	case "csv":
 		col := os.Args[3]
-		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/")
-		dataset.SelectColumns([]string{col})
+		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/", []string{col})
 		printTrace(dataset, col, 20)
 
 	case "trace":
 		col := os.Args[3]
-		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/")
-		dataset.SelectColumns([]string{col})
+		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/", []string{col})
 
 		starter := tracebench.NewStarter[time.Time]()
 		starter.Add(1)

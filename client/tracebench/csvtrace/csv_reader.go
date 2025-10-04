@@ -2,18 +2,15 @@ package csvtrace
 
 import (
 	"compress/gzip"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path"
+	"slices"
 	"strconv"
 	"strings"
-
-	qcsv "github.com/tobgu/qframe/config/csv"
-	"github.com/tobgu/qframe/types"
-
-	"github.com/tobgu/qframe"
 )
 
 // Huawei 2023 private dataset: https://github.com/sir-lab/data-release/
@@ -25,19 +22,23 @@ import (
 
 type HuaweiDataset struct {
 	// request rate for replaying
-	RequestsPerMinute qframe.QFrame
+	RequestsPerMinute ColumnSet
 	// average length of each function invocation
-	FunctionDelayAvgPerMinute qframe.QFrame
+	FunctionDelayAvgPerMinute ColumnSet
 }
 
 // Read all datafiles belonging to a given day and return as frames.
-func ReadDataset(directory string) (trace HuaweiDataset) {
+func ReadDataset(directory string, cols []string) HuaweiDataset {
 
-	load := func(dataset string) qframe.QFrame {
-		// construct filename and read qframe
+	load := func(dataset string) ColumnSet {
+		// construct filename and read csv file
 		filename := path.Join(directory, fmt.Sprintf("%s.csv.gz", dataset))
 		log.Printf("loading %s ...", filename)
-		return ReadQframe(filename)
+		cs, err := ReadCSV(filename, cols)
+		if err != nil {
+			log.Fatalf("failed reading csv: %v", err)
+		}
+		return cs
 	}
 
 	return HuaweiDataset{
@@ -50,70 +51,122 @@ func ReadDataset(directory string) (trace HuaweiDataset) {
 // Scale all columns in the dataset to simplify downstream usage.
 func (hw *HuaweiDataset) ScaleDatasets(rateScale float64, tasklenScale float64) *HuaweiDataset {
 
+	scaleColumnSet := func(cs ColumnSet, mult float64) {
+		for key := range cs {
+			if key == "time" {
+				continue
+			}
+			for i, v := range cs[key] {
+				cs[key][i] = v * mult
+			}
+		}
+	}
+
 	if rateScale != 1.0 {
 		log.Printf("scaling the RequestsPerMinute values (y-axis) by %f", rateScale)
-		hw.RequestsPerMinute = scaleEntireQFrame(hw.RequestsPerMinute, rateScale)
+		scaleColumnSet(hw.RequestsPerMinute, rateScale)
 	}
 	if tasklenScale != 1.0 {
 		log.Printf("scaling the FunctionDelayAvgPerMinute values (y-axis) by %f", tasklenScale)
-		hw.FunctionDelayAvgPerMinute = scaleEntireQFrame(hw.FunctionDelayAvgPerMinute, tasklenScale)
+		scaleColumnSet(hw.FunctionDelayAvgPerMinute, tasklenScale)
 	}
 
 	return hw
 
 }
 
-func scaleEntireQFrame(frame qframe.QFrame, scale float64) qframe.QFrame {
-	for _, column := range frame.ColumnNames() {
-		if column == "day" || column == "time" {
-			continue
+// Holds the parsed CSV data in a set of column slices..
+type ColumnSet map[string][]float64
+
+func ReadCSV(filename string, keep []string) (ColumnSet, error) {
+
+	// validate the column names "to keep"
+	for _, col := range keep {
+		i, err := strconv.Atoi(col)
+		if err != nil || i < 0 || i >= 200 {
+			return nil, fmt.Errorf("not a valid data column: %s", col)
 		}
-		frame = frame.Apply(qframe.Instruction{Fn: scaleColumn(scale), SrcCol1: column, DstCol: column})
 	}
-	return frame
-}
-
-// Select only specific columns from the datasets.
-func (hw *HuaweiDataset) SelectColumns(cols []string) *HuaweiDataset {
-	cols = append([]string{"time"}, cols...)
-	hw.RequestsPerMinute = hw.RequestsPerMinute.Select(cols...)
-	hw.FunctionDelayAvgPerMinute = hw.FunctionDelayAvgPerMinute.Select(cols...)
-	return hw
-}
-
-func ReadQframe(filename string) (frame qframe.QFrame) {
 
 	// open the file
-	file, err := os.Open(filename)
+	f, err := os.Open(filename)
 	if err != nil {
-		log.Fatalf("can't open %q: %s", filename, err)
+		return nil, fmt.Errorf("can't open %q: %s", filename, err)
 	}
-	defer file.Close()
+	defer f.Close()
 
-	// use it as a reader interface
-	var reader io.Reader = file
+	// use it as a file interface
+	var file io.Reader = f
 
 	// maybe it needs decompression
 	if strings.HasSuffix(filename, ".gz") {
-		zr, err := gzip.NewReader(file)
+		gz, err := gzip.NewReader(f)
 		if err != nil {
-			log.Fatalf("failed to open %q as gzip: %s", filename, err)
+			return nil, fmt.Errorf("failed to open %q as gzip: %s", filename, err)
 		}
-		defer zr.Close()
-		reader = zr
+		defer gz.Close()
+		file = gz
 	}
 
-	return qframe.ReadCSV(reader, allYourColumnsAreFloat())
+	// open a csv reader
+	reader := csv.NewReader(file)
+
+	// read header and make sure there is a time column
+	header, err := reader.Read()
+	if err != nil {
+		return nil, fmt.Errorf("reading header: %w", err)
+	}
+	if header[1] != "time" {
+		return nil, fmt.Errorf("unexpected header: wanted 'time' in second column")
+	}
+
+	// store the indices of the columns we want to keep
+	indices := make(map[string]int)
+	indices["time"] = 1
+	for _, col := range keep {
+		i := slices.Index(header, col)
+		if i == -1 {
+			return nil, fmt.Errorf("unexpected header: column %q not found", col)
+		}
+		indices[col] = i
+	}
+
+	// initialize the result set and allocate slices
+	dataset := make(ColumnSet)
+	dataset["time"] = make([]float64, 0)
+	for col := range indices {
+		dataset[col] = make([]float64, 0)
+	}
+
+	// read data rows from file
+	for row := 0; ; row++ {
+
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, fmt.Errorf("reading row %d: %w", row, err)
+		}
+
+		for col, i := range indices {
+			value, err := parseFloat(record[i])
+			if err != nil {
+				return nil, fmt.Errorf("parsing row %d: column %s (%d): %w", row, col, i, err)
+			}
+			dataset[col] = append(dataset[col], value)
+		}
+
+	}
+
+	return dataset, nil
+
 }
 
-// set the types map to float64 for all expected column names
-func allYourColumnsAreFloat() qcsv.ConfigFunc {
-	return func(c *qcsv.Config) {
-		c.Types = make(map[string]types.DataType, 202)
-		c.Types["day"] = types.Float
-		c.Types["time"] = types.Float
-		for i := range 200 {
-			c.Types[strconv.Itoa(i)] = types.Float
-		}
+// parseFloat parses a string as float64, treating empty strings as 0
+func parseFloat(s string) (float64, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, nil
 	}
+	return strconv.ParseFloat(s, 64)
 }
