@@ -8,63 +8,61 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"wasi.team/broker/net/transport"
+	"wasi.team/client/tracebench"
+	"wasi.team/client/tracebench/csvtrace"
 	wasimoffv1 "wasi.team/proto/v1"
 )
 
-const broker = "http://localhost:4080/"
-
 func main() {
 
-	if len(os.Args) < 3 {
-		fmt.Fprintln(os.Stderr, "usage: tracebench dataset/ col [col ...]")
-		os.Exit(1)
-	}
+	// parse commandline arguments
+	args := cmdline()
 
-	// parse args
-	// TODO: offset into dataset
-	dir := os.Args[1]
-	columns := os.Args[2:]
+	// read input file and apply modifiers
+	dataset := csvtrace.ReadDataset(args.Dataset, args.Columns)
+	dataset.ScaleDatasets(args.ScaleRate, args.ScaleTasklen)
 
-	// read input file
-	dataset := ReadDataset(dir)
-	dataset.SelectColumns(columns)
-
-	timeout, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	// contexts for app cancellation
+	background, shutdown := context.WithCancel(context.Background())
+	timeout, cancel := context.WithTimeout(background, time.Duration(args.Timeout)*time.Second)
+	defer shutdown()
 	defer cancel()
+	go func(ctx context.Context) {
+		<-ctx.Done()
+		log.Println("timeout reached, exiting ...")
+	}(timeout)
 
-	wasimoffClient := Connect(timeout, broker)
+	// create the request generator
+	argon := NewArgonTasker(background, args.Broker)
 
-	output := OpenOutputLog("tracebench.jsonl")
+	output := NewProtoDelimEncoder(args.Tracefile)
 	defer output.Close()
 
 	responses := make(chan *transport.PendingCall, 2048)
 
 	threads := sync.WaitGroup{}
-	starter := NewStarter[time.Time]()
+	starter := tracebench.NewStarter[time.Time]()
 
-	for _, col := range columns {
+	// spawn ticker threads
+	for _, col := range args.Columns {
 		threads.Add(1)
 		starter.Add(1)
 
-		ticker := make(chan Tick, 10)
-		argon := NewArgonTasker(wasimoffClient)
-
-		go dataset.InterpolatedRateTicker(timeout, col, starter, ticker)
-
-		go func() { // TODO: make this a func on ArgonTasker
+		go func(ar *ArgonTasker) {
 			defer threads.Done()
-			for tick := range ticker {
+			for tick := range dataset.TaskTriggers(starter, col) {
 				if diff := time.Since(tick.Scheduled); diff > 10*time.Millisecond {
 					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, tick.Sequence, diff)
 				}
-				fmt.Printf("[ %3s ] tick %8d / %10s --> %f\n", col, tick.Sequence, tick.Elapsed, tick.Tasklen)
-				// TODO: needs to actually vary the task duration now
-				argon.Run(responses, 10)
+				fmt.Printf("[ %3s ] tick %8d / %10s --> %v\n", col, tick.Sequence, tick.Elapsed, tick.Tasklen)
+				ar.Run(responses, tick.Tasklen)
 			}
-		}()
+		}(argon)
 	}
 
+	// a single function to handle responses
 	go func() {
 		for c := range responses {
 			if c.Error != nil {
@@ -75,8 +73,16 @@ func main() {
 					panic("can't cast the response to *wasimoffv1.Task_Wasip1_Response")
 				}
 				fmt.Printf("Task OK: %10s on %s\n", *r.Info.Id, *r.Info.Provider)
-				if err := output.EncodeProto(r.Info.Trace); err != nil {
-					log.Fatalf("ERR: failed writing trace log: %s", err)
+				if output != nil {
+					if err := output.Write(r.Info); err != nil {
+						log.Fatalf("ERR: failed writing trace log: %s", err)
+					}
+				} else {
+					buf, err := protojson.Marshal(r.Info)
+					if err != nil {
+						panic(err)
+					}
+					log.Printf("%s", buf)
 				}
 			}
 		}
@@ -86,13 +92,8 @@ func main() {
 	starter.Wait()
 	starter.Broadcast(time.Now())
 
+	// wait for tickers to finish for clean exit
+	// TODO: this does NOT wait for all responses to arrive
 	threads.Wait()
 
-}
-
-func must[T any](v T, e error) T {
-	if e != nil {
-		panic(e)
-	}
-	return v
 }
