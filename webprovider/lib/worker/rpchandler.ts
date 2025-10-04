@@ -71,7 +71,12 @@ export async function rpchandler(
 
         if (qos) {
           if (qos.immediate && !this.pool.anyIdle) {
-            throw new Error("qos: no idle workers for immediate mode");
+            // scheduling errors are WasiResponse.Error
+            traceEvent(info, wasimoff.Task_TraceEvent_EventType.ProviderError);
+            return create(wasimoff.Task_Wasip1_ResponseSchema, {
+              info: info,
+              result: { case: "error", value: String("qos: no idle workers for immediate mode") },
+            });
           }
         }
 
