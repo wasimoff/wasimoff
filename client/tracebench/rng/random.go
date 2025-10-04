@@ -7,20 +7,27 @@ import (
 	"math/rand/v2"
 )
 
-// A global seed that influences all RNGs equally.
-var GlobalSeed uint64 = 0
-
-// Return a deteministic random number source based on the PCG algorithm.
-// https://go.dev/blog/chacha8rand#performance
-func NewRand(seed uint64) rand.Source {
-	return rand.NewPCG(GlobalSeed, seed)
+// A source of rand.Sources.
+type SeededSourcer struct {
+	commonSeed uint64
 }
 
-// Use the seed to get one deterministic random number and
-// then return another rand source at an offset from that.
-func NewOffsetRand(seed, offset uint64) rand.Source {
-	r := NewRand(seed).Uint64()
-	return NewRand(r + offset)
+func NewSeededSourcer(global uint64) *SeededSourcer {
+	return &SeededSourcer{global}
+}
+
+// Return a deteministic random number source based on the PCG algorithm,
+// using the struct seed as first and seed arg as second half of internal state.
+// https://go.dev/blog/chacha8rand#performance
+func (s *SeededSourcer) New(seed uint64) rand.Source {
+	return rand.NewPCG(s.commonSeed, seed)
+}
+
+// Use the seed to get a single deterministic random number and reuse that
+// number with the offset to return another deterministic rand source.
+func (s *SeededSourcer) NewAtOffset(seed, offset uint64) rand.Source {
+	r := s.New(seed).Uint64()
+	return s.New(r + offset)
 }
 
 // Return an actually random number from the system's cryptographic randomness.

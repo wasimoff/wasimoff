@@ -6,94 +6,101 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/yaml.v3"
 	"wasi.team/client/tracebench"
 	"wasi.team/client/tracebench/csvtrace"
 	"wasi.team/client/tracebench/funcgen"
-	"wasi.team/client/tracebench/rng"
 )
 
 func main() {
 
+	const usage = "{funcgen|csvtrace} config.yaml [run]"
+
 	if len(os.Args) < 3 {
-		log.Fatal("need two arguments: {show|run} <config.yaml>")
+		log.Fatalf("need two arguments: %s", usage)
 	}
 
-	file, err := os.Open(os.Args[2])
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer file.Close()
-
-	traceconf := funcgen.TraceConfig{}
-	err = yaml.NewDecoder(file).Decode(&traceconf)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Printf("Loaded configuration: %#v\n------------------------------\n", traceconf)
-
-	rng.GlobalSeed = traceconf.Seed
-	if rng.GlobalSeed == 0 {
-		rng.GlobalSeed = rng.TrueRandom()
+	run := false
+	if len(os.Args) >= 4 && os.Args[3] == "run" {
+		run = true
 	}
 
 	switch os.Args[1] {
 
-	case "show":
-		for _, w := range traceconf.Workloads {
+	// generate workload file
+	case "funcgen":
+		trace, err := funcgen.ReadTraceConfig(os.Args[2])
+		if err != nil {
+			log.Fatalf("reading funcgen config: %v", err)
+		}
+		fmt.Printf("Loaded funcgen configuration: %#v\n\n", trace)
+
+		switch run {
+
+		case false:
+			for _, w := range trace.Workloads {
+				fmt.Println()
+				printFuncgen(w, 10)
+			}
 			fmt.Println()
-			printWorkload(w, 20)
+
+		case true:
+			starter := tracebench.NewStarter[time.Time]()
+			for _, w := range trace.Workloads {
+				starter.Add(1)
+				go runFuncgen(w, starter)
+			}
+			starter.Wait()
+			now := time.Now()
+			starter.Broadcast(now)
+			time.Sleep(time.Until(now.Add(trace.Duration)))
+
 		}
-		fmt.Println()
 
-	case "run":
-		starter := tracebench.NewStarter[time.Time]()
-
-		for _, w := range traceconf.Workloads {
-			starter.Add(1)
-			go runWorkload(w, starter)
+		// huawei trace dataset
+	case "csvtrace":
+		trace, err := csvtrace.ReadTraceConfig(os.Args[2])
+		if err != nil {
+			log.Fatalf("reading csvtrace config: %v", err)
 		}
+		fmt.Printf("Loaded funcgen configuration: %#v\n\n", trace)
 
-		starter.Wait()
-		now := time.Now()
-		starter.Broadcast(now)
+		switch run {
 
-		time.Sleep(time.Until(now.Add(traceconf.Duration)))
+		case false:
+			for _, col := range trace.Columns {
+				fmt.Println()
+				printCSVTrace(trace.GetDataset(), col, 10)
+			}
+			fmt.Println()
 
-	case "csv":
-		col := os.Args[3]
-		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/", []string{col})
-		printTrace(dataset, col, 20)
+		case true:
+			starter := tracebench.NewStarter[time.Time]()
+			for _, col := range trace.Columns {
+				starter.Add(1)
+				go runCSVTrace(trace.GetDataset(), col, starter)
+			}
+			starter.Wait()
+			now := time.Now()
+			starter.Broadcast(now)
+			time.Sleep(time.Until(now.Add(trace.Duration)))
 
-	case "trace":
-		col := os.Args[3]
-		dataset := csvtrace.ReadDataset("/home/ansemjo/src/wasimoff/wasimoff/client/cmd/tracebench/dataset/", []string{col})
-
-		starter := tracebench.NewStarter[time.Time]()
-		starter.Add(1)
-		go runTrace(dataset, col, starter)
-
-		starter.Wait()
-		now := time.Now()
-		starter.Broadcast(now)
-
-		time.Sleep(time.Until(now.Add(traceconf.Duration)))
+		}
 
 	default:
-		log.Fatalf("unknown command, expected {show|run}: %s", os.Args[1])
+		log.Fatalf("unknown command %q: expected: %s", os.Args[1], usage)
 
 	}
 
 }
 
-func runWorkload(w funcgen.WorkloadConfig, starter *tracebench.Starter[time.Time]) {
+func runFuncgen(w funcgen.WorkloadConfig, starter *tracebench.Starter[time.Time]) {
 	for t := range w.TaskTriggers(starter) {
 		fmt.Printf("%20s [%3d] elapsed: %9.6f, task: %9.6f\n", w.Name,
 			t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 	}
 }
 
-func printWorkload(w funcgen.WorkloadConfig, n int) {
+func printFuncgen(w funcgen.WorkloadConfig, n int) {
 	i := 0
 	for t := range w.TaskIterator() {
 		i += 1
@@ -105,14 +112,14 @@ func printWorkload(w funcgen.WorkloadConfig, n int) {
 	}
 }
 
-func runTrace(hw csvtrace.HuaweiDataset, col string, starter *tracebench.Starter[time.Time]) {
+func runCSVTrace(hw *csvtrace.HuaweiDataset, col string, starter *tracebench.Starter[time.Time]) {
 	for t := range hw.TaskTriggers(starter, col) {
 		fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
 			t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 	}
 }
 
-func printTrace(hw csvtrace.HuaweiDataset, col string, n int) {
+func printCSVTrace(hw *csvtrace.HuaweiDataset, col string, n int) {
 	i := 0
 	for t := range hw.TaskIterator(col) {
 		i += 1
