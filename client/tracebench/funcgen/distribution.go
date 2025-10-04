@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"gonum.org/v1/gonum/stat/distuv"
-	"wasi.team/client/tracebench/rng"
 )
 
 // could use (https://pkg.go.dev/gonum.org/v1/gonum/stat/distuv)
@@ -35,9 +34,8 @@ import (
 // arguments using a regular expression.
 func ParseDistribution(s string, rngs rand.Source) (distuv.Rander, error) {
 
-	// use deterministic rng
 	if rngs == nil {
-		rngs = rng.NewRand(0)
+		return nil, fmt.Errorf("must provide a randomness source")
 	}
 
 	// find the correct parser for distribution
@@ -222,20 +220,20 @@ func (*Never) Rand() float64 {
 }
 
 // Boolean coin flip based on a bernoulli distribution.
-func NewCoinFlip(p float64, rngs rand.Source) CoinFlip {
+func NewCoinFlip(p float64, rngs rand.Source) (*CoinFlip, error) {
 	if rngs == nil {
-		rngs = rng.NewRand(0)
+		return nil, fmt.Errorf("must provide a randomness source")
 	}
 	if p == 0 {
-		return CoinFlip{&Never{}}
+		return &CoinFlip{&Never{}}, nil
 	} else {
 		if !(0 <= p && p <= 1) {
-			panic("Bernoulli probability must be in [0, 1]")
+			return nil, fmt.Errorf("probability must be in [0, 1]: %f", p)
 		}
-		return CoinFlip{distuv.Bernoulli{
+		return &CoinFlip{distuv.Bernoulli{
 			Src: rngs,
 			P:   p,
-		}}
+		}}, nil
 	}
 }
 

@@ -1,0 +1,17 @@
+name: huawei trace config
+duration: 60s
+
+# absolute or relative to this file
+dataset: ../../cmd/tracebench/dataset
+
+offset: 24h # TODO
+
+scale:
+  rate: 1.4
+  tasklen: 0.4
+
+columns:
+  - 4
+  - 6
+  - 21
+  # - 60 # very high frequency

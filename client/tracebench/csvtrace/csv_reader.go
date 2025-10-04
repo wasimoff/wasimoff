@@ -28,7 +28,7 @@ type HuaweiDataset struct {
 }
 
 // Read all datafiles belonging to a given day and return as frames.
-func ReadDataset(directory string, cols []string) HuaweiDataset {
+func ReadDataset(directory string, cols []string) *HuaweiDataset {
 
 	load := func(dataset string) ColumnSet {
 		// construct filename and read csv file
@@ -41,7 +41,7 @@ func ReadDataset(directory string, cols []string) HuaweiDataset {
 		return cs
 	}
 
-	return HuaweiDataset{
+	return &HuaweiDataset{
 		RequestsPerMinute:         load("requests_minute"),
 		FunctionDelayAvgPerMinute: load("function_delay_minute"),
 	}
