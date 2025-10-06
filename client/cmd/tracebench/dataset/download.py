@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # /// script
-# dependencies = [ "requests", "pandas", "tqdm" ]
+# dependencies = [
+#   "requests ~= 2.32.5",
+#   "pandas ~= 2.3.2",
+#   "tqdm ~= 4.67.1",
+# ]
 # ///
 
 import sys, os, zipfile
@@ -86,4 +90,4 @@ if __name__ == "__main__":
         print(f"usage: {sys.argv[0]} <dataset> [...]", file=sys.stderr)
         print("from:", private_dataset, file=sys.stderr)
         exit(1)
-    download(files)
+    download(files, directory="./")

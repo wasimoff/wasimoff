@@ -13,6 +13,8 @@ import (
 
 func main() {
 
+	log.Println("WARNING: this is just a debugging CLI, it is not actually functional in that it doesn't ever send task requests")
+
 	const usage = "{funcgen|csvtrace} config.yaml [run]"
 
 	if len(os.Args) < 3 {
