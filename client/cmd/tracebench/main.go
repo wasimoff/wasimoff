@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"time"
 
 	"wasi.team/broker/net/transport"
@@ -100,13 +101,6 @@ func main() {
 						log.Fatalf("ERR: failed writing trace log: %s", err)
 					}
 				}
-				//  else {
-				// 	buf, err := protojson.Marshal(r.Info)
-				// 	if err != nil {
-				// 		panic(err)
-				// 	}
-				// 	log.Printf("%s", buf)
-				// }
 			}
 		}
 	}()
@@ -115,8 +109,20 @@ func main() {
 	starter.Wait()
 	starter.Broadcast(time.Now())
 
-	// wait for tickers to finish for clean exit
-	// TODO: this does NOT wait for all responses to arrive
-	time.Sleep(runfor)
+	// signal handler to receive CTRL-C
+	sigint := make(chan os.Signal, 1)
+	signal.Notify(sigint, os.Interrupt)
+
+	select {
+
+	case <-sigint:
+		fmt.Println(" quit!")
+		log.Println("interrupt received, exit ...")
+
+	case <-time.After(runfor):
+		// TODO: this does NOT wait for all responses to arrive
+		log.Println("configured runtime reached, exit ...")
+
+	}
 
 }
