@@ -6,61 +6,55 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
+
+	"wasi.team/client/tracebench/csvtrace"
+	"wasi.team/client/tracebench/funcgen"
 )
 
 type Args struct {
-	Dataset      string
-	Broker       string
-	Tracefile    string
-	Timeout      int
-	ScaleRate    float64
-	ScaleTasklen float64
-	Columns      []string
+	RunFuncgen  *funcgen.TraceConfig
+	RunCsvTrace *csvtrace.TraceConfig
+	Broker      string
+	Tracefile   string
 }
 
-func cmdline() Args {
+func cmdline() (args *Args, err error) {
 
-	dataset := flag.String("dataset", getEnv("DATASET", "./dataset"),
-		"directory with the {requests,function_delay}_minute.csv.gz files")
+	// either one of ...
+	funcgenCfg := flag.String("funcgen", getEnv("CONF_FUNCGEN", ""),
+		"path to a generated workload config file")
+	csvtraceCfg := flag.String("tracer", getEnv("CONF_TRACER", ""),
+		"path to a yaml config to follow huawei dataset")
 
+	// URL to the Broker (dry-run when empty)
 	broker := flag.String("broker", getEnv("BROKER", ""),
 		"connection URL to the Wasimoff Broker or ArtDeco client")
 
-	tracefile := flag.String("trace", getEnv("FILE", ""),
-		"output file for JSONL formatted task traces")
+	// log received task traces to this file
+	out := fmt.Sprintf("tracebench-%d-%d.pb", time.Now().Unix(), os.Getpid())
+	tracefile := flag.String("output", getEnv("OUTPUT", out),
+		"output file for delimited protobuf Task_Metadata traces")
 
-	timeout := flag.Int("timeout", getInt("TIMEOUT", 60),
-		"terminate trace after this many seconds by cancelling context")
-
-	scaleRate := flag.Float64("scale-rate", getFloat("SCALE_RATE", 1.0),
-		"global modifier for the request rate (e.g. to slow down)")
-
-	scaleTasklen := flag.Float64("scale-tasklen", getFloat("SCALE_TASKLEN", 1.0),
-		"global modifier for the task length (e.g. for shorter tasks)")
-
-	// parse remaining args as list of column indices
+	// parse arguments and check validity
 	flag.Parse()
-	columns := flag.Args()
-	if len(columns) == 0 {
-		fatal("need at least one column index")
+	args = &Args{Broker: *broker, Tracefile: *tracefile}
+
+	// read one of the config file types
+	if (*funcgenCfg == "" && *csvtraceCfg == "") || (*funcgenCfg != "" && *csvtraceCfg != "") {
+		return nil, fmt.Errorf("must provide either -funcgen or -tracer config")
 	}
-	for _, col := range columns {
-		if v, err := strconv.Atoi(col); err == nil && 0 <= v && v <= 200 {
-			continue
-		} else {
-			fatal("cannot parse %v as column index (0..200)", col)
-		}
+	if *funcgenCfg != "" {
+		args.RunFuncgen, err = funcgen.ReadTraceConfig(*funcgenCfg)
+	}
+	if *csvtraceCfg != "" {
+		args.RunCsvTrace, err = csvtrace.ReadTraceConfig(*csvtraceCfg)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("reading config: %w", err)
 	}
 
-	return Args{
-		Dataset:      *dataset,
-		Broker:       *broker,
-		Tracefile:    *tracefile,
-		Timeout:      *timeout,
-		ScaleRate:    *scaleRate,
-		ScaleTasklen: *scaleTasklen,
-		Columns:      columns,
-	}
+	return
 
 }
 

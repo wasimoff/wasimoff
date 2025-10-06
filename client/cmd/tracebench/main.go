@@ -5,61 +5,83 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sync"
 	"time"
 
-	"google.golang.org/protobuf/encoding/protojson"
 	"wasi.team/broker/net/transport"
 	"wasi.team/client/tracebench"
-	"wasi.team/client/tracebench/csvtrace"
+	"wasi.team/client/tracebench/funcgen"
 	wasimoffv1 "wasi.team/proto/v1"
 )
 
 func main() {
 
 	// parse commandline arguments
-	args := cmdline()
+	args, err := cmdline()
+	if err != nil {
+		log.Fatalf("cmdline: %v", err)
+	}
 
-	// read input file and apply modifiers
-	dataset := csvtrace.ReadDataset(args.Dataset, args.Columns)
-	dataset.ScaleDatasets(args.ScaleRate, args.ScaleTasklen)
-
-	// contexts for app cancellation
-	background, shutdown := context.WithCancel(context.Background())
-	timeout, cancel := context.WithTimeout(background, time.Duration(args.Timeout)*time.Second)
-	defer shutdown()
+	// cancellable background context for app termination
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go func(ctx context.Context) {
-		<-ctx.Done()
-		log.Println("timeout reached, exiting ...")
-	}(timeout)
 
 	// create the request generator
-	argon := NewArgonTasker(background, args.Broker)
+	argon := NewArgonTasker(ctx, args.Broker)
 
-	output := NewProtoDelimEncoder(args.Tracefile)
-	defer output.Close()
+	// open output file
+	var output *ProtoDelimEncoder
+	if args.Tracefile != "" && args.Broker != "" {
+		output = NewProtoDelimEncoder(args.Tracefile)
+		defer output.Close()
+	}
 
+	// receive all task responses in a single channel for logging
 	responses := make(chan *transport.PendingCall, 2048)
 
-	threads := sync.WaitGroup{}
 	starter := tracebench.NewStarter[time.Time]()
+	var runfor time.Duration
 
-	// spawn ticker threads
-	for _, col := range args.Columns {
-		threads.Add(1)
-		starter.Add(1)
+	// funcgen: spawn function generators
+	if args.RunFuncgen != nil {
+		cfg := args.RunFuncgen
+		fmt.Printf("Loaded workload generator: %#v\n\n", cfg)
+		runfor = cfg.Duration
 
-		go func(ar *ArgonTasker) {
-			defer threads.Done()
-			for tick := range dataset.TaskTriggers(starter, col) {
-				if diff := time.Since(tick.Scheduled); diff > 10*time.Millisecond {
-					fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, tick.Sequence, diff)
+		for _, workload := range cfg.Workloads {
+			starter.Add(1)
+			go func(w funcgen.WorkloadConfig) {
+				for t := range w.TaskTriggers(starter) {
+					fmt.Printf("%20s [%3d] elapsed: %9.6f, task: %9.6f\n", w.Name,
+						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
+					// if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
+					// 	fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
+					// }
+					argon.Run(responses, t.Tasklen)
 				}
-				fmt.Printf("[ %3s ] tick %8d / %10s --> %v\n", col, tick.Sequence, tick.Elapsed, tick.Tasklen)
-				ar.Run(responses, tick.Tasklen)
-			}
-		}(argon)
+			}(workload)
+		}
+	}
+
+	// csvtrace: spawn function generators
+	if args.RunCsvTrace != nil {
+		cfg := args.RunCsvTrace
+		fmt.Printf("Loaded CSV trace generator: %#v\n\n", cfg)
+		runfor = cfg.Duration
+
+		dataset := cfg.GetDataset()
+		for _, column := range cfg.Columns {
+			starter.Add(1)
+			go func(col string) {
+				for t := range dataset.TaskTriggers(starter, col) {
+					fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
+						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
+					if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
+						fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
+					}
+					argon.Run(responses, t.Tasklen)
+				}
+			}(column)
+		}
 	}
 
 	// a single function to handle responses
@@ -77,13 +99,14 @@ func main() {
 					if err := output.Write(r.Info); err != nil {
 						log.Fatalf("ERR: failed writing trace log: %s", err)
 					}
-				} else {
-					buf, err := protojson.Marshal(r.Info)
-					if err != nil {
-						panic(err)
-					}
-					log.Printf("%s", buf)
 				}
+				//  else {
+				// 	buf, err := protojson.Marshal(r.Info)
+				// 	if err != nil {
+				// 		panic(err)
+				// 	}
+				// 	log.Printf("%s", buf)
+				// }
 			}
 		}
 	}()
@@ -94,6 +117,6 @@ func main() {
 
 	// wait for tickers to finish for clean exit
 	// TODO: this does NOT wait for all responses to arrive
-	threads.Wait()
+	time.Sleep(runfor)
 
 }

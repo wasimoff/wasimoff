@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sync"
 
-	"github.com/klauspost/compress/zstd"
 	"google.golang.org/protobuf/encoding/protodelim"
 	"google.golang.org/protobuf/proto"
 )
@@ -20,7 +20,7 @@ type TraceOutputEncoder interface {
 type ProtoDelimEncoder struct {
 	mutex sync.Mutex
 	file  *os.File
-	zenc  *zstd.Encoder
+	// zenc  *zstd.Encoder
 }
 
 func NewProtoDelimEncoder(filename string) *ProtoDelimEncoder {
@@ -30,15 +30,15 @@ func NewProtoDelimEncoder(filename string) *ProtoDelimEncoder {
 		log.Fatalf("ERR: can't open %q for trace logging: %s", filename, err)
 	}
 
-	zenc, err := zstd.NewWriter(file)
-	if err != nil {
-		log.Fatalf("ERR: can't open zstd writer on file: %s", err)
-	}
+	// zenc, err := zstd.NewWriter(file)
+	// if err != nil {
+	// 	log.Fatalf("ERR: can't open zstd writer on file: %s", err)
+	// }
 
 	return &ProtoDelimEncoder{
 		mutex: sync.Mutex{},
 		file:  file,
-		zenc:  zenc,
+		// zenc:  zenc,
 	}
 
 }
@@ -46,16 +46,17 @@ func NewProtoDelimEncoder(filename string) *ProtoDelimEncoder {
 func (enc *ProtoDelimEncoder) Write(msg proto.Message) error {
 	enc.mutex.Lock()
 	defer enc.mutex.Unlock()
-	_, err := protodelim.MarshalTo(enc.zenc, msg)
+	_, err := protodelim.MarshalTo(enc.file, msg)
 	return err
 }
 
 func (enc *ProtoDelimEncoder) Close() error {
+	fmt.Println("CLOSING LOG")
 	enc.mutex.Lock()
 	defer enc.mutex.Unlock()
-	if err := enc.zenc.Flush(); err != nil {
-		enc.file.Close()
-		return err
-	}
+	// if err := enc.zenc.Flush(); err != nil {
+	// 	enc.file.Close()
+	// 	return err
+	// }
 	return enc.file.Close()
 }
