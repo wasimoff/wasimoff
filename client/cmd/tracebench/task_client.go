@@ -18,6 +18,7 @@ import (
 type ArgonTasker struct {
 	ctx        context.Context
 	client     *client.WasimoffWebsocketClient
+	sequence   uint64
 	request    *wasimoffv1.Task_Wasip1_Request
 	request_mu sync.Mutex
 }
@@ -44,7 +45,7 @@ func NewArgonTasker(ctx context.Context, broker string) *ArgonTasker {
 	// TODO: check if mutex + message reuse is the best idea here
 	argon.request = &wasimoffv1.Task_Wasip1_Request{
 		Info: &wasimoffv1.Task_Metadata{
-			Reference: proto.String("argontasker"),
+			Reference: nil,
 			Trace:     &wasimoffv1.Task_Trace{},
 		},
 		Qos: &wasimoffv1.Task_QoS{},
@@ -67,6 +68,10 @@ func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds time.Durat
 	// set the iteration count to given parameter
 	iter := durationToIterations(seconds)
 	at.request.Params.Args[2] = strconv.Itoa(iter)
+
+	// set task reference with incrementing counter
+	at.request.Info.Reference = proto.String(strconv.FormatUint(at.sequence, 10))
+	at.sequence++
 
 	// set current start time in trace
 	at.request.Info.Trace.Created = proto.Int64(time.Now().UnixNano())
