@@ -1,2 +1,7 @@
-dataset/
+dataset/*.csv.gz
+dataset/*.zip
 *.jsonl
+*.protodelim
+*.proto.zst
+*.pb
+*.pprof

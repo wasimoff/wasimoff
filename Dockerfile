@@ -78,22 +78,17 @@ ENV WASIMOFF_HTTP_LISTEN=":4080"
 ENV WASIMOFF_STATIC_FILES="/provider"
 
 # =========================================================================== #
-FROM python:3.11-slim AS dataset-builder
+FROM ghcr.io/astral-sh/uv:alpine AS dataset-builder
 
-WORKDIR /build
+WORKDIR /dataset
 
-# Install Python dependencies
-COPY client/cmd/tracebench/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy and run download script
-COPY client/cmd/tracebench/download.py .
-RUN mkdir -p dataset
-RUN python download.py
+# copy and run download script
+COPY client/cmd/tracebench/dataset/download.py .
+RUN uv run download.py
 
 # =========================================================================== #
 FROM alpine AS tracebench
+COPY --from=dataset-builder /dataset/*.csv.gz /dataset/
 COPY --from=go-build /build/client/cmd/tracebench/tracebench /tracebench
-COPY --from=dataset-builder /build/dataset/*.csv.gz /dataset/
 COPY --from=go-build /build/wasi-apps/argonload/argonload.wasm /wasm/
 ENTRYPOINT [ "/tracebench" ]
