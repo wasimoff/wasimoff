@@ -15,6 +15,10 @@ import (
 	wasimoffv1 "wasi.team/proto/v1"
 )
 
+type TraceBenchTasker interface {
+	Run(queue chan *transport.PendingCall, tasklen time.Duration)
+}
+
 type ArgonTasker struct {
 	ctx        context.Context
 	client     *client.WasimoffWebsocketClient
@@ -26,7 +30,7 @@ type ArgonTasker struct {
 // hash of the currently committed file in repository at wasi-apps/argonload/argonload.wasm
 var argonload = "sha256:a77ee84e1e8b0e9734cc4647b8ee0813c55c697c53a38397cc43e308ec871b8f"
 
-func NewArgonTasker(ctx context.Context, broker string) *ArgonTasker {
+func NewArgonTasker(ctx context.Context, broker string) TraceBenchTasker {
 
 	argon := &ArgonTasker{
 		ctx:        ctx,

@@ -27,7 +27,8 @@ func main() {
 	defer cancel()
 
 	// create the request generator
-	argon := NewArgonTasker(ctx, args.Broker)
+	// allows for different task generators, could be string-matched like distributions
+	tasker := NewArgonTasker(ctx, args.Broker)
 
 	// open output file
 	var output TraceOutputEncoder
@@ -60,7 +61,7 @@ func main() {
 					// if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
 					// 	fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
 					// }
-					argon.Run(responses, t.Tasklen)
+					tasker.Run(responses, t.Tasklen)
 				}
 			}(workload)
 		}
@@ -82,17 +83,20 @@ func main() {
 					if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
 						fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
 					}
-					argon.Run(responses, t.Tasklen)
+					tasker.Run(responses, t.Tasklen)
 				}
 			}(column)
 		}
 	}
 
 	// a single function to handle responses
+	// TODO:
+	// - tasks that never receive a response are lost
+	// - erroneous responses are never logged
 	go func() {
 		for c := range responses {
 			if c.Error != nil {
-				fmt.Fprintf(os.Stderr, "ERR: %s\n", c.Error)
+				fmt.Fprintf(os.Stderr, "ERR: %s\n%#v\n", c.Error, c.Response)
 			} else {
 				r, ok := c.Response.(*wasimoffv1.Task_Wasip1_Response)
 				if !ok {
@@ -123,7 +127,7 @@ func main() {
 		log.Println("interrupt received, exit ...")
 
 	case <-time.After(runfor):
-		// TODO: this does NOT wait for all responses to arrive
+		// this does not wait for all responses to arrive
 		log.Println("configured runtime reached, exit ...")
 
 	}
