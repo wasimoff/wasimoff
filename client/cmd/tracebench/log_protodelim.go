@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"io"
 	"os"
+	"strings"
 	"sync"
 
 	"google.golang.org/protobuf/encoding/protodelim"
@@ -16,29 +17,33 @@ type TraceOutputEncoder interface {
 	Close() error
 }
 
-// Write traces in varint-delimited protobuf format.
-type ProtoDelimEncoder struct {
-	mutex sync.Mutex
-	file  *os.File
-	// zenc  *zstd.Encoder
-}
-
-func NewProtoDelimEncoder(filename string) *ProtoDelimEncoder {
-
+// open an output encoder, either jsonl or protodelim based on filename
+func OpenTraceOutputEncoder(filename string) (TraceOutputEncoder, error) {
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
-		log.Fatalf("ERR: can't open %q for trace logging: %s", filename, err)
+		return nil, fmt.Errorf("cannot open %q for logging: %v", filename, err)
 	}
+	switch {
+	case strings.HasSuffix(file.Name(), ".jsonl"):
+		return NewJsonLineEncoder(file), nil
+	default:
+		return NewProtoDelimEncoder(file), nil
+	}
+}
 
-	// zenc, err := zstd.NewWriter(file)
-	// if err != nil {
-	// 	log.Fatalf("ERR: can't open zstd writer on file: %s", err)
-	// }
+type ProtoDelimEncoder struct {
+	mutex   sync.Mutex
+	file    io.WriteCloser
+	encoder *protodelim.MarshalOptions
+}
+
+// Write traces in varint-delimited protobuf format.
+func NewProtoDelimEncoder(file io.WriteCloser) TraceOutputEncoder {
 
 	return &ProtoDelimEncoder{
-		mutex: sync.Mutex{},
-		file:  file,
-		// zenc:  zenc,
+		mutex:   sync.Mutex{},
+		file:    file,
+		encoder: &protodelim.MarshalOptions{},
 	}
 
 }
@@ -46,17 +51,12 @@ func NewProtoDelimEncoder(filename string) *ProtoDelimEncoder {
 func (enc *ProtoDelimEncoder) Write(msg proto.Message) error {
 	enc.mutex.Lock()
 	defer enc.mutex.Unlock()
-	_, err := protodelim.MarshalTo(enc.file, msg)
+	_, err := enc.encoder.MarshalTo(enc.file, msg)
 	return err
 }
 
 func (enc *ProtoDelimEncoder) Close() error {
-	fmt.Println("CLOSING LOG")
 	enc.mutex.Lock()
 	defer enc.mutex.Unlock()
-	// if err := enc.zenc.Flush(); err != nil {
-	// 	enc.file.Close()
-	// 	return err
-	// }
 	return enc.file.Close()
 }

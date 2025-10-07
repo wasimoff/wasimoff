@@ -1,32 +1,26 @@
 package main
 
 import (
-	"log"
-	"os"
+	"io"
 	"sync"
 
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 )
 
-// Write traces in JSONL format (one trace per line).
 type JsonLineEncoder struct {
-	mutex    sync.Mutex
-	file     *os.File
-	protoenc *protojson.MarshalOptions
+	mutex   sync.Mutex
+	file    io.WriteCloser
+	encoder *protojson.MarshalOptions
 }
 
-func NewJsonLineEncoder(filename string) *JsonLineEncoder {
-
-	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
-	if err != nil {
-		log.Fatalf("ERR: can't open %q for trace logging: %s", filename, err)
-	}
+// Write traces in JSONL format (one trace per line).
+func NewJsonLineEncoder(file io.WriteCloser) TraceOutputEncoder {
 
 	return &JsonLineEncoder{
 		mutex: sync.Mutex{},
 		file:  file,
-		protoenc: &protojson.MarshalOptions{
+		encoder: &protojson.MarshalOptions{
 			Multiline:      false,
 			UseEnumNumbers: false,
 		},
@@ -35,7 +29,7 @@ func NewJsonLineEncoder(filename string) *JsonLineEncoder {
 }
 
 func (enc *JsonLineEncoder) Write(msg proto.Message) error {
-	buf, err := enc.protoenc.Marshal(msg)
+	buf, err := enc.encoder.Marshal(msg)
 	if err != nil {
 		return err
 	}

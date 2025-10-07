@@ -30,9 +30,12 @@ func main() {
 	argon := NewArgonTasker(ctx, args.Broker)
 
 	// open output file
-	var output *ProtoDelimEncoder
+	var output TraceOutputEncoder
 	if args.Tracefile != "" && args.Broker != "" {
-		output = NewProtoDelimEncoder(args.Tracefile)
+		output, err = OpenTraceOutputEncoder(args.Tracefile)
+		if err != nil {
+			log.Fatal(err)
+		}
 		defer output.Close()
 	}
 
