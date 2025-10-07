@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"iter"
 	"log"
 	"os"
 	"time"
@@ -34,16 +36,46 @@ func main() {
 		if err != nil {
 			log.Fatalf("reading funcgen config: %v", err)
 		}
-		fmt.Printf("Loaded funcgen configuration: %#v\n\n", trace)
+		fmt.Fprintf(os.Stderr, "Loaded funcgen configuration: %#v\n\n", trace)
 
 		switch run {
 
 		case false:
-			for _, w := range trace.Workloads {
-				fmt.Println()
-				printFuncgen(w, 10)
+
+			// prepare all data rows
+			stop := 100
+			rows := make([][]string, stop+1)
+			for r := 0; r < len(rows); r++ {
+				rows[r] = make([]string, len(trace.Workloads))
 			}
-			fmt.Println()
+
+			// prepare all iterators for row-wise calling
+			iters := make([]func() (funcgen.NextTask, bool), 0)
+			for i, w := range trace.Workloads {
+				rows[0][i] = w.Name
+				next, _ := iter.Pull(w.TaskIterator())
+				iters = append(iters, next)
+			}
+
+			// and collect all data rows now
+			for r := 0; r < stop; r++ {
+				for i, next := range iters {
+					val, ok := next()
+					if !ok {
+						panic("unexpected end of iterator")
+					}
+					rows[r+1][i] = fmt.Sprintf("%f", val.Tasklen.Seconds())
+				}
+			}
+
+			w := csv.NewWriter(os.Stdout)
+			w.WriteAll(rows)
+
+			// for _, w := range trace.Workloads {
+			// 	fmt.Println()
+			// 	printFuncgen(w, 10)
+			// }
+			// fmt.Println()
 
 		case true:
 			starter := tracebench.NewStarter[time.Time]()
@@ -64,7 +96,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("reading csvtrace config: %v", err)
 		}
-		fmt.Printf("Loaded funcgen configuration: %#v\n\n", trace)
+		fmt.Fprintf(os.Stderr, "Loaded funcgen configuration: %#v\n\n", trace)
 
 		switch run {
 

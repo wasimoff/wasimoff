@@ -1,0 +1,49 @@
+name: example trace config
+duration: 60s
+
+workloads:
+  - name: normal(1s, 250ms)
+    rate:
+      fixed: 100ms
+    task:
+      jitter: normal(1s, 250ms)
+
+  - name: uniform(0, 500ms)
+    rate:
+      fixed: 100ms
+    task:
+      fixed: 750ms
+      jitter: uniform(0, 500ms)
+
+  - name: bernoulli(500ms, 0.5)
+    rate:
+      fixed: 100ms
+    task:
+      fixed: 750ms
+      jitter: bernoulli(500ms, 0.5)
+
+  - name: exponential(3.0)
+    rate:
+      fixed: 100ms
+    task:
+      fixed: 750ms
+      jitter: exponential(3.0)
+
+  - name: laplace(1s, 250ms)
+    rate:
+      fixed: 100ms
+    task:
+      jitter: laplace(1s, 250ms)
+
+  - name: pareto(750ms, 1)
+    rate:
+      fixed: 100ms
+    task:
+      jitter: pareto(750ms, 1)
+
+  - name: poisson(60s, 60)
+    rate:
+      fixed: 100ms
+    task:
+      # fixed: 750ms
+      jitter: poisson(60s, 60)
