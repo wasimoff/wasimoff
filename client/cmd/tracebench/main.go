@@ -33,11 +33,22 @@ func main() {
 	// open output file
 	var output TraceOutputEncoder
 	if args.Tracefile != "" && args.Broker != "" {
+
 		output, err = OpenTraceOutputEncoder(args.Tracefile)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer output.Close()
+
+		// maybe start profiling as well
+		if args.Pprof {
+			stopProfiling, err := StartProfiling(args.Tracefile)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer stopProfiling()
+		}
+
 	}
 
 	// receive all task responses in a single channel for logging

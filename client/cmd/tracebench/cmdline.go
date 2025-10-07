@@ -17,6 +17,7 @@ type Args struct {
 	RunCsvTrace *csvtrace.TraceConfig
 	Broker      string
 	Tracefile   string
+	Pprof       bool
 }
 
 func cmdline() (args *Args, err error) {
@@ -36,9 +37,13 @@ func cmdline() (args *Args, err error) {
 	tracefile := flag.String("output", getEnv("OUTPUT", out),
 		"output file for delimited protobuf Task_Metadata traces")
 
+	// enable pprof profiler during a run
+	pprof := flag.Bool("profile", getBool("PROFILE", false),
+		"enable pprof profiling of this binary during the run")
+
 	// parse arguments and check validity
 	flag.Parse()
-	args = &Args{Broker: *broker, Tracefile: *tracefile}
+	args = &Args{Broker: *broker, Tracefile: *tracefile, Pprof: *pprof}
 
 	// read one of the config file types
 	if (*funcgenCfg == "" && *csvtraceCfg == "") || (*funcgenCfg != "" && *csvtraceCfg != "") {

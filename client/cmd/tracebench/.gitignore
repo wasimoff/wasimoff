@@ -4,3 +4,4 @@ dataset/*.zip
 *.protodelim
 *.proto.zst
 *.pb
+*.pprof
