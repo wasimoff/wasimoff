@@ -10,6 +10,7 @@ import { PushableAsyncIterable } from "@wasimoff/func/pushableiterable";
 import { createRegistry, fromBinary, isMessage, toBinary } from "@bufbuild/protobuf";
 import { Signal } from "@wasimoff/func/promises";
 import { anyUnpack } from "@bufbuild/protobuf/wkt";
+import { fragmentMessage, PacketDefragmenter } from "./packet";
 
 interface SdpMessage {
   source: string;
@@ -39,6 +40,7 @@ export class WebRTCTransport implements Transport {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private dataChannels: Map<string, RTCDataChannel> = new Map();
   private connectionStates: Map<string, string> = new Map();
+  private defragmenters: Map<string, PacketDefragmenter> = new Map();
   private nc: nats_core.NatsConnection;
   private id: string;
   private iceServers: RTCIceServer[];
@@ -95,7 +97,8 @@ export class WebRTCTransport implements Transport {
     if (transmit.identifier) {
       const dataChannel = this.dataChannels.get(transmit.identifier);
       if (dataChannel && dataChannel.readyState === "open") {
-        dataChannel.send(toBinary(EnvelopeSchema, transmit.envelope));
+        const data = toBinary(EnvelopeSchema, transmit.envelope);
+        await this.sendFragmentedData(dataChannel, data);
       } else {
         console.error("No open data channel for address", transmit.identifier);
       }
@@ -112,6 +115,42 @@ export class WebRTCTransport implements Transport {
         }
       }
       console.warn("Cannot multiplex transmit with empty identifier", transmit);
+    }
+  }
+
+  private async sendFragmentedData(
+    dataChannel: RTCDataChannel,
+    data: Uint8Array<ArrayBuffer>,
+  ): Promise<void> {
+    const fragments = fragmentMessage(data);
+
+    for (const fragment of fragments) {
+      dataChannel.send(fragment.data);
+    }
+  }
+
+  private processReceivedData(source: string, data: Uint8Array): void {
+    let defragmenter = this.defragmenters.get(source);
+    if (!defragmenter) {
+      defragmenter = new PacketDefragmenter();
+      this.defragmenters.set(source, defragmenter);
+    }
+
+    defragmenter.processBytes(data);
+
+    // Process all complete messages
+    let message;
+    while ((message = defragmenter.nextMessage()) !== null) {
+      try {
+        const envelope = fromBinary(EnvelopeSchema, message.data);
+        const transmit: Transmit = {
+          envelope,
+          identifier: source,
+        };
+        this.messages.push(transmit);
+      } catch (error) {
+        console.error("Failed to parse complete message:", error);
+      }
     }
   }
 
@@ -186,25 +225,22 @@ export class WebRTCTransport implements Transport {
 
             dataChannel.onclose = () => {
               this.connectionStates.set(sdpMessage.source, "disconnected");
+              this.defragmenters.delete(sdpMessage.source);
               console.info("Data channel closed for:", sdpMessage.source);
             };
 
             dataChannel.onerror = (error) => {
               console.error("Data channel error for:", sdpMessage.source, error);
             };
+
             dataChannel.onmessage = async (event) => {
-              // Receive Envelope and push together with the source identifier to the message queue
-              console.debug!("Received data channel data", event.data);
+              console.debug("Received data channel fragment", event.data);
               const data = event.data;
               let array: Uint8Array;
               if (data instanceof Blob) array = await data.bytes();
               else array = new Uint8Array(data);
-              const envelope = fromBinary(EnvelopeSchema, array);
-              const transmit: Transmit = {
-                envelope,
-                identifier: sdpMessage.source,
-              };
-              this.messages.push(transmit);
+
+              this.processReceivedData(sdpMessage.source, array);
             };
           }
         };
@@ -246,6 +282,7 @@ export class WebRTCTransport implements Transport {
     this.peerConnections.clear();
     this.dataChannels.clear();
     this.connectionStates.clear();
+    this.defragmenters.clear();
 
     // Close NATS connection
     this.nc.close().catch((err) => console.error("Error closing NATS connection:", err));
