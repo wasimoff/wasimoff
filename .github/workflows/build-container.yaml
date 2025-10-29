@@ -11,18 +11,23 @@ on:
 permissions:
   packages: write
 
-env:
-  PLATFORMS: # only native for pull requests
-    ${{ fromJSON('[ "linux/amd64", "linux/amd64,linux/arm64" ]')[ github.event_name !=
-    'pull_request' ] }}
-
 jobs:
   container:
     name: build ${{ matrix.target }} image 📦
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [broker, provider, tracebench]
+        include:
+          - target: broker
+            platforms:
+              ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64'
+              }}
+          - target: provider
+            platforms:
+              ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64'
+              }}
+          - target: tracebench
+            platforms: linux/amd64
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -64,7 +69,7 @@ jobs:
         with:
           context: .
           target: ${{ matrix.target }}
-          platforms: ${{ env.PLATFORMS }}
+          platforms: ${{ matrix.platforms }}
           push: ${{ github.event_name != 'pull_request' && steps.meta.outputs.head == 'main' }}
           tags: >-
             ${{ github.event_name == 'schedule' && format('ghcr.io/wasimoff/{0}:nightly',
