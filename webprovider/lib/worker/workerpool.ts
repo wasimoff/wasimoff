@@ -36,6 +36,22 @@ export class WasiWorkerPool {
   /** Incrementing index for new workers. */
   private nextindex = 0;
 
+  /** Callback fired when worker busy state or pool size changes */
+  private onConcurrencyChange?: (poolSize: number, activeTasks: number) => void;
+
+  /** Set a callback to be called whenever concurrency changes */
+  setOnConcurrencyChange(callback: (poolSize: number, activeTasks: number) => void) {
+    this.onConcurrencyChange = callback;
+  }
+
+  /** Helper method to notify of concurrency changes */
+  private notifyConcurrencyChange() {
+    if (this.onConcurrencyChange) {
+      const activeTasks = this.pool.filter((w) => w.busy).length;
+      this.onConcurrencyChange(this.pool.length, activeTasks);
+    }
+  }
+
   /** Get the number of Workers currently in the pool. */
   get length() {
     return this.pool.length;
@@ -83,6 +99,7 @@ export class WasiWorkerPool {
     const wrapped = { index, worker, link, busy: false };
     this.pool.push(wrapped);
     this.idlequeue.put(wrapped);
+    this.notifyConcurrencyChange();
     return this.length;
   }
 
@@ -128,6 +145,7 @@ export class WasiWorkerPool {
     console.info(...logprefix, "shutdown worker", worker.index);
     worker.link[releaseProxy]();
     worker.worker.terminate();
+    this.notifyConcurrencyChange();
     return this.length;
   }
 
@@ -141,6 +159,7 @@ export class WasiWorkerPool {
     });
     this.pool = [];
     this.idlequeue = new Queue();
+    this.notifyConcurrencyChange();
     return this.length;
   }
 
@@ -161,6 +180,7 @@ export class WasiWorkerPool {
       w.link[releaseProxy]();
       w.worker.terminate();
       w.reject?.();
+      this.notifyConcurrencyChange();
       // and respawn
       await this.spawn();
     }
@@ -181,6 +201,7 @@ export class WasiWorkerPool {
     traceEvent(info, Task_TraceEvent_EventType.ProviderGetWorker);
     const worker = await this.idlequeue.get();
     worker.busy = true;
+    this.notifyConcurrencyChange();
     worker.taskid = info.id;
     worker.started = new Date();
 
@@ -197,6 +218,7 @@ export class WasiWorkerPool {
       // don't requeue if it's terminated
       if (worker.cancelled !== true) {
         worker.busy = false;
+        this.notifyConcurrencyChange();
         worker.taskid = undefined;
         worker.started = undefined;
         await this.idlequeue.put(worker);
@@ -211,6 +233,7 @@ export class WasiWorkerPool {
     traceEvent(info, Task_TraceEvent_EventType.ProviderGetWorker);
     const worker = await this.idlequeue.get();
     worker.busy = true;
+    this.notifyConcurrencyChange();
     worker.taskid = info.id;
     worker.started = new Date();
 
@@ -228,6 +251,7 @@ export class WasiWorkerPool {
       // always respawn this worker
       console.log(...logprefix, `force worker ${worker.index} respawn`);
       worker.busy = false;
+      this.notifyConcurrencyChange();
       worker.taskid = undefined;
       worker.started = undefined;
       worker.link[releaseProxy]();
