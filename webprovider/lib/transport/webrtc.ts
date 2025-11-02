@@ -39,22 +39,24 @@ export class WebRTCTransport implements Transport {
   public messages = new PushableAsyncIterable<Transmit>();
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private dataChannels: Map<string, RTCDataChannel> = new Map();
-  private connectionStates: Map<string, string> = new Map();
   private defragmenters: Map<string, PacketDefragmenter> = new Map();
   private nc: nats_core.NatsConnection;
   private id: string;
   private iceServers: RTCIceServer[];
   private announceMsg?: ProviderAnnounce;
   private readonly registry = createRegistry(file_proto_v1_messages);
+  private maxConnections: number;
 
   private constructor(
     natsConnection: nats_core.NatsConnection,
     id: string,
     announceInterval: number,
+    maxConnections: number,
   ) {
     this.iceServers = [{ urls: "stun:stun.l.google.com:19302" }];
     this.id = id;
     this.nc = natsConnection;
+    this.maxConnections = maxConnections;
     // subscribe to sdp channel
     const sub = this.nc.subscribe("sdp");
     (async () => {
@@ -86,11 +88,21 @@ export class WebRTCTransport implements Transport {
       throw "Invalid announce parameter: must be a positive number";
     }
 
+    const maxConnectionsParam = url.searchParams.get("maxConnections");
+    let maxConnections = 0; // Default to 0 (unlimited) if not provided
+
+    if (maxConnectionsParam) {
+      maxConnections = parseInt(maxConnectionsParam, 10);
+      if (isNaN(maxConnections) || maxConnections < 0) {
+        throw "Invalid maxConnections parameter: must be a non-negative number";
+      }
+    }
+
     const con_opts = { servers: url.origin };
     console.info("connecting to nats server", con_opts);
     let nc = await nats_core.wsconnect(con_opts);
     console.info(`connected to ${nc.getServer()}`);
-    return new WebRTCTransport(nc, id, announceInterval);
+    return new WebRTCTransport(nc, id, announceInterval, maxConnections);
   }
 
   async send(transmit: Transmit): Promise<void> {
@@ -160,6 +172,24 @@ export class WebRTCTransport implements Transport {
     }
   }
 
+  private removeConnection(source: string): void {
+    // Remove data channel
+    this.dataChannels.delete(source);
+    // Remove defragmenter
+    this.defragmenters.delete(source);
+
+    // Close and remove peer connection
+    const peerConnection = this.peerConnections.get(source);
+    if (peerConnection) {
+      peerConnection.close();
+      this.peerConnections.delete(source);
+    }
+
+    console.info(
+      `Removed connection for: ${source}. Active connections: ${this.peerConnections.size}`,
+    );
+  }
+
   private async handleSdpMessages(m: nats_core.Msg) {
     console.debug(new TextDecoder().decode(m.data));
 
@@ -167,6 +197,14 @@ export class WebRTCTransport implements Transport {
 
     if (sdpMessage.destination === this.id) {
       if ("Offer" in sdpMessage.msg) {
+        // Check if we've reached the maximum connection limit
+        if (this.maxConnections > 0 && this.peerConnections.size >= this.maxConnections) {
+          console.warn(
+            `Rejecting connection from ${sdpMessage.source}: maximum connections (${this.maxConnections}) reached. Current connections: ${this.peerConnections.size}`,
+          );
+          return; // Don't process the offer
+        }
+
         const sdpOffer = sdpMessage.msg.Offer;
 
         const peerConnection = new RTCPeerConnection({
@@ -211,6 +249,17 @@ export class WebRTCTransport implements Transport {
           }
         };
 
+        // Add connection state change handler
+        peerConnection.onconnectionstatechange = () => {
+          const state = peerConnection.connectionState;
+          console.debug(`Peer connection state changed for ${sdpMessage.source}: ${state}`);
+
+          if (state === "failed" || state === "closed" || state === "disconnected") {
+            console.info(`Peer connection ${state} for: ${sdpMessage.source}`);
+            this.removeConnection(sdpMessage.source);
+          }
+        };
+
         // Set up data channel event handlers
         peerConnection.ondatachannel = (event) => {
           const dataChannel = event.channel;
@@ -219,18 +268,17 @@ export class WebRTCTransport implements Transport {
             this.dataChannels.set(sdpMessage.source, dataChannel);
 
             dataChannel.onopen = () => {
-              this.connectionStates.set(sdpMessage.source, "connected");
               console.info("Data channel opened for:", sdpMessage.source);
             };
 
             dataChannel.onclose = () => {
-              this.connectionStates.set(sdpMessage.source, "disconnected");
-              this.defragmenters.delete(sdpMessage.source);
               console.info("Data channel closed for:", sdpMessage.source);
+              this.removeConnection(sdpMessage.source);
             };
 
             dataChannel.onerror = (error) => {
               console.error("Data channel error for:", sdpMessage.source, error);
+              this.removeConnection(sdpMessage.source);
             };
 
             dataChannel.onmessage = async (event) => {
@@ -279,10 +327,9 @@ export class WebRTCTransport implements Transport {
     for (const [_, peerConnection] of this.peerConnections) {
       peerConnection.close();
     }
-    this.peerConnections.clear();
     this.dataChannels.clear();
-    this.connectionStates.clear();
     this.defragmenters.clear();
+    this.peerConnections.clear();
 
     // Close NATS connection
     this.nc.close().catch((err) => console.error("Error closing NATS connection:", err));
@@ -292,5 +339,3 @@ export class WebRTCTransport implements Transport {
     this.controller.abort(err);
   }
 }
-
-// timeout for connections?
