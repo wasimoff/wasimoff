@@ -59,28 +59,14 @@ export class WasimoffProvider {
   ) {
     console.info(...WasimoffProvider.logprefix, "started in", self.constructor.name);
 
-    // setup the proxied pool to send concurrency updates automatically
-    this.pool = new Proxy(new WasiWorkerPool(this.nmax), {
-      // trap property accesses that return methods which can change the pool length
-      get: (target, prop, receiver) => {
-        const traps = ["spawn", "scale", "drop", "killall"];
-        const method = Reflect.get(target, prop, receiver);
-        // wrap the function calls with an update to the broker
-        if (typeof method === "function" && traps.includes(prop as string)) {
-          return async (...args: any[]) => {
-            let result = (await (method as any).apply(target, args)) as Promise<number>;
-            if (this.messenger !== undefined) {
-              this.sendConcurrency(await result).catch(() => {
-                /* ignore errors */
-              });
-            }
-            return result;
-          };
-        } else {
-          // anything else is passed through
-          return method;
-        }
-      },
+    // create the worker pool and set up concurrency change callback
+    this.pool = new WasiWorkerPool(this.nmax);
+    this.pool.setOnConcurrencyChange((poolSize, activeTasks) => {
+      if (this.messenger !== undefined) {
+        this.sendConcurrency(poolSize, activeTasks).catch(() => {
+          /* ignore errors */
+        });
+      }
     });
   }
 
@@ -194,8 +180,7 @@ export class WasimoffProvider {
       await wst.ready;
     }
 
-    // send current concurrency
-    this.sendConcurrency(this.pool.length);
+    this.sendConcurrency(this.pool.length, 0);
   }
 
   async disconnect() {
@@ -263,11 +248,11 @@ export class WasimoffProvider {
 
   // --------->  shorthands to send events
 
-  async sendConcurrency(concurrency: number) {
+  async sendConcurrency(concurrency: number, activeTasks: number) {
     if (this.messenger === undefined) throw "not connected yet";
-    if (concurrency !== undefined) {
-      this.messenger.sendEvent(create(Event_ProviderResourcesSchema, { concurrency: concurrency }));
-    }
+    this.messenger.sendEvent(
+      create(Event_ProviderResourcesSchema, { concurrency: concurrency, tasks: activeTasks }),
+    );
   }
 }
 

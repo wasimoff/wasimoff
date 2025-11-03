@@ -482,26 +482,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tsconfig/node20@npm:^20.1.4":
-  version: 20.1.6
-  resolution: "@tsconfig/node20@npm:20.1.6"
-  checksum: 10c0/736bca8c405222e78f77da068bf705b398e3afb3f2ec3c1d2a8792505283863bef8cca5646358fcbabd3b07c6fbbf0b1acdf09aa182254fe60eb519827737f09
-  languageName: node
-  linkType: hard
-
 "@types/estree@npm:1.0.8":
   version: 1.0.8
   resolution: "@types/estree@npm:1.0.8"
   checksum: 10c0/39d34d1afaa338ab9763f37ad6066e3f349444f9052b9676a7cc0252ef9485a41c6d81c9c4e0d26e9077993354edf25efc853f3224dd4b447175ef62bdcc86a5
-  languageName: node
-  linkType: hard
-
-"@types/node@npm:^20.14.2":
-  version: 20.19.13
-  resolution: "@types/node@npm:20.19.13"
-  dependencies:
-    undici-types: "npm:~6.21.0"
-  checksum: 10c0/25fba13d50c4f18ac56a50d4491502e7d095f09e44c17c0c6887aa5e4e6122e961e92fc3b682ed8c053ab87a05ce10f501345d23d96fdfba8002ecce6c8ced51
   languageName: node
   linkType: hard
 
@@ -3073,13 +3057,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.21.0":
-  version: 6.21.0
-  resolution: "undici-types@npm:6.21.0"
-  checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
-  languageName: node
-  linkType: hard
-
 "unique-filename@npm:^4.0.0":
   version: 4.0.0
   resolution: "unique-filename@npm:4.0.0"
@@ -3215,8 +3192,6 @@ __metadata:
     "@bufbuild/protoc-gen-es": "npm:^2.0.0"
     "@msgpack/msgpack": "npm:^3.0.0-beta2"
     "@nats-io/nats-core": "npm:^3.1.0"
-    "@tsconfig/node20": "npm:^20.1.4"
-    "@types/node": "npm:^20.14.2"
     "@vitejs/plugin-vue": "npm:^5.0.5"
     "@vue/tsconfig": "npm:^0.5.1"
     "@zip.js/zip.js": "npm:^2.7.52"

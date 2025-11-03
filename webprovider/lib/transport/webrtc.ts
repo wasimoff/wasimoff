@@ -33,6 +33,10 @@ type Sdp =
 interface ProviderAnnounce {
   id: string;
   concurrency: number;
+  tasks: number;
+  timestamp: number;
+  activeConnections: number;
+  maxConnections: number;
 }
 
 export class WebRTCTransport implements Transport {
@@ -46,6 +50,8 @@ export class WebRTCTransport implements Transport {
   private announceMsg?: ProviderAnnounce;
   private readonly registry = createRegistry(file_proto_v1_messages);
   private maxConnections: number;
+  private announceInterval: number;
+  private announceTimer?: number;
 
   private constructor(
     natsConnection: nats_core.NatsConnection,
@@ -57,6 +63,7 @@ export class WebRTCTransport implements Transport {
     this.id = id;
     this.nc = natsConnection;
     this.maxConnections = maxConnections;
+    this.announceInterval = announceInterval;
     // subscribe to sdp channel
     const sub = this.nc.subscribe("sdp");
     (async () => {
@@ -65,9 +72,6 @@ export class WebRTCTransport implements Transport {
       }
     })();
 
-    setInterval(() => {
-      this.announce();
-    }, announceInterval * 1000);
     this.signal.resolve();
   }
 
@@ -120,9 +124,9 @@ export class WebRTCTransport implements Transport {
         let payloadMessage = anyUnpack(transmit.envelope.payload, this.registry);
         if (payloadMessage === undefined) throw "unknown payload type";
         if (isMessage(payloadMessage, Event_ProviderResourcesSchema)) {
-          let { concurrency } = payloadMessage;
-          this.announceMsg = { id: this.id, concurrency };
-          this.announce();
+          let { concurrency, tasks } = payloadMessage;
+          // first announce starts the timer
+          this.updateAnnounceMsg({ concurrency, tasks });
           return;
         }
       }
@@ -170,6 +174,26 @@ export class WebRTCTransport implements Transport {
     if (this.announceMsg) {
       this.nc.publish("providers", JSON.stringify(this.announceMsg));
     }
+    this.resetAnnounceTimer();
+  }
+
+  private updateAnnounceMsg(resources?: { concurrency: number; tasks: number }): void {
+    if (!resources && !this.announceMsg) {
+      return;
+    }
+
+    const now_ns = (performance.now() + performance.timeOrigin) * 1_000_000;
+    this.announceMsg = {
+      id: this.id,
+      concurrency: resources?.concurrency ?? this.announceMsg?.concurrency ?? 0,
+      tasks: resources?.tasks ?? this.announceMsg?.tasks ?? 0,
+      timestamp: now_ns,
+      activeConnections: this.peerConnections.size,
+      maxConnections: this.maxConnections,
+    };
+
+    // Announce immediately when msg changes
+    this.announce();
   }
 
   private removeConnection(source: string): void {
@@ -184,6 +208,8 @@ export class WebRTCTransport implements Transport {
       peerConnection.close();
       this.peerConnections.delete(source);
     }
+
+    this.updateAnnounceMsg();
 
     console.info(
       `Removed connection for: ${source}. Active connections: ${this.peerConnections.size}`,
@@ -211,6 +237,8 @@ export class WebRTCTransport implements Transport {
           iceServers: this.iceServers,
         });
         this.peerConnections.set(sdpMessage.source, peerConnection);
+
+        this.updateAnnounceMsg();
 
         await peerConnection.setRemoteDescription(sdpOffer);
         const answer = await peerConnection.createAnswer();
@@ -321,8 +349,27 @@ export class WebRTCTransport implements Transport {
   private controller = new AbortController();
   public closed = this.controller.signal;
 
+  private startAnnounceTimer(): void {
+    this.announceTimer = setTimeout(() => {
+      this.announce();
+    }, this.announceInterval * 1000);
+  }
+
+  private resetAnnounceTimer(): void {
+    if (this.announceTimer) {
+      clearTimeout(this.announceTimer);
+    }
+    this.startAnnounceTimer();
+  }
+
   public close(reason: string = "closed normally", _: boolean = true) {
     let err = new Error(`WebRTC transport closed: ${reason}`);
+
+    // Clear announce timer
+    if (this.announceTimer) {
+      clearTimeout(this.announceTimer);
+    }
+
     // Close all peer connections
     for (const [_, peerConnection] of this.peerConnections) {
       peerConnection.close();
