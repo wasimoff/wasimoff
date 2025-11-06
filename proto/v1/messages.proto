@@ -110,6 +110,10 @@ message Task {
       ArtDecoSchedulerResultLeave = 42; // task result has left the scheduler (final time)
       ArtDecoWasimoffSerialized = 43; // task has been serialized
       ArtDecoWasimoffDeserialized = 44; // task has been deserialized
+
+      ArtDecoSchedulerProviderConnect = 45; // scheduler has selected a provider to connect to
+      ArtDecoSchedulerProviderOffload = 46; // scheduler has sent task to provider
+      ArtDecoSchedulerRequeue = 47; // scheduler needs to requeue task because of connection/execution failure
     }
   }
 
