@@ -1,6 +1,7 @@
 name: example trace config
 seed: 1 #! zero/undefined => random
 duration: 10s
+wait: true
 
 workloads:
   - name: background task

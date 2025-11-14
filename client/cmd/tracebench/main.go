@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync/atomic"
 	"time"
 
 	"wasi.team/broker/net/transport"
@@ -25,6 +26,12 @@ func main() {
 	// cancellable background context for app termination
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	// context for stopping task generators early
+	taskGenCtx, stopTaskGenerators := context.WithCancel(ctx)
+
+	// atomic counter to track outstanding tasks (sent - received)
+	var outstandingTasks atomic.Int64
 
 	// create the request generator
 	// allows for different task generators, could be string-matched like distributions
@@ -67,12 +74,19 @@ func main() {
 			starter.Add(1)
 			go func(w funcgen.WorkloadConfig) {
 				for t := range w.TaskTriggers(starter) {
+					select {
+					case <-taskGenCtx.Done():
+						return
+					default:
+					}
+
 					fmt.Printf("%20s [%3d] elapsed: %9.6f, task: %9.6f\n", w.Name,
 						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 					// if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
 					// 	fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
 					// }
 					tasker.Run(responses, t.Tasklen)
+					outstandingTasks.Add(1)
 				}
 			}(workload)
 		}
@@ -89,12 +103,19 @@ func main() {
 			starter.Add(1)
 			go func(col string) {
 				for t := range dataset.TaskTriggers(starter, col) {
+					select {
+					case <-taskGenCtx.Done():
+						return
+					default:
+					}
+
 					fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
 						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 					if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
 						fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
 					}
 					tasker.Run(responses, t.Tasklen)
+					outstandingTasks.Add(1)
 				}
 			}(column)
 		}
@@ -102,10 +123,11 @@ func main() {
 
 	// a single function to handle responses
 	// TODO:
-	// - tasks that never receive a response are lost
 	// - erroneous responses are never logged
 	go func() {
 		for c := range responses {
+			outstandingTasks.Add(-1)
+
 			if c.Error != nil {
 				fmt.Fprintf(os.Stderr, "ERR: %s\n%#v\n", c.Error, c.Response)
 			} else {
@@ -138,9 +160,28 @@ func main() {
 		log.Println("interrupt received, exit ...")
 
 	case <-time.After(runfor):
-		// this does not wait for all responses to arrive
-		log.Println("configured runtime reached, exit ...")
 
+		var waitForResults bool
+		if args.RunFuncgen != nil && args.RunFuncgen.Wait {
+			waitForResults = true
+		}
+
+		log.Println("configured runtime reached")
+		if waitForResults {
+			log.Println("stopping task generators and waiting for outstanding tasks...")
+
+			stopTaskGenerators()
+
+			for {
+				outstanding := outstandingTasks.Load()
+				if outstanding <= 0 {
+					break
+				}
+				fmt.Printf(" waiting for %d outstanding tasks...\n", outstanding)
+				time.Sleep(100 * time.Millisecond)
+			}
+		}
+		log.Println("exit ...")
 	}
 
 }

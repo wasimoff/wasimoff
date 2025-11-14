@@ -15,6 +15,7 @@ type TraceConfig struct {
 	Name      string
 	Seed      uint64
 	Duration  time.Duration
+	Wait      bool
 	Workloads []WorkloadConfig
 }
 
