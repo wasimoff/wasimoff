@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"strconv"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -23,14 +24,15 @@ type ArgonTasker struct {
 	ctx      context.Context
 	client   *client.WasimoffWebsocketClient
 	sequence atomic.Uint64
+	wg       *sync.WaitGroup
 }
 
 // hash of the currently committed file in repository at wasi-apps/argonload/argonload.wasm
 var argonload = "sha256:a77ee84e1e8b0e9734cc4647b8ee0813c55c697c53a38397cc43e308ec871b8f"
 
-func NewArgonTasker(ctx context.Context, broker string) TraceBenchTasker {
+func NewArgonTasker(ctx context.Context, wg *sync.WaitGroup, broker string) TraceBenchTasker {
 
-	argon := &ArgonTasker{ctx: ctx}
+	argon := &ArgonTasker{ctx: ctx, wg: wg}
 
 	// connect to wasimoff over websocket
 	if broker != "" {
@@ -68,6 +70,7 @@ func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds time.Durat
 	if at.client != nil {
 		// send the request and return async call to unlock mutex quickly again
 		response := &wasimoffv1.Task_Wasip1_Response{}
+		at.wg.Add(1)
 		at.client.Messenger.SendRequest(at.ctx, request, response, calls)
 
 	} else {
