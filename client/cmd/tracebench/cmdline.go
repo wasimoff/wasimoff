@@ -18,6 +18,7 @@ type Args struct {
 	Broker      string
 	Tracefile   string
 	Pprof       bool
+	Wait        bool
 }
 
 func cmdline() (args *Args, err error) {
@@ -41,9 +42,13 @@ func cmdline() (args *Args, err error) {
 	pprof := flag.Bool("profile", getBool("PROFILE", false),
 		"enable pprof profiling of this binary during the run")
 
+	// wait until all task responses are received
+	wait := flag.Bool("wait", getBool("WAITTASKS", false),
+		"stop generating after timeout but wait for all task responses")
+
 	// parse arguments and check validity
 	flag.Parse()
-	args = &Args{Broker: *broker, Tracefile: *tracefile, Pprof: *pprof}
+	args = &Args{Broker: *broker, Tracefile: *tracefile, Pprof: *pprof, Wait: *wait}
 
 	// read one of the config file types
 	if (*funcgenCfg == "" && *csvtraceCfg == "") || (*funcgenCfg != "" && *csvtraceCfg != "") {

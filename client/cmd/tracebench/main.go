@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"time"
 
 	"wasi.team/broker/net/transport"
@@ -26,9 +27,15 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// child context for task iterators
+	iterctx, canceliters := context.WithCancel(ctx)
+
+	// waitgroup to count number of requests in-flight
+	var tasks sync.WaitGroup
+
 	// create the request generator
 	// allows for different task generators, could be string-matched like distributions
-	tasker := NewArgonTasker(ctx, args.Broker)
+	tasker := NewArgonTasker(ctx, &tasks, args.Broker)
 
 	// open output file
 	var output TraceOutputEncoder
@@ -66,7 +73,7 @@ func main() {
 		for _, workload := range cfg.Workloads {
 			starter.Add(1)
 			go func(w funcgen.WorkloadConfig) {
-				for t := range w.TaskTriggers(starter) {
+				for t := range w.TaskTriggers(iterctx, starter) {
 					fmt.Printf("%20s [%3d] elapsed: %9.6f, task: %9.6f\n", w.Name,
 						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 					// if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
@@ -88,7 +95,7 @@ func main() {
 		for _, column := range cfg.Columns {
 			starter.Add(1)
 			go func(col string) {
-				for t := range dataset.TaskTriggers(starter, col) {
+				for t := range dataset.TaskTriggers(iterctx, starter, col) {
 					fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
 						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 					if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
@@ -120,6 +127,7 @@ func main() {
 					}
 				}
 			}
+			tasks.Done()
 		}
 	}()
 
@@ -131,15 +139,48 @@ func main() {
 	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, os.Interrupt)
 
+	// wait for signal or timeout
+	select {
+	case <-sigint:
+		fmt.Println(" interrupt!")
+		log.Println("signal received, stopping workloads ...")
+	case <-time.After(runfor):
+		canceliters()
+		log.Println("configured runtime reached, stopping workloads ...")
+	}
+	canceliters()
+
+	// quit immediately if not instructed to wait
+	if !args.Wait {
+		log.Println("quit immediately. pass -wait to wait for all tasks.")
+		return
+	}
+
+	// setup to wait for the waitgroup asynchronously
+	quit := make(chan struct{})
+	go func() {
+		tasks.Wait()
+		quit <- struct{}{}
+	}()
+
+	// setup a grace timeout
+	go func() {
+		select {
+		case <-ctx.Done():
+		case <-time.After(60 * time.Second):
+			log.Println("60s grace timeout reached, exit now")
+			quit <- struct{}{}
+		}
+	}()
+
+	// wait for finish, with grace period or instant abort on (another) signal
 	select {
 
-	case <-sigint:
-		fmt.Println(" quit!")
-		log.Println("interrupt received, exit ...")
+	case <-quit: // normal exit
 
-	case <-time.After(runfor):
-		// this does not wait for all responses to arrive
-		log.Println("configured runtime reached, exit ...")
+	case <-sigint: // cancel immediately
+		fmt.Println(" abort!")
+		os.Exit(1)
 
 	}
 
