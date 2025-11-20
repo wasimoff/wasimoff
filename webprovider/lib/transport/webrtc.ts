@@ -157,6 +157,11 @@ export class WebRTCTransport implements Transport {
     // Process all complete messages
     let message;
     while ((message = defragmenter.nextMessage()) !== null) {
+      if (message.data.length === 0) {
+        console.info(`Received zero-length message from ${source}, disconnecting.`);
+        this.removeConnection(source);
+        return;
+      }
       try {
         const envelope = fromBinary(EnvelopeSchema, message.data);
         const transmit: Transmit = {
