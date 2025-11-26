@@ -56,6 +56,9 @@ func main() {
 	path, handler := wasimoffv1connect.NewTasksHandler(rpc)
 	mux.Handle("/api/client"+path, http.StripPrefix("/api/client", handler))
 	log.Printf("Client RPC: %s%s", broker.Addr(), "/api/client"+path)
+	// -- plain http
+	mux.Handle("/api/client/run/{wasm}", client.HttpExecWasip1Handler(rpc))
+	log.Printf("Client HTTP: %s%s", broker.Addr(), "/api/client/run/{wasm}")
 
 	// storage: serve files from and upload into store storage
 	mux.Handle("GET /api/storage/{filename}", store.Storage)
