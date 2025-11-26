@@ -1,6 +1,7 @@
 package csvtrace
 
 import (
+	"context"
 	"iter"
 	"log"
 	"time"
@@ -58,7 +59,7 @@ func (hw HuaweiDataset) TaskIterator(column string) iter.Seq[NextTask] {
 // Iterator that follows a trace column. Attention: that means that this iterator will
 // block and sleep according to the task instants! Use this in a goroutine to
 // trigger function requests asynchronously.
-func (hw HuaweiDataset) TaskTriggers(starter *tracebench.Starter[time.Time], column string) iter.Seq[tracebench.TaskTick] {
+func (hw HuaweiDataset) TaskTriggers(ctx context.Context, starter *tracebench.Starter[time.Time], column string) iter.Seq[tracebench.TaskTick] {
 
 	tasks := hw.TaskIterator(column)
 	sequence := uint64(0)
@@ -75,7 +76,12 @@ func (hw HuaweiDataset) TaskTriggers(starter *tracebench.Starter[time.Time], col
 			if sleep > time.Hour {
 				log.Printf("WARNING: next task in column %s is far away: %v", column, sleep)
 			}
-			time.Sleep(sleep)
+			// sleep with cancellation
+			select {
+			case <-time.After(time.Until(instant)): // ok
+			case <-ctx.Done(): // cancelled
+				return
+			}
 
 			// yield the next task
 			if !yield(tracebench.TaskTick{

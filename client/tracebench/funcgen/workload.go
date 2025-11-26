@@ -1,6 +1,7 @@
 package funcgen
 
 import (
+	"context"
 	"iter"
 	"time"
 
@@ -44,7 +45,7 @@ func (w WorkloadConfig) TaskIterator() iter.Seq[NextTask] {
 // Iterator that runs a workload. Attention: that means that this iterator will
 // block and sleep according to the task instants! Use this in a goroutine to
 // trigger function requests asynchronously.
-func (w WorkloadConfig) TaskTriggers(starter *tracebench.Starter[time.Time]) iter.Seq[tracebench.TaskTick] {
+func (w WorkloadConfig) TaskTriggers(ctx context.Context, starter *tracebench.Starter[time.Time]) iter.Seq[tracebench.TaskTick] {
 
 	tasks := w.TaskIterator()
 	sequence := uint64(0)
@@ -59,7 +60,12 @@ func (w WorkloadConfig) TaskTriggers(starter *tracebench.Starter[time.Time]) ite
 			// compute the next task trigger instant and sleep until then
 			instant = instant.Add(task.Sleep)
 			elapsed = instant.Sub(start)
-			time.Sleep(time.Until(instant))
+			// sleep with cancellation
+			select {
+			case <-time.After(time.Until(instant)): // ok
+			case <-ctx.Done(): // cancelled
+				return
+			}
 
 			// maybe skip this task trigger
 			if task.Skip {
