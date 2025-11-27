@@ -27,7 +27,7 @@ runjson() { # $1: run configuration
   # you can convert your old configs with:
   # $ jq '. as $t | { parent: { binary: { ref: $t.bin } }, tasks: $t.exec | map({ args: ([$t.bin] + .args), stdin: .stdin | @base64 }) }' config.json
   # upload run configuration and show the result 
-  curl --fail-with-body -kX POST -H "content-type: application/json" "$BROKER/api/client/run" --data-binary "@$1"
+  curl --fail-with-body -kX POST -H "content-type: application/json" "$BROKER/api/client/wasimoff.v1.Tasks/RunWasip1Job" --data-binary "@$1"
 }
 
 # create a run config from arguments
@@ -43,7 +43,7 @@ execute() { # $@ arguments
 # parse the response with jq and decode stdout and stderr to text; use in a pipe
 parseresponse() {
   slurp=$(cat)
-  jq -r '.tasks[].result | { status, stdout: .stdout | @base64d, stderr: .stderr | @base64d }' <<<"$slurp"
+  jq -r '.tasks[] | { info, status: .ok.status, stdout: .ok.stdout | @base64d, stderr: .ok.stderr | @base64d }' <<<"$slurp"
   if [[ $? -ne 0 ]]; then
     echo "failed parsing response; printing raw instead:"
     echo "$slurp"
