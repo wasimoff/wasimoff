@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>argonload benchmark</title>
+    <style>
+      input {
+        width: 50px;
+      }
+      table {
+        margin: 1em;
+      }
+      table,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+        min-width: 40px;
+        font-family: monospace;
+        font-size: large;
+        text-align: end;
+        padding: 0px 6px;
+      }
+      tr:nth-child(odd) {
+        background: lightgrey;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- the commandline argument form -->
+    <form id="cmd">
+      <code>argonload.wasm -p1 -m </code>
+      <input type="number" name="mem" value="32" />
+      <code> -i </code>
+      <input type="number" name="iter" value="20" />
+      <input type="submit" name="run" value="run" />
+      <input type="submit" name="x20" value="x20" />
+    </form>
+
+    <!-- textarea for full json -->
+    <textarea id="json" style="width: 400px; height: 100px">
+Results JSON will appear here.
+    </textarea
+    ><br />
+    <code id="avg" style="font-weight: bold"></code><br />
+    <code id="stdout"></code>
+
+    <!-- results table -->
+    <table id="results">
+      <tr style="font-weight: bold; background-color: skyblue; height: 30px">
+        <td>par</td>
+        <td>mem</td>
+        <td>iter</td>
+        <td style="min-width: 80px">time</td>
+      </tr>
+    </table>
+
+    <!-- more info hint -->
+    <div>Check the console for more info (<kbd>ctrl</kbd>-<kbd>shift</kbd>-<kbd>K</kbd>).</div>
+
+    <script type="module">
+      // import WASI shim
+      import {
+        WASI,
+        File,
+        OpenFile,
+      } from "https://cdn.jsdelivr.net/npm/@bjorn3/browser_wasi_shim@0.4.2/dist/index.js";
+
+      // wrapper to compile and cache the binary
+      let binary = null;
+      async function argonload() {
+        if (binary === null) binary = await WebAssembly.compileStreaming(fetch("argonload.wasm"));
+        return binary;
+      }
+
+      // benchmark a single execution
+      async function bench(memory, iters) {
+        // instantiate the module with wasi shim
+        let start = performance.now();
+        let args = ["argonload", "-p1", "-m", memory, "-i", iters];
+        let envs = [];
+        let files = [
+          /* stdin  */ new OpenFile(new File([])),
+          /* stdout */ new OpenFile(new File([])),
+          /* stderr */ new OpenFile(new File([])),
+        ];
+        console.log("bench:", args);
+        let wasi = new WASI(args, envs, files);
+        let shim = { wasi_snapshot_preview1: wasi.wasiImport };
+        let instance = await WebAssembly.instantiate(await argonload(), shim);
+        wasi.inst = instance;
+        let init = performance.now();
+
+        // do the thing
+        instance.exports._start();
+        let end = performance.now();
+
+        let stdout = new TextDecoder("utf-8").decode(files[1].file.data);
+        return { stdout, init: init - start, exec: end - init };
+      }
+
+      let results = [];
+      let table = document.getElementById("results");
+      let stdout = document.getElementById("stdout");
+      let avg = document.getElementById("avg");
+      let json = document.getElementById("json");
+      let average = () => {
+        let sum = 0;
+        let num = 0;
+        for (let r of results) {
+          sum += r.time / r.i / r.m;
+          num += 1;
+        }
+        return sum / num;
+      };
+      let run = async (ev) => {
+        ev.preventDefault();
+        let i = ev.target.iter.value;
+        let m = ev.target.mem.value;
+        let out = await bench(m, i);
+        console.warn(out);
+        stdout.innerText = out.stdout;
+        let row = table.insertRow();
+        row.insertCell(0).innerText = "1";
+        row.insertCell(1).innerText = m;
+        row.insertCell(2).innerText = i;
+        row.insertCell(3).innerText = out.exec;
+        results.push({ p: 1, i: Number(i), m: Number(m), time: out.exec });
+        let a = average();
+        avg.innerText = `Average time/iter/mb = ${a.toFixed(3)} ms.`;
+        json.innerText = JSON.stringify({ average: a, results });
+      };
+      document.getElementById("cmd").onsubmit = async (ev) => {
+        document.querySelectorAll("input").forEach((i) => (i.disabled = true));
+        if (ev.submitter.name === "x20") {
+          for (let n = 0; n < 20; n++) {
+            await run(ev);
+          }
+        } else {
+          await run(ev);
+        }
+        document.querySelectorAll("input").forEach((i) => (i.disabled = false));
+      };
+    </script>
+  </body>
+</html>
