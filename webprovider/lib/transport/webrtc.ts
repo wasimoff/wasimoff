@@ -187,13 +187,18 @@ export class WebRTCTransport implements Transport {
       return;
     }
 
+    // Count only connections that are actually connected
+    const connectedCount = [...this.peerConnections.values()].filter(
+      (pc) => pc.connectionState === "connected",
+    ).length;
+
     const now_ns = (performance.now() + performance.timeOrigin) * 1_000_000;
     this.announceMsg = {
       id: this.id,
       concurrency: resources?.concurrency ?? this.announceMsg?.concurrency ?? 0,
       tasks: resources?.tasks ?? this.announceMsg?.tasks ?? 0,
       timestamp: now_ns,
-      activeConnections: this.peerConnections.size,
+      activeConnections: connectedCount,
       maxConnections: this.maxConnections,
     };
 
