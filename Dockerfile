@@ -2,11 +2,16 @@
 # ---> build the go binaries
 FROM golang:1.24-alpine AS go-build
 
-# compile the binary
+# compile the broker binary
 COPY ./ /build
 WORKDIR /build/broker
 RUN CGO_ENABLED=0 go build -o broker
 
+# compile the client bianry
+WORKDIR /build/client
+RUN CGO_ENABLED=0 go build -o wasimoff ./cmd/wasimoff/
+
+# compile tracebench tool
 WORKDIR /build/client/cmd/tracebench
 RUN CGO_ENABLED=0 go build -o tracebench
 
@@ -78,17 +83,8 @@ ENV WASIMOFF_HTTP_LISTEN=":4080"
 ENV WASIMOFF_STATIC_FILES="/provider"
 
 # =========================================================================== #
-FROM ghcr.io/astral-sh/uv:alpine AS dataset-builder
-
-WORKDIR /dataset
-
-# copy and run download script
-COPY client/cmd/tracebench/dataset/download.py .
-RUN uv run download.py
-
-# =========================================================================== #
 FROM alpine AS tracebench
-COPY --from=dataset-builder /dataset/*.csv.gz /dataset/
 COPY --from=go-build /build/client/cmd/tracebench/tracebench /tracebench
+COPY --from=go-build /build/client/wasimoff /wasimoff
 COPY --from=go-build /build/wasi-apps/argonload/argonload.wasm /wasm/
 ENTRYPOINT [ "/tracebench" ]

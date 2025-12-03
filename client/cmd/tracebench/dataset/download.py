@@ -10,10 +10,14 @@
 import sys, os, zipfile
 import requests, pandas, tqdm
 
+# link to the github readme with google drive links
+readme = "https://github.com/sir-lab/data-release/blob/main/README_data_release_2023.md#huawei-private"
+
 
 # download, concatenate and then re-save as single-file compressed CSVs
 def download(names: list[str], directory="dataset"):
     os.makedirs(directory, exist_ok=True)
+    missing = False
     for name in names:
         # construct filenames
         archive = os.path.join(directory, f"{name}.zip")
@@ -23,11 +27,17 @@ def download(names: list[str], directory="dataset"):
         else:
             # maybe download the original archive
             if not os.path.exists(archive):
-                print(name, "> download", link(name))
-                fetch(link(name), archive)
+                print(archive, f"> missing dataset source!")
+                missing = True
+                continue
+                # print(name, "> download", link(name))
+                # fetch(link(name), archive)
             # concatenate to a single dataframe for easier analysis
             print(name, "> concatenate to a single dataframe")
             concatenate(archive, dest=csv)
+    if missing:
+        print(f"!! Please download missing ZIP archives using links at {readme}")
+        exit(1)
 
 
 # download a file to disk with progress bar
