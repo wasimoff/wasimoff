@@ -43,8 +43,8 @@ start = args.columns[0] + 2
 end = args.columns[1] + 3
 
 # load datasets
-df_requests = pd.read_csv("dataset/requests_minute.csv.gz")
-df_tasklens = pd.read_csv("dataset/function_delay_minute.csv.gz")
+df_requests = pd.read_csv("./requests_minute.csv.gz")
+df_tasklens = pd.read_csv("./function_delay_minute.csv.gz")
 time_sec = df_requests.iloc[:, 1].values  # time
 requests_data = df_requests.iloc[:, start:end].values  # request rates
 tasklens_data = df_tasklens.iloc[:, start:end].values  # function delays
