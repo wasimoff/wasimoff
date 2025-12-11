@@ -11,7 +11,7 @@ import (
 // Add a traced event to task metadata.
 func (t *Task_Metadata) TraceEvent(ev Task_TraceEvent_EventType) {
 	// only append if metadata contains a trace message
-	if t.Trace != nil {
+	if t != nil && t.Trace != nil {
 		// prepare list with some capacity when empty
 		if t.Trace.Events == nil {
 			t.Trace.Events = make([]*Task_TraceEvent, 0, 20)
