@@ -11,6 +11,7 @@ import (
 
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/proto"
 )
 
 // ClientSocketHandler returns a http.HandlerFunc to be used on a route that shall serve
@@ -60,11 +61,11 @@ func ClientSocketHandler(rpc *ConnectRpcServer) http.HandlerFunc {
 					go func(ctx context.Context, req transport.IncomingRequest, task *wasimoff.Task_Wasip1_Request) {
 						r := connect.NewRequest(task)
 						resp, err := rpc.RunWasip1(ctx, r)
-						if err != nil {
-							request.Respond(ctx, nil, err)
-						} else {
-							request.Respond(ctx, resp.Msg, nil)
+						var msg proto.Message
+						if resp != nil {
+							msg = resp.Msg
 						}
+						req.Respond(ctx, msg, err)
 					}(r.Context(), request, taskrequest)
 					continue
 
@@ -72,11 +73,11 @@ func ClientSocketHandler(rpc *ConnectRpcServer) http.HandlerFunc {
 					go func(ctx context.Context, req transport.IncomingRequest, task *wasimoff.Task_Pyodide_Request) {
 						r := connect.NewRequest(task)
 						resp, err := rpc.RunPyodide(ctx, r)
-						if err != nil {
-							request.Respond(ctx, nil, err)
-						} else {
-							request.Respond(ctx, resp.Msg, nil)
+						var msg proto.Message
+						if resp != nil {
+							msg = resp.Msg
 						}
+						req.Respond(ctx, msg, err)
 					}(r.Context(), request, taskrequest)
 					continue
 
@@ -84,11 +85,11 @@ func ClientSocketHandler(rpc *ConnectRpcServer) http.HandlerFunc {
 					go func(ctx context.Context, req transport.IncomingRequest, task *wasimoff.Filesystem_Upload_Request) {
 						r := connect.NewRequest(task)
 						resp, err := rpc.Upload(ctx, r)
-						if err != nil {
-							request.Respond(ctx, nil, err)
-						} else {
-							request.Respond(ctx, resp.Msg, nil)
+						var msg proto.Message
+						if resp != nil {
+							msg = resp.Msg
 						}
+						req.Respond(ctx, msg, err)
 					}(r.Context(), request, taskrequest)
 					continue
 
