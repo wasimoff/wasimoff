@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math"
 	"strconv"
@@ -17,7 +18,7 @@ import (
 )
 
 type TraceBenchTasker interface {
-	Run(queue chan *transport.PendingCall, tasklen time.Duration)
+	Run(queue chan *transport.PendingCall, tasklen time.Duration, name string)
 }
 
 type ArgonTasker struct {
@@ -47,12 +48,12 @@ func NewArgonTasker(ctx context.Context, wg *sync.WaitGroup, broker string) Trac
 
 }
 
-func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds time.Duration) {
+func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds time.Duration, name string) {
 
 	request := &wasimoffv1.Task_Wasip1_Request{
 		Info: &wasimoffv1.Task_Metadata{
-			// set task reference with incrementing counter
-			Reference: proto.String(strconv.FormatUint(at.sequence.Add(1), 10)),
+			// set task reference with incrementing counter and name
+			Reference: proto.String(fmt.Sprintf("%d/%s", at.sequence.Add(1), name)),
 			// start a trace with current start time
 			Trace: &wasimoffv1.Task_Trace{
 				Created: proto.Int64(time.Now().UnixNano()),

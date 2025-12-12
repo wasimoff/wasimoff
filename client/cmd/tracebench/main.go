@@ -79,7 +79,7 @@ func main() {
 					// if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
 					// 	fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
 					// }
-					tasker.Run(responses, t.Tasklen)
+					tasker.Run(responses, t.Tasklen, w.Name)
 				}
 			}(workload)
 		}
@@ -95,13 +95,14 @@ func main() {
 		for _, column := range cfg.Columns {
 			starter.Add(1)
 			go func(col string) {
+				name := "col:" + col
 				for t := range dataset.TaskTriggers(iterctx, starter, col) {
 					fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
 						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
 					if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
 						fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
 					}
-					tasker.Run(responses, t.Tasklen)
+					tasker.Run(responses, t.Tasklen, name)
 				}
 			}(column)
 		}
