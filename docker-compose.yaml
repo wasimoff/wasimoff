@@ -1,14 +1,15 @@
 services:
+  # start a broker image
   broker:
     image: ghcr.io/wasimoff/broker
     build:
       context: ./
-      target: wasimoff
-    restart: unless-stopped
+      target: broker
+    restart: on-failure:3
     ports:
       - 4080:4080
     volumes:
-      - broker_storage:/data
+      - ./broker/broker_storage:/broker_storage
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:4080/healthz"]
       interval: 2s
@@ -18,11 +19,14 @@ services:
       # allow requests from local frontend dev
       WASIMOFF_ALLOWED_ORIGINS: localhost:5173
       # store uploaded binaries in volume
-      WASIMOFF_FILESTORAGE: /data/broker_storage.boltdb
+      WASIMOFF_FILESTORAGE: /broker_storage
       # enable pprof and metrics endpoints
       WASIMOFF_DEBUG: "true"
       WASIMOFF_METRICS: "true"
+      # enable benchmode with endless tasks
+      #WASIMOFF_BENCHMODE=32
 
+  # .. as well as a provider, to be able to compute some tasks
   provider:
     image: ghcr.io/wasimoff/provider
     build:
@@ -32,7 +36,36 @@ services:
     depends_on:
       broker:
         condition: service_healthy
-    command: ["--url", "http://broker:4080"]
+    command: ["--url", "http://broker:4080", "--workers", "2", "--retry"]
+
+  # collect metrics locally
+  prometheus:
+    image: prom/prometheus # :v3.8.0
+    restart: on-failure:3
+    # entrypoint: [/bin/sh, -c, "sleep 6000"]
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+      - "--storage.tsdb.retention.time=1y"
+    ports:
+      - 9090:9090
+    volumes:
+      - ./docker/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - prometheus:/prometheus
+
+  # and show them on a dashboard
+  grafana:
+    image: grafana/grafana # :12.3.0
+    restart: on-failure:3
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=changeme
+      - GF_USERS_DEFAULT_THEME=light
+    volumes:
+      - ./docker/prometheus/grafana_source.yaml:/etc/grafana/provisioning/datasources/prometheus.yml
+      - grafana:/var/lib/grafana
 
 volumes:
-  broker_storage:
+  prometheus:
+  grafana:
