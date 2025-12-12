@@ -31,7 +31,7 @@ func (s *SeededSourcer) NewAtOffset(seed, offset uint64) rand.Source {
 }
 
 // Return an actually random number from the system's cryptographic randomness.
-// This is not deterministic, obviuosly.
+// This is not deterministic, obviously.
 func TrueRandom() uint64 {
 	var b [8]byte
 	_, err := crand.Read(b[:])

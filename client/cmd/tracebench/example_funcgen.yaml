@@ -1,0 +1,59 @@
+# Name of this trace.
+name: example trace config
+
+# Common global uint64 seed for the pseudorandom number generator. If this or the
+# workload seeds are zero / omitted, they are chosen truly random! Both seeds
+# are used together in rand/v2/NewPCG(global, workload) for 128 bits of state.
+seed: 1
+
+# Stop workload after this time. Use the optional --wait flag to also wait for
+# all in-flight requests. Otherwise any running tasks are simply cancelled after
+# this duration elapses. Use time units like 10s, 5m or 2h.
+duration: 10s
+
+# Define a list of concurrent workloads. Each configuration object starts a
+# goroutine with an iterator, which will emit events to schedule wasm tasks.
+workloads:
+  # Name of this workload, will be used for logging and task reference.
+  - name: background task
+
+    # Pseudorandom seed, see above. Omit or set to 0 for true random.
+    seed: 3
+
+    # Probability of dropping each individual task trigger [0, 1]. Higher values
+    # will look more "bursty". The distribution is deterministic with the seeds
+    # above, meaning that for the same seed the exact same triggers will be
+    # skipped each run.
+    skip: 0.3
+
+    # The rate determines ... the "rate at which tasks are sent" using one of
+    # a few simple distributions (jitter) plus an optional fixed interval.
+    rate:
+      # You can set a fixed interval between each task invocation here. If you
+      # set both fixed and jitter, both will be added together.
+      fixed: 100ms
+
+      # Jitter takes a distribution definition and calculates random intervals
+      # (deterministically based on the seeds) between each "task trigger".
+      # See client/tracebench/funcgen/distribution.go for up-to-date list.
+      # Distributions from https://pkg.go.dev/gonum.org/v1/gonum/stat/distuv.
+      #
+      # - bernoulli(:time, :probability)    binary choice of adding fixed time
+      # - exponential(:rate-per-second)     avg. time with exponential backoff
+      # - laplace(:mu, :scale)              Laplace with center :mu and :scale
+      # - normal(:mu, :sigma)               Gaussian; :mu and :sigma are times
+      # - pareto(:time, :alpha)             Minimum :time with dropoff :alpha
+      # - poisson(:time, :rate)             Have :rate tasks per :time
+      # - uniform(:min, :max)               Uniform between times :min and :max
+      jitter: normal(100ms, 50ms)
+
+    # Task defines the length of each individual task; basically complexity.
+    # This is based on a benchmark of the argonload.wasm binary where parameter
+    # i(terations) linearly affects the runtime and we can thus compute the
+    # parameter for a given desired runtime. The measurement is based on my
+    # laptop's CPU, thus it will take a little longer on slower devices; this
+    # is on purpose!
+    task:
+      # Fixed time and jitter distribution defined as above.
+      fixed: 100ms
+      jitter: uniform(200ms, 300ms)

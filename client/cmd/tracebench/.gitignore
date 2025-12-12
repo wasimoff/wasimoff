@@ -1,3 +1,4 @@
+/tracebench
 dataset/*.csv.gz
 dataset/*.zip
 *.jsonl
