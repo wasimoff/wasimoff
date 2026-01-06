@@ -56,11 +56,13 @@ export class WasimoffProvider {
     public messenger?: Messenger,
     /** storage backend for modules and artifacts */
     public storage?: ProviderStorage,
+    /** be more verbose throughout */
+    public readonly verbose: boolean = false,
   ) {
     console.info(...WasimoffProvider.logprefix, "started in", self.constructor.name);
 
     // create the worker pool and set up concurrency change callback
-    this.pool = new WasiWorkerPool(this.nmax);
+    this.pool = new WasiWorkerPool(this.nmax, verbose);
     this.pool.setOnConcurrencyChange((poolSize, activeTasks) => {
       if (this.messenger !== undefined) {
         this.sendConcurrency(poolSize, activeTasks).catch(() => {

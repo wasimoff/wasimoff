@@ -21,6 +21,12 @@ export const useTerminal = defineStore("Terminal", () => {
     });
   }
 
+  // receive logging form broadcasts
+  const broadcast = new BroadcastChannel("wasimoff");
+  broadcast.addEventListener("message", (ev) => {
+    log(ev.data, LogType.Grey);
+  });
+
   // A couple aliases for logging with predefined colors.
   const warn = (m: string) => log(m, LogType.Warning);
   const error = (m: string) => log(m, LogType.Danger);

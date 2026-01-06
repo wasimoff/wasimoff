@@ -56,7 +56,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   exclusive.then(async () => {
     // instantiate the provider directly in the main thread
     connected.value = false;
-    provider.value = new WasimoffProvider(config.workers);
+    provider.value = new WasimoffProvider(config.workers, undefined, undefined, config.verbose);
 
     // wrap the pool in a proxy to keep worker count updated
     pool.value = new Proxy(provider.value.pool, {
