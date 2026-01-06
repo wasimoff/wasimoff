@@ -65,7 +65,7 @@ services:
     volumes:
       - ./docker/prometheus/grafana_source.yaml:/etc/grafana/provisioning/datasources/prometheus.yml
       - ./docker/prometheus/grafana_dashboard.yaml:/etc/grafana/provisioning/dashboards/wasimoff.yml
-      - ./docker/prometheus/dashboard.json:/etc/grafana/provisioning/dashboards/wasimoff.json
+      - ./docker/prometheus/dashboard_provision.json:/etc/grafana/provisioning/dashboards/wasimoff.json
       - grafana:/var/lib/grafana
 
 volumes:
