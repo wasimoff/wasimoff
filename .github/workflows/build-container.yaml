@@ -19,13 +19,10 @@ jobs:
       matrix:
         include:
           - target: broker
-            platforms:
-              ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64'
-              }}
+            platforms: linux/amd64
+            # ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
           - target: provider
-            platforms:
-              ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64'
-              }}
+            platforms: linux/amd64
           - target: tracebench
             platforms: linux/amd64
     steps:
