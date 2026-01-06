@@ -18,6 +18,8 @@ export class WasiWorkerPool {
   constructor(
     /** The absolute maximum number of workers in this pool. */
     public readonly capacity: number = navigator.hardwareConcurrency,
+    /** Be more verbose. */
+    public readonly verbose: boolean = false,
   ) {}
 
   // hold the Workers in an array
@@ -93,7 +95,7 @@ export class WasiWorkerPool {
     let index = this.nextindex++;
     console.info(...logprefix, "spawn Worker", index);
     const worker = new Worker(new URL("./wasiworker.ts", import.meta.url), { type: "module" });
-    const link = await construct<typeof WasiWorker>(worker, index); // TODO: use Pyodide dist on Broker
+    const link = await construct<typeof WasiWorker>(worker, index, this.verbose); // TODO: use Pyodide dist on Broker
 
     // append to pool and enqueue available for work
     const wrapped = { index, worker, link, busy: false };

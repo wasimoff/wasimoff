@@ -56,7 +56,7 @@ export const useProvider = defineStore("WasimoffProvider", () => {
   exclusive.then(async () => {
     // instantiate the provider directly in the main thread
     connected.value = false;
-    provider.value = new WasimoffProvider(config.workers);
+    provider.value = new WasimoffProvider(config.workers, undefined, undefined, config.verbose);
 
     // wrap the pool in a proxy to keep worker count updated
     pool.value = new Proxy(provider.value.pool, {
@@ -84,7 +84,9 @@ export const useProvider = defineStore("WasimoffProvider", () => {
     if ("wakeLock" in navigator) {
       try {
         const lock = await navigator.wakeLock.request("screen");
-        terminal.info("Acquired a wakelock.");
+        terminal.info(
+          "Acquired wakelock. Screen timeout is disabled as long as this tab remains in foreground.",
+        );
         lock.addEventListener("release", () => terminal.warn("Wakelock was revoked!"));
         window.addEventListener("beforeunload", () => lock.release());
       } catch (err) {

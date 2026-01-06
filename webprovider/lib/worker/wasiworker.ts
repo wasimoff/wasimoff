@@ -17,7 +17,17 @@ export class WasiWorker {
     private readonly index: number,
     private readonly verbose: boolean = false,
     private readonly pydist: string = `https://cdn.jsdelivr.net/pyodide/v${pyversion}/full/`,
-  ) {}
+  ) {
+    if (verbose)
+      try {
+        this.broadcast = new BroadcastChannel("wasimoff");
+      } catch (err) {
+        /* ignore API errors in Deno */
+      }
+  }
+
+  // maybe there's a broadcast for logging
+  private broadcast?: BroadcastChannel;
 
   // colorful console logging prefix
   private get logprefix() {
@@ -37,6 +47,9 @@ export class WasiWorker {
       // log the overall commandline to dev console
       if (this.verbose) {
         let cmdline = [...task.envs, task.argv[0] || "<binary>", ...task.argv.slice(1)];
+        this.broadcast?.postMessage(
+          `[Worker ${this.index}] task ${id}: ${JSON.stringify(cmdline)}`,
+        );
         console.info(...this.logprefix, id, cmdline);
       }
 

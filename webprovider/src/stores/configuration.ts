@@ -8,6 +8,8 @@ type Configuration = {
   workers: number | null;
   // broker transport URL
   transport: string | null;
+  // be more verbose
+  verbose: boolean | null;
 };
 
 // parse configuration from URL fragment and expose for application
@@ -18,6 +20,7 @@ export const useConfiguration = defineStore("Configuration", () => {
     autoconnect: true,
     workers: navigator.hardwareConcurrency, // i.e. number of logical cores
     transport: window.location.origin,
+    verbose: false,
   };
 
   // ---------- configuration via query parameters in URL fragment --------- //
@@ -42,14 +45,17 @@ export const useConfiguration = defineStore("Configuration", () => {
     })(),
 
     transport: fragments.get("transport"),
+
+    verbose: asBoolean(fragments.get("verbose")),
   };
 
   // ---------- overall getters; mostly fragment > serverfetch > defaults --------- //
   const autoconnect = computed(() => firstOf(fragmentconf.autoconnect, defaultconf.autoconnect));
   const workers = computed(() => firstOf(fragmentconf.workers, defaultconf.workers));
   const transport = computed(() => firstOf(fragmentconf.transport, defaultconf.transport));
+  const verbose = computed(() => firstOf(fragmentconf.verbose, defaultconf.verbose));
 
-  return { fragmentconf, defaultconf, autoconnect, workers, transport };
+  return { fragmentconf, defaultconf, autoconnect, workers, transport, verbose };
 });
 
 // ---------- helpers for the fragment parsing --------- //

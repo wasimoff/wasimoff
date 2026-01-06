@@ -44,7 +44,7 @@ async function connect() {
   try {
     const url = transport.value;
     await wasimoff.connect(url, getlocalid());
-    const message = url.startsWith('ad') ? 'Connected to ArtDeco' : 'Connected to Wasimoff Broker';
+    const message = url.startsWith("ad") ? "Connected to ArtDeco" : "Connected to Wasimoff Broker";
     terminal.log(`${message} at ${url} as id=${getlocalid()}`, LogType.Success);
     wasimoff.handlerequests();
   } catch (err) {
@@ -125,7 +125,7 @@ async function fillWorkers() {
     // await $pool.value.fill();
     let max = await $pool.value.capacity;
     while ((await $pool.value.length) < max) await $pool.value.spawn();
-    terminal.success(`Filled pool to capacity with ${workers.value.length} runners.`);
+    terminal.success(`Filled pool to capacity with ${$pool.value.length} runners.`);
   } catch (err) {
     terminal.error(err as string);
   }
