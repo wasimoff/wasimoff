@@ -108,6 +108,11 @@ func main() {
 		}
 	}
 
+	// if the configured duration is zero, effectively run ~forever
+	if runfor == 0 {
+		runfor = 1<<63 - 1 // 292 years
+	}
+
 	// a single function to handle responses
 	// TODO:
 	// - tasks that never receive a response are lost

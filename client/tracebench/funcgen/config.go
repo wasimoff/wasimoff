@@ -61,11 +61,6 @@ func ReadTraceConfig(filename string) (trace *TraceConfig, err error) {
 		return nil, fmt.Errorf("please provide a name in config")
 	}
 
-	// make sure duration isn't zero
-	if trace.Duration == 0 {
-		return nil, fmt.Errorf("must provide a run duration")
-	}
-
 	// make sure we have workloads
 	if len(trace.Workloads) == 0 {
 		return nil, fmt.Errorf("must provide workloads, can't be empty")

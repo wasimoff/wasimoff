@@ -45,11 +45,6 @@ func ReadTraceConfig(filename string) (*TraceConfig, error) {
 		return nil, fmt.Errorf("please provide a name in config")
 	}
 
-	// make sure duration isn't zero
-	if trace.Duration == 0 {
-		return nil, fmt.Errorf("must provide a run duration")
-	}
-
 	// make sure we have columns
 	if len(trace.Columns) == 0 {
 		return nil, fmt.Errorf("must provide columns, can't be empty")
