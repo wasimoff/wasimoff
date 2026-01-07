@@ -10,13 +10,14 @@ import (
 )
 
 type TraceConfig struct {
-	Name     string
-	Duration time.Duration
-	Dataset  string
-	dataset  *HuaweiDataset
-	Offset   time.Duration
-	Scale    TraceScaling
-	Columns  []string
+	Name            string
+	Duration        time.Duration
+	Dataset         string
+	dataset         *HuaweiDataset
+	Offset          time.Duration
+	Scale           TraceScaling
+	ConcurrentLimit uint64
+	Columns         []string
 }
 
 type TraceScaling struct {
@@ -43,11 +44,6 @@ func ReadTraceConfig(filename string) (*TraceConfig, error) {
 	// make sure we have a name
 	if trace.Name == "" {
 		return nil, fmt.Errorf("please provide a name in config")
-	}
-
-	// make sure duration isn't zero
-	if trace.Duration == 0 {
-		return nil, fmt.Errorf("must provide a run duration")
 	}
 
 	// make sure we have columns

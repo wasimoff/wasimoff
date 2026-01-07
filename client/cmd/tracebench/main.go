@@ -64,22 +64,34 @@ func main() {
 	starter := tracebench.NewStarter[time.Time]()
 	var runfor time.Duration
 
+	// channel-based limiter to cap maximum number of in-flight tasks
+	var limiter *tracebench.Limiter
+	limitWarning := false
+
 	// funcgen: spawn function generators
 	if args.RunFuncgen != nil {
 		cfg := args.RunFuncgen
 		fmt.Printf("Loaded workload generator: %#v\n\n", cfg)
 		runfor = cfg.Duration
+		if cfg.ConcurrentLimit > 0 {
+			limiter = tracebench.NewLimiter(cfg.ConcurrentLimit)
+		}
 
 		for _, workload := range cfg.Workloads {
 			starter.Add(1)
 			go func(w funcgen.WorkloadConfig) {
 				for t := range w.TaskTriggers(iterctx, starter) {
-					fmt.Printf("%20s [%3d] elapsed: %9.6f, task: %9.6f\n", w.Name,
-						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
-					// if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
-					// 	fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
-					// }
-					tasker.Run(responses, t.Tasklen, w.Name)
+					if limiter.Acquire() {
+						fmt.Printf("%20s [%3d] elapsed: %9.6f, task: %9.6f\n", w.Name,
+							t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
+						// if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
+						// 	fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
+						// }
+						tasker.Run(responses, t.Tasklen, w.Name)
+					} else if limitWarning == false {
+						limitWarning = true
+						log.Println("concurrency limit reached, task skipped; this warning is only printed once")
+					}
 				}
 			}(workload)
 		}
@@ -90,6 +102,9 @@ func main() {
 		cfg := args.RunCsvTrace
 		fmt.Printf("Loaded CSV trace generator: %#v\n\n", cfg)
 		runfor = cfg.Duration
+		if cfg.ConcurrentLimit > 0 {
+			limiter = tracebench.NewLimiter(cfg.ConcurrentLimit)
+		}
 
 		dataset := cfg.GetDataset()
 		for _, column := range cfg.Columns {
@@ -97,15 +112,25 @@ func main() {
 			go func(col string) {
 				name := "col:" + col
 				for t := range dataset.TaskTriggers(iterctx, starter, col) {
-					fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
-						t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
-					if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
-						fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
+					if limiter.Acquire() {
+						fmt.Printf("column %3s [%3d] elapsed: %9.6f, task: %9.6f\n", col,
+							t.Sequence, t.Elapsed.Seconds(), t.Tasklen.Seconds())
+						if diff := time.Since(t.Scheduled); diff > 10*time.Millisecond {
+							fmt.Fprintf(os.Stderr, "WARN: [ %3s : %4d ] far from scheduled tick: %s\n", col, t.Sequence, diff)
+						}
+						tasker.Run(responses, t.Tasklen, name)
+					} else if limitWarning == false {
+						limitWarning = true
+						log.Println("concurrency limit reached, task skipped; this warning is only printed once")
 					}
-					tasker.Run(responses, t.Tasklen, name)
 				}
 			}(column)
 		}
+	}
+
+	// if the configured duration is zero, effectively run ~forever
+	if runfor == 0 {
+		runfor = 1<<63 - 1 // 292 years
 	}
 
 	// a single function to handle responses
@@ -128,6 +153,7 @@ func main() {
 					}
 				}
 			}
+			limiter.Release()
 			tasks.Done()
 		}
 	}()

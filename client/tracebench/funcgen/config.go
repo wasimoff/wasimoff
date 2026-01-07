@@ -12,10 +12,11 @@ import (
 )
 
 type TraceConfig struct {
-	Name      string
-	Seed      uint64
-	Duration  time.Duration
-	Workloads []WorkloadConfig
+	Name            string
+	Seed            uint64
+	Duration        time.Duration
+	ConcurrentLimit uint64
+	Workloads       []WorkloadConfig
 }
 
 type WorkloadConfig struct {
@@ -59,11 +60,6 @@ func ReadTraceConfig(filename string) (trace *TraceConfig, err error) {
 	// make sure we have a name
 	if trace.Name == "" {
 		return nil, fmt.Errorf("please provide a name in config")
-	}
-
-	// make sure duration isn't zero
-	if trace.Duration == 0 {
-		return nil, fmt.Errorf("must provide a run duration")
 	}
 
 	// make sure we have workloads
