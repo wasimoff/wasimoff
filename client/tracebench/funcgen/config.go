@@ -12,10 +12,11 @@ import (
 )
 
 type TraceConfig struct {
-	Name      string
-	Seed      uint64
-	Duration  time.Duration
-	Workloads []WorkloadConfig
+	Name            string
+	Seed            uint64
+	Duration        time.Duration
+	ConcurrentLimit uint64
+	Workloads       []WorkloadConfig
 }
 
 type WorkloadConfig struct {

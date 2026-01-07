@@ -12,6 +12,11 @@ seed: 1
 # to zero, it will effectively run forever.
 duration: 10s
 
+# Put a limit on the number of concurrent tasks in-flight. When over the limit,
+# new task triggers are simply skipped. Omitting or setting to zero means that
+# there is no limit (the previous default).
+#concurrentlimit: 2
+
 # Define a list of concurrent workloads. Each configuration object starts a
 # goroutine with an iterator, which will emit events to schedule wasm tasks.
 workloads:

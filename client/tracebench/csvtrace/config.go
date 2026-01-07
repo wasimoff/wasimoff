@@ -10,13 +10,14 @@ import (
 )
 
 type TraceConfig struct {
-	Name     string
-	Duration time.Duration
-	Dataset  string
-	dataset  *HuaweiDataset
-	Offset   time.Duration
-	Scale    TraceScaling
-	Columns  []string
+	Name            string
+	Duration        time.Duration
+	Dataset         string
+	dataset         *HuaweiDataset
+	Offset          time.Duration
+	Scale           TraceScaling
+	ConcurrentLimit uint64
+	Columns         []string
 }
 
 type TraceScaling struct {
