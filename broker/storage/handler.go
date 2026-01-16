@@ -23,18 +23,19 @@ func (fs *FileStorage) Upload() http.HandlerFunc {
 			}
 		}()
 
-		// check the content-type of the request: accept zip or wasm
-		ft, err := CheckMediaType(r.Header.Get("content-type"))
-		if err != nil {
-			http.Error(w, "unsupported filetype", http.StatusUnsupportedMediaType)
-			return
-		}
-
 		// read the entire body
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "reading body failed", http.StatusUnprocessableEntity)
 			err = fmt.Errorf("reading body failed: %w", err)
+			return
+		}
+
+		// check the content-type of the request: accept zip or wasm
+		// TODO: could be reordered with a LimitedReader to peek 512 bytes for detection before reading the whole body
+		ft, err := CheckMediaType(http.DetectContentType(body))
+		if err != nil {
+			http.Error(w, "unsupported filetype", http.StatusUnsupportedMediaType)
 			return
 		}
 
