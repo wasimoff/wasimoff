@@ -46,6 +46,8 @@ func HttpExecWasip1Handler(rpc *ConnectRpcServer) http.HandlerFunc {
 				http.Error(w, fmt.Sprintf("malformatted X-Args: %s", err), http.StatusBadRequest)
 				return
 			} else {
+				// prepend binary name as argv[0]
+				parsed = append([]string{executable}, parsed...)
 				task.Args = parsed
 			}
 		}
@@ -58,7 +60,7 @@ func HttpExecWasip1Handler(rpc *ConnectRpcServer) http.HandlerFunc {
 				if len(values) > 0 {
 					// use the first header for each variable
 					k := strings.TrimPrefix(key, "X-Env-")
-					task.Envs = append(task.Envs, fmt.Sprintf("%s=%s", k, values[0]))
+					task.Envs = append(task.Envs, fmt.Sprintf("%s=%s", strings.ToUpper(k), values[0]))
 				}
 			}
 
