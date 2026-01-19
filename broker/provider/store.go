@@ -70,12 +70,17 @@ func NewProviderStore(storagepath string, conf *config.Configuration) (*Provider
 	}
 
 	// maybe initialize cloud client
-	if conf.CloudCredentials != "" && conf.CloudFunction != "" && conf.CloudConcurrency > 0 {
-		client, err := idtoken.NewClient(context.Background(), conf.CloudFunction, idtoken.WithCredentialsFile(conf.CloudCredentials))
-		if err != nil {
-			return nil, fmt.Errorf("failed to initialize GCP cloudclient: %w", err)
+	if conf.CloudFunction != "" && conf.CloudConcurrency > 0 {
+		// cloudfunction without credentials is probably a local docker container
+		if conf.CloudCredentials != "" {
+			client, err := idtoken.NewClient(context.Background(), conf.CloudFunction, idtoken.WithCredentialsFile(conf.CloudCredentials))
+			if err != nil {
+				return nil, fmt.Errorf("failed to initialize GCP cloudclient: %w", err)
+			}
+			store.cloudClient = client
+		} else {
+			store.cloudClient = http.DefaultClient
 		}
-		store.cloudClient = client
 		store.cloudFunction = conf.CloudFunction
 		go store.cloudLoop(conf.CloudConcurrency)
 		store.metrics.AvailableWorkers.WithLabelValues("cloud").Set(float64(conf.CloudConcurrency))
