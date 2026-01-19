@@ -73,7 +73,7 @@ func main() {
 		cfg := args.RunFuncgen
 		fmt.Printf("Loaded workload generator: %#v\n\n", cfg)
 		runfor = cfg.Duration
-		if cfg.ConcurrentLimit > 0 {
+		if !tasker.IsDryrun() && cfg.ConcurrentLimit > 0 {
 			limiter = tracebench.NewLimiter(cfg.ConcurrentLimit)
 		}
 
@@ -102,7 +102,7 @@ func main() {
 		cfg := args.RunCsvTrace
 		fmt.Printf("Loaded CSV trace generator: %#v\n\n", cfg)
 		runfor = cfg.Duration
-		if cfg.ConcurrentLimit > 0 {
+		if !tasker.IsDryrun() && cfg.ConcurrentLimit > 0 {
 			limiter = tracebench.NewLimiter(cfg.ConcurrentLimit)
 		}
 

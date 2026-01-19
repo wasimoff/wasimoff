@@ -19,6 +19,7 @@ import (
 
 type TraceBenchTasker interface {
 	Run(queue chan *transport.PendingCall, tasklen time.Duration, name string)
+	IsDryrun() bool
 }
 
 type ArgonTasker struct {
@@ -68,7 +69,7 @@ func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds time.Durat
 		},
 	}
 
-	if at.client != nil {
+	if !at.IsDryrun() {
 		// send the request and return async call to unlock mutex quickly again
 		response := &wasimoffv1.Task_Wasip1_Response{}
 		at.wg.Add(1)
@@ -83,6 +84,10 @@ func (at *ArgonTasker) Run(calls chan *transport.PendingCall, seconds time.Durat
 		log.Printf("DRYRUN: %s", buf)
 	}
 
+}
+
+func (at *ArgonTasker) IsDryrun() bool {
+	return at.client == nil
 }
 
 // For argonload/wasm running on an Intel i5-1345U, we get around iter=35 for 1s runtime.
