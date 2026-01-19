@@ -1,0 +1,12 @@
+# This workload was used in the "ArtDeco" Master Thesis as an evaluation
+# scenario for WebRTC-based decentralized scheduling.
+name: ArtDeco Evaluation (high)
+seed: 3
+duration: 120s
+
+workloads:
+  - name: poisson task
+    rate:
+      jitter: poisson(60s, 70)
+    task:
+      jitter: normal(400ms, 100ms)
