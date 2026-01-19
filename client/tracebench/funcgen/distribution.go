@@ -83,7 +83,7 @@ func ParseBernoulli(s string, rngs rand.Source) (distuv.Rander, error) {
 	const re = `^bernoulli\(\s*(` + dur + `)\s*,\s*(` + f64 + `)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
 	if len(matches) != 3 {
-		return nil, fmt.Errorf("invalid format: expected bernoulli(:time, :prob)")
+		return nil, fmt.Errorf("invalid format: expected bernoulli(:time, :prob), have %q", s)
 	}
 	// convert the arguments
 	t, err := time.ParseDuration(matches[1])
@@ -122,7 +122,7 @@ func ParseExponential(s string, rngs rand.Source) (distuv.Rander, error) {
 	const re = `^exponential\(\s*(` + f64 + `)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
 	if len(matches) != 2 {
-		return nil, fmt.Errorf("invalid format: expected exponential(:rate/s)")
+		return nil, fmt.Errorf("invalid format: expected exponential(:rate/s), have %q", s)
 	}
 	// convert the arguments
 	rate, err := strconv.ParseFloat(matches[1], 64)
@@ -142,7 +142,7 @@ func ParseLaplace(s string, rngs rand.Source) (distuv.Rander, error) {
 	const re = `^laplace\(\s*(` + dur + `)\s*,\s*(` + dur + `)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
 	if len(matches) != 3 {
-		return nil, fmt.Errorf("invalid format: expected laplace(:mu, :scale)")
+		return nil, fmt.Errorf("invalid format: expected laplace(:mu, :scale), have %q", s)
 	}
 	// convert the arguments
 	mu, err := time.ParseDuration(matches[1])
@@ -170,7 +170,7 @@ func ParseNormal(s string, rngs rand.Source) (distuv.Rander, error) {
 	const re = `^normal\(\s*(` + dur + `)\s*,\s*(` + dur + `)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
 	if len(matches) != 3 {
-		return nil, fmt.Errorf("invalid format: expected normal(:mu, :sigma)")
+		return nil, fmt.Errorf("invalid format: expected normal(:mu, :sigma), have %q", s)
 	}
 	// convert the arguments
 	// mu, err := strconv.ParseFloat(matches[1], 64)
@@ -200,7 +200,7 @@ func ParsePareto(s string, rngs rand.Source) (distuv.Rander, error) {
 	const re = `^pareto\(\s*(` + dur + `)\s*,\s*(` + f64 + `)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
 	if len(matches) != 3 {
-		return nil, fmt.Errorf("invalid format: expected pareto(:time, :alpha)")
+		return nil, fmt.Errorf("invalid format: expected pareto(:time, :alpha), have %q", s)
 	}
 	// convert the arguments
 	t, err := time.ParseDuration(matches[1])
@@ -231,7 +231,7 @@ func ParsePoisson(s string, rngs rand.Source) (distuv.Rander, error) {
 	const re = `^poisson\(\s*(` + dur + `)\s*,\s*(` + f64 + `)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
 	if len(matches) != 3 {
-		return nil, fmt.Errorf("invalid format: expected poisson(:timespan, :lambda)")
+		return nil, fmt.Errorf("invalid format: expected poisson(:timespan, :lambda), have %q", s)
 	}
 	// convert the arguments
 	t, err := time.ParseDuration(matches[1])
@@ -279,7 +279,7 @@ func ParseUniform(s string, rngs rand.Source) (distuv.Rander, error) {
 	const re = `^uniform\(\s*(` + dur + `)\s*,\s*(` + dur + `)\s*\)$`
 	matches := regexp.MustCompile(re).FindStringSubmatch(s)
 	if len(matches) != 3 {
-		return nil, fmt.Errorf("invalid format: expected uniform(:min, :max)")
+		return nil, fmt.Errorf("invalid format: expected uniform(:min, :max), have %q", s)
 	}
 	// convert the arguments
 	min, err := time.ParseDuration(matches[1])
