@@ -151,12 +151,14 @@ func (s *ConnectRpcServer) RunPyodide(
 // -------------------- handlers for task metadata --------------------
 
 func (s *ConnectRpcServer) prepareTaskInfo(info *wasimoff.Task_Metadata, peer connect.Peer) *wasimoff.Task_Metadata {
-	info.TraceEvent(wasimoff.Task_TraceEvent_BrokerReceivedClientRequest)
+	if info != nil {
+		info.TraceEvent(wasimoff.Task_TraceEvent_BrokerReceivedClientRequest)
+	}
 	return &wasimoff.Task_Metadata{
 		Id:        proto.String(strconv.FormatUint(s.taskSeq.Add(1), 10)),
 		Requester: proto.String(peer.Addr),
-		Reference: info.Reference,
-		Trace:     info.Trace,
+		Reference: proto.String(info.GetReference()),
+		Trace:     info.GetTrace(),
 		Provider:  nil,
 	}
 }
