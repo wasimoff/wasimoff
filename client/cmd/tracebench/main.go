@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"wasi.team/broker/net/transport"
-	"wasi.team/client/tracebench"
-	"wasi.team/client/tracebench/funcgen"
+	"wasi.team/client/internal/tracebench"
+	"wasi.team/client/internal/tracebench/funcgen"
 	wasimoffv1 "wasi.team/proto/v1"
 )
 

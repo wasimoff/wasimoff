@@ -6,3 +6,6 @@ gcp_invoke: cmd/gcp_invoke/main.go
 
 tspbench: cmd/tspbench/main.go
 	go build -o $@ $<
+
+tracebench: cmd/tracebench/main.go
+	go build -o $@ ./cmd/tracebench/

@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"wasi.team/client/tracebench"
+	"wasi.team/client/internal/tracebench"
 )
 
 type NextTask struct {

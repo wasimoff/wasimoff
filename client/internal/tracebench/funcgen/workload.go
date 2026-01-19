@@ -5,7 +5,7 @@ import (
 	"iter"
 	"time"
 
-	"wasi.team/client/tracebench"
+	"wasi.team/client/internal/tracebench"
 )
 
 // Return the next random duration as Fixed + Jitter.Rand()

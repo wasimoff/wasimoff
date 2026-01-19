@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"wasi.team/client/tracebench/csvtrace"
-	"wasi.team/client/tracebench/funcgen"
+	"wasi.team/client/internal/tracebench/csvtrace"
+	"wasi.team/client/internal/tracebench/funcgen"
 )
 
 type Args struct {

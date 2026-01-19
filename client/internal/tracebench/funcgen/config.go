@@ -8,7 +8,7 @@ import (
 
 	"gonum.org/v1/gonum/stat/distuv"
 	"gopkg.in/yaml.v3"
-	"wasi.team/client/tracebench/rng"
+	"wasi.team/client/internal/tracebench/rng"
 )
 
 type TraceConfig struct {
