@@ -23,6 +23,8 @@ jobs:
             # ${{ github.event_name == 'pull_request' && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
           - target: provider
             platforms: linux/amd64
+          - target: faas
+            platforms: linux/amd64
           - target: tracebench
             platforms: linux/amd64
     steps:
