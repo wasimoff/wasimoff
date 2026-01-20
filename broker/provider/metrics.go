@@ -19,9 +19,10 @@ type ProviderStoreMetrics struct {
 	TaskRetries prometheus.CounterVec
 
 	// track available resources
-	ConnectedProviders prometheus.GaugeFunc // currently connected providers
-	AvailableWorkers   prometheus.GaugeVec  // available workers, partitioned by providers and cloud
-
+	ConnectedProviders        prometheus.GaugeFunc // currently connected providers
+	AvailableWorkers          prometheus.GaugeVec  // available workers, partitioned by providers and cloud
+	CurrentlyQueuedTasks      prometheus.Gauge     // currently waiting (queued) tasks
+	CurrentlyDispatchingTasks prometheus.Gauge     // concurrently scheduling tasks
 }
 
 // list of useful histogram buckets
@@ -66,6 +67,16 @@ func (store *ProviderStore) initializePrometheusMetrics() {
 		Help: "number of retries across all scheduled tasks",
 	}, []string{"attempt"})
 
+	// currently waiting (queued) and dispatching (scheduling) tasks
+	m.CurrentlyQueuedTasks = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "wasimoff_tasks_queued",
+		Help: "currently waiting (queued) tasks",
+	})
+	m.CurrentlyDispatchingTasks = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "wasimoff_tasks_dispatching",
+		Help: "currently dispatching (scheduling) tasks",
+	})
+
 	// -- available resources
 
 	// total number of available workers across all providers + cloud
@@ -96,6 +107,12 @@ func (store *ProviderStore) initializePrometheusMetrics() {
 // Observe a retried task to update counter vector
 func (s *ProviderStore) ObserveRetry(attempt int) {
 	s.metrics.TaskRetries.With(prometheus.Labels{"attempt": fmt.Sprintf("%d", attempt)}).Inc()
+}
+
+// Set the current task queue length gauge
+func (s *ProviderStore) ObserveTaskQueue(queuelen int, scheduling int) {
+	s.metrics.CurrentlyQueuedTasks.Set(float64(queuelen))        // tasks in the queue
+	s.metrics.CurrentlyDispatchingTasks.Set(float64(scheduling)) // tasks trying to dispatch
 }
 
 // Observe a scheduled task to update historgram

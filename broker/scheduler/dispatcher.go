@@ -34,6 +34,14 @@ func Dispatcher(store *provider.ProviderStore, selector Scheduler, concurrency i
 		tickets <- struct{}{}
 	}
 
+	// use a timer to update metrics
+	go func() {
+		ticker := time.NewTicker(time.Second)
+		for range ticker.C {
+			store.ObserveTaskQueue(len(TaskQueue), cap(tickets)-len(tickets))
+		}
+	}()
+
 	for task := range TaskQueue {
 		<-tickets // get a ticket
 
