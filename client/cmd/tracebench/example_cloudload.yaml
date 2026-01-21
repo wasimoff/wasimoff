@@ -1,0 +1,35 @@
+name: trace configuration to check cloud offloading
+seed: 1
+
+duration: 1m
+concurrentlimit: 1000
+
+workloads:
+  # Jitter takes a distribution definition and calculates random intervals
+  # (deterministically based on the seeds) between each "task trigger".
+  # See client/tracebench/funcgen/distribution.go for up-to-date list.
+  # Distributions from https://pkg.go.dev/gonum.org/v1/gonum/stat/distuv.
+  #
+  # - bernoulli(:time, :probability)    binary choice of adding fixed time
+  # - exponential(:rate-per-second)     avg. time with exponential backoff
+  # - laplace(:mu, :scale)              Laplace with center :mu and :scale
+  # - normal(:mu, :sigma)               Gaussian; :mu and :sigma are times
+  # - pareto(:time, :alpha)             Minimum :time with dropoff :alpha
+  # - poisson(:time, :rate)             Have :rate tasks per :time
+  # - uniform(:min, :max)               Uniform between times :min and :max
+
+  - name: small tasks
+    seed: 3
+    skip: 0.3
+    rate:
+      jitter: poisson(60s, 6000) # 100/sec
+    task:
+      jitter: normal(200ms, 100ms)
+
+  - name: twosec tasks
+    seed: 4
+    skip: 0.1
+    rate:
+      jitter: poisson(60s, 30) # 0.5/sec
+    task:
+      jitter: normal(5s, 250ms)
