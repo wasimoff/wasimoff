@@ -48,6 +48,8 @@ services:
       - "--storage.tsdb.retention.time=1y"
     ports:
       - 9090:9090
+    extra_hosts:
+      - host.docker.internal:172.27.168.224
     volumes:
       - ./docker/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
       - prometheus:/prometheus

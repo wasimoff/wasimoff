@@ -20,3 +20,4 @@ scrape_configs:
     scheme: http
     static_configs:
       - targets: [broker:4080]
+      - targets: [host.docker.internal:4080]
