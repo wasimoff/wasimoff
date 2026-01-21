@@ -17,8 +17,8 @@ The main operations of this CLI are:
 
 - **Upload:** `-upload <file>`
 - **Execute:** `-exec <ref> [<args>]`
-- **Job:** `-run <jobfile>` and
-- **Pyodide:** `-runpy <python-script>`
+- **Pyodide:** `-pyodide <script.py>`
+- **Task:** `-task <task.json>`
 
 Other options include:
 
@@ -54,57 +54,43 @@ Again, using the TSP example, you could calculate the route for ten random citie
 equivalent to running `wasmtime tsp.wasm ...`. If you need data from stdin, use `-stdin`, which will
 read until EOF and send it as a binary blob in the request.
 
-#### Jobs
+#### Tasks
 
-Finally, you can write a JSON job file to start multiple tasks at the same time. The job file looks
-like this:
-
-```json
-{
-  // tasks is a list of wasimoff.Task_Wasip1_Params
-  "tasks": [
-    {
-      // the executable to start; use either "ref" with a filename / sha256 reference
-      // or "blob" with a base64-encoded binary blob as a string
-      "binary": { "ref": "hello.wasm" },
-
-      // optional: rootfs can contain a ZIP file that is extracted in the virtual
-      // WASI filesystem before execution; use "ref" or "blob" as above
-      "rootfs": { "ref": "hello.zip" },
-
-      // environment variables and commandline arguments, pretty straightforward;
-      // the first string in "args" is actually "arg0", i.e. the filename as seen
-      // by the executable itself
-      "envs": ["DOS=demonstration"],
-      "args": ["hello.wasm", "print_envs", "print_rootfs", "file:hello.txt"],
-
-      // optional: data to be passed to the application on stdin; must be base64
-      // encoded, as it is not necessarily a valid utf-8 string
-      "stdin": "SGVsbG8sIFdvcmxkIQo=",
-
-      // optional: artifacts can be a list of files to return to the client in a
-      // ZIP file after execution; useful if the app writes results "to disk"
-      "artifacts": ["hello.txt"]
-    }
-  ]
-}
-```
-
-The file is parsed as a `wasimoff.Task_Wasip1_JobRequest`, where the `parent` and each element in
-`tasks` is a `wasimoff.Task_Wasip1_Params`. The tasks use a very simple inheritance: each empty /
-`nil` field is copied straight from the parent (that means `envs` do **not** get concatenated for
-example). The following is an example job, which starts three identical TSP tasks, each computing a
-path for ten random cities:
+Finally, you can write a JSON file to start a predefined task on demand:
 
 ```json
 {
-  "parent": {
-    "binary": { "ref": "tsp.wasm" },
-    "args": ["tsp.wasm", "rand", "10"]
-  },
-  "tasks": [{}, {}, {}]
+  // the file is parsed as a google.protobuf.Any message, so you need to specify the type
+  "@type": "wasimoff.v1.Task.Wasip1.Request",
+  // now the rest of the object is parsed as a wasimoff.Task_Wasip1_Request
+  "params": {
+    // the executable to start; use either "ref" with a filename / sha256 reference
+    // or "blob" with a base64-encoded binary blob as a string
+    "binary": { "ref": "hello.wasm" },
+
+    // optional: rootfs can contain a ZIP file that is extracted in the virtual
+    // WASI filesystem before execution; use "ref" or "blob" as above
+    "rootfs": { "ref": "hello.zip" },
+
+    // environment variables and commandline arguments, pretty straightforward;
+    // the first string in "args" is actually "arg0", i.e. the filename as seen
+    // by the executable itself
+    "envs": ["DOS=demonstration"],
+    "args": ["hello.wasm", "print_envs", "print_rootfs", "file:hello.txt"],
+
+    // optional: data to be passed to the application on stdin; must be base64
+    // encoded, as it is not necessarily a valid utf-8 string
+    "stdin": "SGVsbG8sIFdvcmxkIQo=",
+
+    // optional: artifacts can be a list of files to return to the client in a
+    // ZIP file after execution; useful if the app writes results "to disk"
+    "artifacts": ["hello.txt"]
+  }
 }
 ```
+
+The file is parsed as an "any" message, which can be either a `wasimoff.Task_Wasip1_Request` or
+`wasimoff.Task_Pyodide_Request`.
 
 #### Embedded client
 

@@ -2,21 +2,19 @@
 # simple http client to interact with the broker
 set -eu
 
-# For Protobuf users: see ../broker/messages.proto and use OffloadWasiJobRequest.
+# For Protobuf users: see ../broker/messages.proto and use Task_Wasip1_Request.
 # The gist of the expeted JSON is:
 # {
-#   "parent": { // common parameters
+#   "params": {
 #     "binary": {
 #       "ref": "filename.wasm" // or:
 #       "blob": "<base64-encoded bytes"
 #     },
-#     "envs": [ "ENV=var", ... ],
-#   },
-#   "tasks": [{
 #     "args": [ "arg0", "rand", "10" ],
+#     "envs": [ "ENV=var", ... ],
 #     "rootfs": { /* ZIP file, like binary above */ },
 #     "artifacts": [ "/hello.txt", ... ] // sent back as ZIP
-#   }, { ... }]
+#   }
 # }
 
 # set the URL to the broker here
@@ -27,14 +25,14 @@ runjson() { # $1: run configuration
   # you can convert your old configs with:
   # $ jq '. as $t | { parent: { binary: { ref: $t.bin } }, tasks: $t.exec | map({ args: ([$t.bin] + .args), stdin: .stdin | @base64 }) }' config.json
   # upload run configuration and show the result 
-  curl --fail-with-body -kX POST -H "content-type: application/json" "$BROKER/api/client/wasimoff.v1.Tasks/RunWasip1Job" --data-binary "@$1"
+  curl --fail-with-body -kX POST -H "content-type: application/json" "$BROKER/api/client/wasimoff.v1.Tasks/RunWasip1" --data-binary "@$1"
 }
 
 # create a run config from arguments
 execute() { # $@ arguments
   bin="${1:?first argument is the binary}";
   # create a config with jq
-  config=$(jq -cn --args --arg bin "$bin" '{ tasks: [{ binary: { ref: $bin }, args: $ARGS.positional }] }' "$@")
+  config=$(jq -cn --args --arg bin "$bin" '{ params: { binary: { ref: $bin }, args: $ARGS.positional } }' "$@")
   echo "$config" >&2
   # and run ad-hoc json
   runjson <(echo "$config")

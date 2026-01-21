@@ -22,7 +22,6 @@ import (
 type WasimoffClient interface {
 	Upload(buf []byte, name string) (ref string, err error)
 	RunWasip1(ctx context.Context, request *wasimoff.Task_Wasip1_Request) (*wasimoff.Task_Wasip1_Response, error)
-	RunWasip1Job(ctx context.Context, request *wasimoff.Task_Wasip1_JobRequest) (*wasimoff.Task_Wasip1_JobResponse, error)
 	RunPyodide(ctx context.Context, request *wasimoff.Task_Pyodide_Request) (*wasimoff.Task_Pyodide_Response, error)
 }
 
@@ -101,14 +100,6 @@ func (c *WasimoffConnectRpcClient) RunWasip1(ctx context.Context, request *wasim
 	return resp.Msg, nil
 }
 
-func (c *WasimoffConnectRpcClient) RunWasip1Job(ctx context.Context, request *wasimoff.Task_Wasip1_JobRequest) (*wasimoff.Task_Wasip1_JobResponse, error) {
-	resp, err := c.ConnectRPC.RunWasip1Job(ctx, connect.NewRequest(request))
-	if err != nil {
-		return nil, err
-	}
-	return resp.Msg, nil
-}
-
 func (c *WasimoffConnectRpcClient) RunPyodide(ctx context.Context, request *wasimoff.Task_Pyodide_Request) (*wasimoff.Task_Pyodide_Response, error) {
 	request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientTransmitRequest)
 	resp, err := c.ConnectRPC.RunPyodide(ctx, connect.NewRequest(request))
@@ -184,57 +175,6 @@ func (c *WasimoffWebsocketClient) RunWasip1(ctx context.Context, request *wasimo
 	return
 }
 
-// NOTICE: WasimoffWebsocketClient.RunWasip1Job is only an example implementation; you're probably better off implementing custom async logic yourself.
-func (c *WasimoffWebsocketClient) RunWasip1Job(ctx context.Context, job *wasimoff.Task_Wasip1_JobRequest) (response *wasimoff.Task_Wasip1_JobResponse, err error) {
-
-	// chan and list to collect responses
-	ntasks := len(job.GetTasks())
-	done := make(chan *transport.PendingCall, ntasks)
-	responses := make([]*wasimoff.Task_Wasip1_Response, ntasks)
-
-	// submit all tasks
-	for i, task := range job.GetTasks() {
-		task.InheritNil(job.Parent)
-		// store index in context
-		ctx := context.WithValue(context.Background(), ctxJobIndex{}, i)
-
-		// assemble wrapped task and fire it off
-		tr := &wasimoff.Task_Wasip1_Request{
-			Params: task,
-		}
-		c.Messenger.SendRequest(ctx, tr, &wasimoff.Task_Wasip1_Response{}, done)
-	}
-
-	// wait for all responses
-	for ntasks > 0 {
-		call := <-done
-		ntasks -= 1
-		i := call.Context.Value(ctxJobIndex{}).(int)
-
-		if call.Error != nil {
-			responses[i].Result = &wasimoff.Task_Wasip1_Response_Error{
-				Error: call.Error.Error(),
-			}
-		} else {
-			if resp, ok := call.Response.(*wasimoff.Task_Wasip1_Response); ok {
-				responses[i] = resp
-			} else {
-				responses[i] = &wasimoff.Task_Wasip1_Response{
-					Result: &wasimoff.Task_Wasip1_Response_Error{
-						Error: "failed to parse the response as pb.Task_Response",
-					},
-				}
-			}
-		}
-	}
-
-	// return the results
-	return &wasimoff.Task_Wasip1_JobResponse{
-		Tasks: responses,
-	}, nil
-
-}
-
 func (c *WasimoffWebsocketClient) RunPyodide(ctx context.Context, request *wasimoff.Task_Pyodide_Request) (response *wasimoff.Task_Pyodide_Response, err error) {
 	request.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientTransmitRequest)
 	response = &wasimoff.Task_Pyodide_Response{}
@@ -242,9 +182,6 @@ func (c *WasimoffWebsocketClient) RunPyodide(ctx context.Context, request *wasim
 	response.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_ClientReceivedResponse)
 	return
 }
-
-// typed key to store index in context
-type ctxJobIndex struct{}
 
 //  example Helpers on interface
 // ------------------------------------------------------------------------------------
