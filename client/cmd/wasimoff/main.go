@@ -19,6 +19,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/anypb"
 )
 
 var ( // config flags
@@ -31,10 +32,10 @@ var ( // config flags
 )
 
 var ( // command flags, pick one
-	cmdUpload     = ""    // upload this file
-	cmdExec       = false // execute cmdline
-	cmdRunWasip1  = ""    // run wasip1 job
-	cmdRunPyodide = ""    // run python file
+	cmdUpload  = ""    // upload this file
+	cmdExec    = false // execute cmdline in wasip1
+	cmdRunTask = ""    // run prepared task json
+	cmdPyodide = ""    // run python file
 )
 
 func init() {
@@ -52,8 +53,8 @@ func main() {
 	flag.StringVar(&brokerUrl, "broker", brokerUrl, "URL to the Broker to use")
 	flag.StringVar(&cmdUpload, "upload", "", "Upload a file (wasm or zip) to the Broker and receive its ref")
 	flag.BoolVar(&cmdExec, "exec", false, "Execute an uploaded binary by passing all non-flag args")
-	flag.StringVar(&cmdRunWasip1, "run", "", "Run a prepared JSON job file")
-	flag.StringVar(&cmdRunPyodide, "runpy", "", "Run a Python script file with Pyodide")
+	flag.StringVar(&cmdPyodide, "pyodide", "", "Run a Python script file with Pyodide")
+	flag.StringVar(&cmdRunTask, "task", "", "Run a prepared JSON task file (either Wasip1 or Pyodide)")
 	flag.BoolVar(&verbose, "verbose", verbose, "Be more verbose and print raw messages for -exec")
 	flag.BoolVar(&readstdin, "stdin", readstdin, "Read and send stdin when using -exec (not streamed)")
 	flag.BoolVar(&websock, "ws", websock, "Use a WebSocket to connect to Broker")
@@ -86,13 +87,13 @@ func main() {
 		args := flag.Args()
 		Execute(args, envs)
 
-	// execute a prepared JSON job
-	case cmdRunWasip1 != "":
-		RunWasip1Job(cmdRunWasip1)
+	// execute a prepared JSON task
+	case cmdRunTask != "":
+		RunTaskFile(cmdRunTask)
 
 	// execute a python script task
-	case cmdRunPyodide != "":
-		RunPythonScript(cmdRunPyodide)
+	case cmdPyodide != "":
+		RunPythonScript(cmdPyodide)
 
 	// no command specified
 	default:
@@ -165,6 +166,11 @@ func Execute(args, envs []string) {
 		}
 	}
 
+	runWasip1(request)
+}
+
+func runWasip1(request *wasimoff.Task_Wasip1_Request) {
+
 	// make the request
 	maybeDumpJson("[RunWasip1] run:", request)
 	response, err := c.RunWasip1(context.Background(), request)
@@ -191,8 +197,8 @@ func Execute(args, envs []string) {
 
 }
 
-// run a prepared job configuration from file
-func RunWasip1Job(config string) {
+// run a prepared task configuration from file
+func RunTaskFile(config string) {
 
 	// read the file
 	buf, err := os.ReadFile(config)
@@ -200,40 +206,30 @@ func RunWasip1Job(config string) {
 		log.Fatal("reading file: ", err)
 	}
 
-	// decode with protojson and report any errors locally
-	job := &wasimoff.Task_Wasip1_JobRequest{}
-	if err = protojson.Unmarshal(buf, job); err != nil {
-		log.Fatal("unmarshal job: ", err)
+	// decode with protojson and decide what to do based on embedded type
+	var anymsg anypb.Any
+	var anytask proto.Message
+	if err = protojson.Unmarshal(buf, &anymsg); err != nil {
+		log.Fatal("unmarshal anypb from JSON: ", err)
+	}
+	if anytask, err = anymsg.UnmarshalNew(); err != nil {
+		log.Fatal("unmarshal request from anypb: ", err)
+	}
+	if verbose {
+		log.Println("parsed file as:", anymsg.GetTypeUrl())
 	}
 
-	// run the job
-	response, err := c.RunWasip1Job(context.Background(), job)
+	switch task := anytask.(type) {
 
-	// check for errors
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "[RunWasip1Job] ERR: %s\n", err.Error())
-		os.Exit(1)
-	}
-	if response.GetError() != "" {
-		fmt.Fprintf(os.Stderr, "[RunWasip1Job] FAIL: %s\n", response.GetError())
-		os.Exit(1)
-	}
+	case *wasimoff.Task_Wasip1_Request:
+		runWasip1(task)
 
-	// print all task results
-	for i, task := range response.GetTasks() {
-		if task.GetError() != "" {
-			fmt.Fprintf(os.Stderr, "[task %d] FAIL: %s\n", i, task.GetError())
-		} else {
-			r := task.GetOk()
-			fmt.Fprintf(os.Stderr, "[task %d] exit:%d\n", i, *r.Status)
-			if r.Artifacts != nil {
-				fmt.Fprintf(os.Stderr, "artifact: %s\n", base64.StdEncoding.EncodeToString(r.Artifacts.GetBlob()))
-			}
-			if len(r.GetStderr()) != 0 {
-				fmt.Fprintf(os.Stderr, "\033[31m%s\033[0m\n", string(r.GetStderr()))
-			}
-			fmt.Fprintln(os.Stdout, string(r.GetStdout()))
-		}
+	case *wasimoff.Task_Pyodide_Request:
+		runPyodide(task)
+
+	default:
+		log.Fatal("this task type is not supported:")
+
 	}
 
 }
@@ -256,6 +252,11 @@ func RunPythonScript(script string) {
 			},
 		},
 	}
+
+	runPyodide(request)
+}
+
+func runPyodide(request *wasimoff.Task_Pyodide_Request) {
 
 	// make the request
 	maybeDumpJson("[RunPyodide] run:", request)

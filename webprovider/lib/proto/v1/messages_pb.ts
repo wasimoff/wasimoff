@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file proto/v1/messages.proto.
  */
 export const file_proto_v1_messages: GenFile = /*@__PURE__*/
-  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyKKFwoEVGFzaxp2CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkSEQoJcmVmZXJlbmNlGAQgASgJEiYKBXRyYWNlGAUgASgLMhcud2FzaW1vZmYudjEuVGFzay5UcmFjZRpYCgNRb1MSEAoIcHJpb3JpdHkYASABKAgSLAoIZGVhZGxpbmUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCWltbWVkaWF0ZRgDIAEoCBpYCgVUcmFjZRIPCgdjcmVhdGVkGAEgASgDEhAKCGR1cmF0aW9uGAIgASgEEiwKBmV2ZW50cxgDIAMoCzIcLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudBqSBwoKVHJhY2VFdmVudBIQCgh1bml4bmFubxgBIAEoAxI1CgVldmVudBgCIAEoDjImLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudC5FdmVudFR5cGUSDwoHZGV0YWlscxgDIAEoCSKpBgoJRXZlbnRUeXBlEgsKB1VOS05PV04QABIPCgtDbGllbnRFcnJvchAKEhkKFUNsaWVudFRyYW5zbWl0UmVxdWVzdBALEhoKFkNsaWVudFJlY2VpdmVkUmVzcG9uc2UQDBIPCgtCcm9rZXJFcnJvchAUEh8KG0Jyb2tlclJlY2VpdmVkQ2xpZW50UmVxdWVzdBAVEhMKD0Jyb2tlclF1ZXVlVGFzaxAWEhYKEkJyb2tlclNjaGVkdWxlVGFzaxAXEh4KGkJyb2tlclRyYW5zbWl0UHJvdmlkZXJUYXNrEBgSIAocQnJva2VyUmVjZWl2ZWRQcm92aWRlclJlc3VsdBAZEiAKHEJyb2tlclRyYW5zbWl0Q2xpZW50UmVzcG9uc2UQGhIRCg1Qcm92aWRlckVycm9yEB4SGAoUUHJvdmlkZXJUYXNrUmVjZWl2ZWQQHxIVChFQcm92aWRlckdldFdvcmtlchAgEhgKFFByb3ZpZGVyUG9zdFRvV29ya2VyECESGQoVUHJvdmlkZXJXb3JrZXJQcmVwYXJlECISGQoVUHJvdmlkZXJXb3JrZXJFeGVjdXRlECMSFgoSUHJvdmlkZXJXb3JrZXJEb25lECQSGgoWUHJvdmlkZXJUcmFuc21pdFJlc3VsdBAlEhkKFUFydERlY29TY2hlZHVsZXJFbnRlchAmEhkKFUFydERlY29TY2hlZHVsZXJMZWF2ZRAnEh0KGUFydERlY29TY2hlZHVsZXJTY2hlZHVsZWQQKBIfChtBcnREZWNvU2NoZWR1bGVyUmVzdWx0RW50ZXIQKRIfChtBcnREZWNvU2NoZWR1bGVyUmVzdWx0TGVhdmUQKhIdChlBcnREZWNvV2FzaW1vZmZTZXJpYWxpemVkECsSHwobQXJ0RGVjb1dhc2ltb2ZmRGVzZXJpYWxpemVkECwSIwofQXJ0RGVjb1NjaGVkdWxlclByb3ZpZGVyQ29ubmVjdBAtEiMKH0FydERlY29TY2hlZHVsZXJQcm92aWRlck9mZmxvYWQQLhIbChdBcnREZWNvU2NoZWR1bGVyUmVxdWV1ZRAvGiQKBkNhbmNlbBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkaugYKBldhc2lwMRqMAQoGUGFyYW1zEiEKBmJpbmFyeRgBIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSDAoEYXJncxgCIAMoCRIMCgRlbnZzGAMgAygJEg0KBXN0ZGluGAQgASgMEiEKBnJvb3RmcxgFIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSEQoJYXJ0aWZhY3RzGAYgAygJGl4KBk91dHB1dBIOCgZzdGF0dXMYASABKAUSDgoGc3Rkb3V0GAIgASgMEg4KBnN0ZGVychgDIAEoDBIkCglhcnRpZmFjdHMYBCABKAsyES53YXNpbW9mZi52MS5GaWxlGogBCgdSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEi8KBnBhcmFtcxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxq7AQoKSm9iUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIvCgZwYXJlbnQYAyABKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5QYXJhbXMSLgoFdGFza3MYBCADKAsyHy53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5QYXJhbXMafgoIUmVzcG9uc2USKAoEaW5mbxgBIAEoCzIaLndhc2ltb2ZmLnYxLlRhc2suTWV0YWRhdGESDwoFZXJyb3IYAiABKAlIABItCgJvaxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLk91dHB1dEgAQggKBnJlc3VsdBp4CgtKb2JSZXNwb25zZRIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRINCgVlcnJvchgCIAEoCRIwCgV0YXNrcxgDIAMoCzIhLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlc3BvbnNlGt0GCgdQeW9kaWRlGpgBCgZQYXJhbXMSEAoIcGFja2FnZXMYASADKAkSEAoGc2NyaXB0GAIgASgJSAASEAoGcGlja2xlGAMgASgMSAASDAoEZW52cxgEIAMoCRINCgVzdGRpbhgFIAEoDBIhCgZyb290ZnMYBiABKAsyES53YXNpbW9mZi52MS5GaWxlEhEKCWFydGlmYWN0cxgHIAMoCUIFCgNydW4abwoGT3V0cHV0Eg4KBnBpY2tsZRgBIAEoDBIOCgZzdGRvdXQYAiABKAwSDgoGc3RkZXJyGAMgASgMEg8KB3ZlcnNpb24YBCABKAkSJAoJYXJ0aWZhY3RzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRqJAQoHUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIwCgZwYXJhbXMYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGr0BCgpKb2JSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEjAKBnBhcmVudBgDIAEoCzIgLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5QYXJhbXMSLwoFdGFza3MYBCADKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGn8KCFJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg8KBWVycm9yGAIgASgJSAASLgoCb2sYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0GnkKC0pvYlJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg0KBWVycm9yGAIgASgJEjEKBXRhc2tzGAMgAygLMiIud2FzaW1vZmYudjEuVGFzay5QeW9kaWRlLlJlc3BvbnNlIjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiqwIKCkZpbGVzeXN0ZW0aLwoHTGlzdGluZxoJCgdSZXF1ZXN0GhkKCFJlc3BvbnNlEg0KBWZpbGVzGAEgAygJGjgKBVByb2JlGhcKB1JlcXVlc3QSDAoEZmlsZRgBIAEoCRoWCghSZXNwb25zZRIKCgJvaxgBIAEoCBpPCgZVcGxvYWQaLAoHUmVxdWVzdBIhCgZ1cGxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlGhcKCFJlc3BvbnNlEgsKA3JlZhgBIAEoCRphCghEb3dubG9hZBoXCgdSZXF1ZXN0EgwKBGZpbGUYASABKAkaPAoIUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSLnAQoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRo3ChFQcm92aWRlclJlc291cmNlcxITCgtjb25jdXJyZW5jeRgBIAEoDRINCgV0YXNrcxgCIAEoDRogCgtDbHVzdGVySW5mbxIRCglwcm92aWRlcnMYASABKA0aLAoKVGhyb3VnaHB1dBIPCgdvdmVyYWxsGAEgASgCEg0KBXlvdXJzGAIgASgCGjIKEEZpbGVTeXN0ZW1VcGRhdGUSDQoFYWRkZWQYASADKAkSDwoHcmVtb3ZlZBgCIAMoCSpcCgtTdWJwcm90b2NvbBILCgdVTktOT1dOEAASIQodd2FzaW1vZmZfcHJvdmlkZXJfdjFfcHJvdG9idWYQARIdChl3YXNpbW9mZl9wcm92aWRlcl92MV9qc29uEAIy7AIKBVRhc2tzElIKCVJ1bldhc2lwMRIgLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlcXVlc3QaIS53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5SZXNwb25zZSIAElsKDFJ1bldhc2lwMUpvYhIjLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLkpvYlJlcXVlc3QaJC53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5Kb2JSZXNwb25zZSIAElUKClJ1blB5b2RpZGUSIS53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUmVxdWVzdBoiLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXNwb25zZSIAElsKBlVwbG9hZBImLndhc2ltb2ZmLnYxLkZpbGVzeXN0ZW0uVXBsb2FkLlJlcXVlc3QaJy53YXNpbW9mZi52MS5GaWxlc3lzdGVtLlVwbG9hZC5SZXNwb25zZSIAQh9aHXdhc2kudGVhbS9wcm90by92MTt3YXNpbW9mZnYxYghlZGl0aW9uc3DoBw", [file_google_protobuf_any, file_google_protobuf_timestamp]);
+  fileDesc("Chdwcm90by92MS9tZXNzYWdlcy5wcm90bxILd2FzaW1vZmYudjEixQEKCEVudmVsb3BlEhAKCHNlcXVlbmNlGAEgASgEEi8KBHR5cGUYAiABKA4yIS53YXNpbW9mZi52MS5FbnZlbG9wZS5NZXNzYWdlVHlwZRINCgVlcnJvchgDIAEoCRIlCgdwYXlsb2FkGAQgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueSJACgtNZXNzYWdlVHlwZRILCgdVTktOT1dOEAASCwoHUmVxdWVzdBABEgwKCFJlc3BvbnNlEAISCQoFRXZlbnQQAyKXEgoEVGFzaxp2CghNZXRhZGF0YRIKCgJpZBgBIAEoCRIRCglyZXF1ZXN0ZXIYAiABKAkSEAoIcHJvdmlkZXIYAyABKAkSEQoJcmVmZXJlbmNlGAQgASgJEiYKBXRyYWNlGAUgASgLMhcud2FzaW1vZmYudjEuVGFzay5UcmFjZRpYCgNRb1MSEAoIcHJpb3JpdHkYASABKAgSLAoIZGVhZGxpbmUYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCWltbWVkaWF0ZRgDIAEoCBpYCgVUcmFjZRIPCgdjcmVhdGVkGAEgASgDEhAKCGR1cmF0aW9uGAIgASgEEiwKBmV2ZW50cxgDIAMoCzIcLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudBqSBwoKVHJhY2VFdmVudBIQCgh1bml4bmFubxgBIAEoAxI1CgVldmVudBgCIAEoDjImLndhc2ltb2ZmLnYxLlRhc2suVHJhY2VFdmVudC5FdmVudFR5cGUSDwoHZGV0YWlscxgDIAEoCSKpBgoJRXZlbnRUeXBlEgsKB1VOS05PV04QABIPCgtDbGllbnRFcnJvchAKEhkKFUNsaWVudFRyYW5zbWl0UmVxdWVzdBALEhoKFkNsaWVudFJlY2VpdmVkUmVzcG9uc2UQDBIPCgtCcm9rZXJFcnJvchAUEh8KG0Jyb2tlclJlY2VpdmVkQ2xpZW50UmVxdWVzdBAVEhMKD0Jyb2tlclF1ZXVlVGFzaxAWEhYKEkJyb2tlclNjaGVkdWxlVGFzaxAXEh4KGkJyb2tlclRyYW5zbWl0UHJvdmlkZXJUYXNrEBgSIAocQnJva2VyUmVjZWl2ZWRQcm92aWRlclJlc3VsdBAZEiAKHEJyb2tlclRyYW5zbWl0Q2xpZW50UmVzcG9uc2UQGhIRCg1Qcm92aWRlckVycm9yEB4SGAoUUHJvdmlkZXJUYXNrUmVjZWl2ZWQQHxIVChFQcm92aWRlckdldFdvcmtlchAgEhgKFFByb3ZpZGVyUG9zdFRvV29ya2VyECESGQoVUHJvdmlkZXJXb3JrZXJQcmVwYXJlECISGQoVUHJvdmlkZXJXb3JrZXJFeGVjdXRlECMSFgoSUHJvdmlkZXJXb3JrZXJEb25lECQSGgoWUHJvdmlkZXJUcmFuc21pdFJlc3VsdBAlEhkKFUFydERlY29TY2hlZHVsZXJFbnRlchAmEhkKFUFydERlY29TY2hlZHVsZXJMZWF2ZRAnEh0KGUFydERlY29TY2hlZHVsZXJTY2hlZHVsZWQQKBIfChtBcnREZWNvU2NoZWR1bGVyUmVzdWx0RW50ZXIQKRIfChtBcnREZWNvU2NoZWR1bGVyUmVzdWx0TGVhdmUQKhIdChlBcnREZWNvV2FzaW1vZmZTZXJpYWxpemVkECsSHwobQXJ0RGVjb1dhc2ltb2ZmRGVzZXJpYWxpemVkECwSIwofQXJ0RGVjb1NjaGVkdWxlclByb3ZpZGVyQ29ubmVjdBAtEiMKH0FydERlY29TY2hlZHVsZXJQcm92aWRlck9mZmxvYWQQLhIbChdBcnREZWNvU2NoZWR1bGVyUmVxdWV1ZRAvGiQKBkNhbmNlbBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkaggQKBldhc2lwMRqMAQoGUGFyYW1zEiEKBmJpbmFyeRgBIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSDAoEYXJncxgCIAMoCRIMCgRlbnZzGAMgAygJEg0KBXN0ZGluGAQgASgMEiEKBnJvb3RmcxgFIAEoCzIRLndhc2ltb2ZmLnYxLkZpbGUSEQoJYXJ0aWZhY3RzGAYgAygJGl4KBk91dHB1dBIOCgZzdGF0dXMYASABKAUSDgoGc3Rkb3V0GAIgASgMEg4KBnN0ZGVychgDIAEoDBIkCglhcnRpZmFjdHMYBCABKAsyES53YXNpbW9mZi52MS5GaWxlGogBCgdSZXF1ZXN0EigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEiIKA3FvcxgCIAEoCzIVLndhc2ltb2ZmLnYxLlRhc2suUW9TEi8KBnBhcmFtcxgDIAEoCzIfLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlBhcmFtcxp+CghSZXNwb25zZRIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIPCgVlcnJvchgCIAEoCUgAEi0KAm9rGAMgASgLMh8ud2FzaW1vZmYudjEuVGFzay5XYXNpcDEuT3V0cHV0SABCCAoGcmVzdWx0GqIECgdQeW9kaWRlGpgBCgZQYXJhbXMSEAoIcGFja2FnZXMYASADKAkSEAoGc2NyaXB0GAIgASgJSAASEAoGcGlja2xlGAMgASgMSAASDAoEZW52cxgEIAMoCRINCgVzdGRpbhgFIAEoDBIhCgZyb290ZnMYBiABKAsyES53YXNpbW9mZi52MS5GaWxlEhEKCWFydGlmYWN0cxgHIAMoCUIFCgNydW4abwoGT3V0cHV0Eg4KBnBpY2tsZRgBIAEoDBIOCgZzdGRvdXQYAiABKAwSDgoGc3RkZXJyGAMgASgMEg8KB3ZlcnNpb24YBCABKAkSJAoJYXJ0aWZhY3RzGAUgASgLMhEud2FzaW1vZmYudjEuRmlsZRqJAQoHUmVxdWVzdBIoCgRpbmZvGAEgASgLMhoud2FzaW1vZmYudjEuVGFzay5NZXRhZGF0YRIiCgNxb3MYAiABKAsyFS53YXNpbW9mZi52MS5UYXNrLlFvUxIwCgZwYXJhbXMYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUGFyYW1zGn8KCFJlc3BvbnNlEigKBGluZm8YASABKAsyGi53YXNpbW9mZi52MS5UYXNrLk1ldGFkYXRhEg8KBWVycm9yGAIgASgJSAASLgoCb2sYAyABKAsyIC53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuT3V0cHV0SABCCAoGcmVzdWx0IjAKBEZpbGUSCwoDcmVmGAEgASgJEg0KBW1lZGlhGAIgASgJEgwKBGJsb2IYAyABKAwiqwIKCkZpbGVzeXN0ZW0aLwoHTGlzdGluZxoJCgdSZXF1ZXN0GhkKCFJlc3BvbnNlEg0KBWZpbGVzGAEgAygJGjgKBVByb2JlGhcKB1JlcXVlc3QSDAoEZmlsZRgBIAEoCRoWCghSZXNwb25zZRIKCgJvaxgBIAEoCBpPCgZVcGxvYWQaLAoHUmVxdWVzdBIhCgZ1cGxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlGhcKCFJlc3BvbnNlEgsKA3JlZhgBIAEoCRphCghEb3dubG9hZBoXCgdSZXF1ZXN0EgwKBGZpbGUYASABKAkaPAoIUmVzcG9uc2USIwoIZG93bmxvYWQYASABKAsyES53YXNpbW9mZi52MS5GaWxlEgsKA2VychgCIAEoCSLnAQoFRXZlbnQaIQoOR2VuZXJpY01lc3NhZ2USDwoHbWVzc2FnZRgBIAEoCRo3ChFQcm92aWRlclJlc291cmNlcxITCgtjb25jdXJyZW5jeRgBIAEoDRINCgV0YXNrcxgCIAEoDRogCgtDbHVzdGVySW5mbxIRCglwcm92aWRlcnMYASABKA0aLAoKVGhyb3VnaHB1dBIPCgdvdmVyYWxsGAEgASgCEg0KBXlvdXJzGAIgASgCGjIKEEZpbGVTeXN0ZW1VcGRhdGUSDQoFYWRkZWQYASADKAkSDwoHcmVtb3ZlZBgCIAMoCSpcCgtTdWJwcm90b2NvbBILCgdVTktOT1dOEAASIQodd2FzaW1vZmZfcHJvdmlkZXJfdjFfcHJvdG9idWYQARIdChl3YXNpbW9mZl9wcm92aWRlcl92MV9qc29uEAIyjwIKBVRhc2tzElIKCVJ1bldhc2lwMRIgLndhc2ltb2ZmLnYxLlRhc2suV2FzaXAxLlJlcXVlc3QaIS53YXNpbW9mZi52MS5UYXNrLldhc2lwMS5SZXNwb25zZSIAElUKClJ1blB5b2RpZGUSIS53YXNpbW9mZi52MS5UYXNrLlB5b2RpZGUuUmVxdWVzdBoiLndhc2ltb2ZmLnYxLlRhc2suUHlvZGlkZS5SZXNwb25zZSIAElsKBlVwbG9hZBImLndhc2ltb2ZmLnYxLkZpbGVzeXN0ZW0uVXBsb2FkLlJlcXVlc3QaJy53YXNpbW9mZi52MS5GaWxlc3lzdGVtLlVwbG9hZC5SZXNwb25zZSIAQh9aHXdhc2kudGVhbS9wcm90by92MTt3YXNpbW9mZnYxYghlZGl0aW9uc3DoBw", [file_google_protobuf_any, file_google_protobuf_timestamp]);
 
 /**
  * Envelope is a generic message wrapper with a sequence counter and message type.
@@ -921,69 +921,6 @@ export const Task_Wasip1_RequestSchema: GenMessage<Task_Wasip1_Request, {jsonTyp
   messageDesc(file_proto_v1_messages, 1, 5, 2);
 
 /**
- * Offload a job (group of Wasip1 tasks).
- * Tasks will inherit unset values from the parent.
- *
- * @generated from message wasimoff.v1.Task.Wasip1.JobRequest
- */
-export type Task_Wasip1_JobRequest = Message<"wasimoff.v1.Task.Wasip1.JobRequest"> & {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_Metadata;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
-   */
-  qos?: Task_QoS;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Wasip1.Params parent = 3;
-   */
-  parent?: Task_Wasip1_Params;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Params tasks = 4;
-   */
-  tasks: Task_Wasip1_Params[];
-};
-
-/**
- * Offload a job (group of Wasip1 tasks).
- * Tasks will inherit unset values from the parent.
- *
- * @generated from message wasimoff.v1.Task.Wasip1.JobRequest
- */
-export type Task_Wasip1_JobRequestJson = {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_MetadataJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
-   */
-  qos?: Task_QoSJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Wasip1.Params parent = 3;
-   */
-  parent?: Task_Wasip1_ParamsJson;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Params tasks = 4;
-   */
-  tasks?: Task_Wasip1_ParamsJson[];
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Wasip1.JobRequest.
- * Use `create(Task_Wasip1_JobRequestSchema)` to create a new message.
- */
-export const Task_Wasip1_JobRequestSchema: GenMessage<Task_Wasip1_JobRequest, {jsonType: Task_Wasip1_JobRequestJson}> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 5, 3);
-
-/**
  * Response for a single Wasip1 task, which can be an Error or OK.
  *
  * @generated from message wasimoff.v1.Task.Wasip1.Response
@@ -1039,58 +976,7 @@ export type Task_Wasip1_ResponseJson = {
  * Use `create(Task_Wasip1_ResponseSchema)` to create a new message.
  */
 export const Task_Wasip1_ResponseSchema: GenMessage<Task_Wasip1_Response, {jsonType: Task_Wasip1_ResponseJson}> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 5, 4);
-
-/**
- * Group result of a Wasip1 Job.
- *
- * @generated from message wasimoff.v1.Task.Wasip1.JobResponse
- */
-export type Task_Wasip1_JobResponse = Message<"wasimoff.v1.Task.Wasip1.JobResponse"> & {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_Metadata;
-
-  /**
-   * @generated from field: string error = 2;
-   */
-  error: string;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Response tasks = 3;
-   */
-  tasks: Task_Wasip1_Response[];
-};
-
-/**
- * Group result of a Wasip1 Job.
- *
- * @generated from message wasimoff.v1.Task.Wasip1.JobResponse
- */
-export type Task_Wasip1_JobResponseJson = {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_MetadataJson;
-
-  /**
-   * @generated from field: string error = 2;
-   */
-  error?: string;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Wasip1.Response tasks = 3;
-   */
-  tasks?: Task_Wasip1_ResponseJson[];
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Wasip1.JobResponse.
- * Use `create(Task_Wasip1_JobResponseSchema)` to create a new message.
- */
-export const Task_Wasip1_JobResponseSchema: GenMessage<Task_Wasip1_JobResponse, {jsonType: Task_Wasip1_JobResponseJson}> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 5, 5);
+  messageDesc(file_proto_v1_messages, 1, 5, 3);
 
 /**
  *  Pyodide Python scripts
@@ -1368,69 +1254,6 @@ export const Task_Pyodide_RequestSchema: GenMessage<Task_Pyodide_Request, {jsonT
   messageDesc(file_proto_v1_messages, 1, 6, 2);
 
 /**
- * Offload a job (group of Pyodide tasks).
- * Tasks will inherit unset values from the parent.
- *
- * @generated from message wasimoff.v1.Task.Pyodide.JobRequest
- */
-export type Task_Pyodide_JobRequest = Message<"wasimoff.v1.Task.Pyodide.JobRequest"> & {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_Metadata;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
-   */
-  qos?: Task_QoS;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Pyodide.Params parent = 3;
-   */
-  parent?: Task_Pyodide_Params;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Params tasks = 4;
-   */
-  tasks: Task_Pyodide_Params[];
-};
-
-/**
- * Offload a job (group of Pyodide tasks).
- * Tasks will inherit unset values from the parent.
- *
- * @generated from message wasimoff.v1.Task.Pyodide.JobRequest
- */
-export type Task_Pyodide_JobRequestJson = {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_MetadataJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.QoS qos = 2;
-   */
-  qos?: Task_QoSJson;
-
-  /**
-   * @generated from field: wasimoff.v1.Task.Pyodide.Params parent = 3;
-   */
-  parent?: Task_Pyodide_ParamsJson;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Params tasks = 4;
-   */
-  tasks?: Task_Pyodide_ParamsJson[];
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Pyodide.JobRequest.
- * Use `create(Task_Pyodide_JobRequestSchema)` to create a new message.
- */
-export const Task_Pyodide_JobRequestSchema: GenMessage<Task_Pyodide_JobRequest, {jsonType: Task_Pyodide_JobRequestJson}> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 6, 3);
-
-/**
  * Response for a single Pyodide task, which can be an Error or OK.
  *
  * @generated from message wasimoff.v1.Task.Pyodide.Response
@@ -1486,58 +1309,7 @@ export type Task_Pyodide_ResponseJson = {
  * Use `create(Task_Pyodide_ResponseSchema)` to create a new message.
  */
 export const Task_Pyodide_ResponseSchema: GenMessage<Task_Pyodide_Response, {jsonType: Task_Pyodide_ResponseJson}> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 6, 4);
-
-/**
- * Group result of a Pyodide Job.
- *
- * @generated from message wasimoff.v1.Task.Pyodide.JobResponse
- */
-export type Task_Pyodide_JobResponse = Message<"wasimoff.v1.Task.Pyodide.JobResponse"> & {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_Metadata;
-
-  /**
-   * @generated from field: string error = 2;
-   */
-  error: string;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Response tasks = 3;
-   */
-  tasks: Task_Pyodide_Response[];
-};
-
-/**
- * Group result of a Pyodide Job.
- *
- * @generated from message wasimoff.v1.Task.Pyodide.JobResponse
- */
-export type Task_Pyodide_JobResponseJson = {
-  /**
-   * @generated from field: wasimoff.v1.Task.Metadata info = 1;
-   */
-  info?: Task_MetadataJson;
-
-  /**
-   * @generated from field: string error = 2;
-   */
-  error?: string;
-
-  /**
-   * @generated from field: repeated wasimoff.v1.Task.Pyodide.Response tasks = 3;
-   */
-  tasks?: Task_Pyodide_ResponseJson[];
-};
-
-/**
- * Describes the message wasimoff.v1.Task.Pyodide.JobResponse.
- * Use `create(Task_Pyodide_JobResponseSchema)` to create a new message.
- */
-export const Task_Pyodide_JobResponseSchema: GenMessage<Task_Pyodide_JobResponse, {jsonType: Task_Pyodide_JobResponseJson}> = /*@__PURE__*/
-  messageDesc(file_proto_v1_messages, 1, 6, 5);
+  messageDesc(file_proto_v1_messages, 1, 6, 3);
 
 /**
  * File is a file reference with optional mime-type. The ref could be a plain
@@ -2209,8 +1981,6 @@ export const SubprotocolSchema: GenEnum<Subprotocol, SubprotocolJson> = /*@__PUR
  */
 export const Tasks: GenService<{
   /**
-   * offload a WebAssembly WASI preview 1 tasks
-   *
    * @generated from rpc wasimoff.v1.Tasks.RunWasip1
    */
   runWasip1: {
@@ -2219,16 +1989,6 @@ export const Tasks: GenService<{
     output: typeof Task_Wasip1_ResponseSchema;
   },
   /**
-   * @generated from rpc wasimoff.v1.Tasks.RunWasip1Job
-   */
-  runWasip1Job: {
-    methodKind: "unary";
-    input: typeof Task_Wasip1_JobRequestSchema;
-    output: typeof Task_Wasip1_JobResponseSchema;
-  },
-  /**
-   * offload a Python task in Pyodide
-   *
    * @generated from rpc wasimoff.v1.Tasks.RunPyodide
    */
   runPyodide: {
@@ -2237,8 +1997,6 @@ export const Tasks: GenService<{
     output: typeof Task_Pyodide_ResponseSchema;
   },
   /**
-   * upload a file to the broker
-   *
    * @generated from rpc wasimoff.v1.Tasks.Upload
    */
   upload: {

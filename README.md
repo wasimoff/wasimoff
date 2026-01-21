@@ -32,6 +32,7 @@ multiple Provider implementations covering modern web browsers and terminals / s
 - **Providers** are the participants that share their resources with the network. An important goal
   of this prototype was to implement the Provider entirely on the Web platform API, so it can run in
   the browser simply by opening a web page.
+
   - A browser implementation (`webprovider/`) is written in TypeScript with a Vue.js frontend and
     uses Web Workers to execute the WebAssembly modules concurrently.
   - The exact same TypeScript code can also be run with Deno (`denoprovider/`), which makes it easy
@@ -40,7 +41,7 @@ multiple Provider implementations covering modern web browsers and terminals / s
 - The **Client** (`client/`) interface is either a simple ConnectRPC HTTP API or also a WebSocket
   connection for asynchronous task submission. Examples exist using `curl` in Bash, as well as a CLI
   written in Go (`go install wasi.team/client/cmd/wasimoff@latest`). It can be used to send
-  individual tasks or schedule a large number of similar tasks with job configuration files.
+  individual tasks from the commandline or execute a predefined task JSON.
 
 More detailed documentation can be found in each subdirectory.
 

@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -26,7 +25,6 @@ import (
 type ConnectRpcServer struct {
 	Store   *provider.ProviderStore
 	taskSeq atomic.Uint64
-	jobSeq  atomic.Uint64
 }
 
 func (s *ConnectRpcServer) Upload(
@@ -91,31 +89,6 @@ func (s *ConnectRpcServer) RunWasip1(
 	} else {
 		response.GetInfo().TraceEvent(wasimoff.Task_TraceEvent_BrokerTransmitClientResponse)
 		return connect.NewResponse(response), nil
-	}
-
-}
-
-func (s *ConnectRpcServer) RunWasip1Job(
-	ctx context.Context,
-	req *connect.Request[wasimoff.Task_Wasip1_JobRequest],
-) (
-	*connect.Response[wasimoff.Task_Wasip1_JobResponse],
-	error,
-) {
-
-	job := OffloadingJob{JobSpec: req.Msg}
-	// amend the job with information about client
-	job.JobID = fmt.Sprintf("%05d", s.jobSeq.Add(1))
-	job.ClientAddr = req.Peer().Addr
-	// TODO: request metadata with optional trace for individual tasks
-
-	// compute all the tasks of a request
-	results := dispatchJob(ctx, s.Store, &job, scheduler.TaskQueue)
-
-	if results.Error != nil {
-		return nil, errors.New(*results.Error)
-	} else {
-		return connect.NewResponse(results), nil
 	}
 
 }

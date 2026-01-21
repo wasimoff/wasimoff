@@ -35,8 +35,6 @@ const (
 const (
 	// TasksRunWasip1Procedure is the fully-qualified name of the Tasks's RunWasip1 RPC.
 	TasksRunWasip1Procedure = "/wasimoff.v1.Tasks/RunWasip1"
-	// TasksRunWasip1JobProcedure is the fully-qualified name of the Tasks's RunWasip1Job RPC.
-	TasksRunWasip1JobProcedure = "/wasimoff.v1.Tasks/RunWasip1Job"
 	// TasksRunPyodideProcedure is the fully-qualified name of the Tasks's RunPyodide RPC.
 	TasksRunPyodideProcedure = "/wasimoff.v1.Tasks/RunPyodide"
 	// TasksUploadProcedure is the fully-qualified name of the Tasks's Upload RPC.
@@ -45,12 +43,8 @@ const (
 
 // TasksClient is a client for the wasimoff.v1.Tasks service.
 type TasksClient interface {
-	// offload a WebAssembly WASI preview 1 tasks
 	RunWasip1(context.Context, *connect.Request[v1.Task_Wasip1_Request]) (*connect.Response[v1.Task_Wasip1_Response], error)
-	RunWasip1Job(context.Context, *connect.Request[v1.Task_Wasip1_JobRequest]) (*connect.Response[v1.Task_Wasip1_JobResponse], error)
-	// offload a Python task in Pyodide
 	RunPyodide(context.Context, *connect.Request[v1.Task_Pyodide_Request]) (*connect.Response[v1.Task_Pyodide_Response], error)
-	// upload a file to the broker
 	Upload(context.Context, *connect.Request[v1.Filesystem_Upload_Request]) (*connect.Response[v1.Filesystem_Upload_Response], error)
 }
 
@@ -71,12 +65,6 @@ func NewTasksClient(httpClient connect.HTTPClient, baseURL string, opts ...conne
 			connect.WithSchema(tasksMethods.ByName("RunWasip1")),
 			connect.WithClientOptions(opts...),
 		),
-		runWasip1Job: connect.NewClient[v1.Task_Wasip1_JobRequest, v1.Task_Wasip1_JobResponse](
-			httpClient,
-			baseURL+TasksRunWasip1JobProcedure,
-			connect.WithSchema(tasksMethods.ByName("RunWasip1Job")),
-			connect.WithClientOptions(opts...),
-		),
 		runPyodide: connect.NewClient[v1.Task_Pyodide_Request, v1.Task_Pyodide_Response](
 			httpClient,
 			baseURL+TasksRunPyodideProcedure,
@@ -94,20 +82,14 @@ func NewTasksClient(httpClient connect.HTTPClient, baseURL string, opts ...conne
 
 // tasksClient implements TasksClient.
 type tasksClient struct {
-	runWasip1    *connect.Client[v1.Task_Wasip1_Request, v1.Task_Wasip1_Response]
-	runWasip1Job *connect.Client[v1.Task_Wasip1_JobRequest, v1.Task_Wasip1_JobResponse]
-	runPyodide   *connect.Client[v1.Task_Pyodide_Request, v1.Task_Pyodide_Response]
-	upload       *connect.Client[v1.Filesystem_Upload_Request, v1.Filesystem_Upload_Response]
+	runWasip1  *connect.Client[v1.Task_Wasip1_Request, v1.Task_Wasip1_Response]
+	runPyodide *connect.Client[v1.Task_Pyodide_Request, v1.Task_Pyodide_Response]
+	upload     *connect.Client[v1.Filesystem_Upload_Request, v1.Filesystem_Upload_Response]
 }
 
 // RunWasip1 calls wasimoff.v1.Tasks.RunWasip1.
 func (c *tasksClient) RunWasip1(ctx context.Context, req *connect.Request[v1.Task_Wasip1_Request]) (*connect.Response[v1.Task_Wasip1_Response], error) {
 	return c.runWasip1.CallUnary(ctx, req)
-}
-
-// RunWasip1Job calls wasimoff.v1.Tasks.RunWasip1Job.
-func (c *tasksClient) RunWasip1Job(ctx context.Context, req *connect.Request[v1.Task_Wasip1_JobRequest]) (*connect.Response[v1.Task_Wasip1_JobResponse], error) {
-	return c.runWasip1Job.CallUnary(ctx, req)
 }
 
 // RunPyodide calls wasimoff.v1.Tasks.RunPyodide.
@@ -122,12 +104,8 @@ func (c *tasksClient) Upload(ctx context.Context, req *connect.Request[v1.Filesy
 
 // TasksHandler is an implementation of the wasimoff.v1.Tasks service.
 type TasksHandler interface {
-	// offload a WebAssembly WASI preview 1 tasks
 	RunWasip1(context.Context, *connect.Request[v1.Task_Wasip1_Request]) (*connect.Response[v1.Task_Wasip1_Response], error)
-	RunWasip1Job(context.Context, *connect.Request[v1.Task_Wasip1_JobRequest]) (*connect.Response[v1.Task_Wasip1_JobResponse], error)
-	// offload a Python task in Pyodide
 	RunPyodide(context.Context, *connect.Request[v1.Task_Pyodide_Request]) (*connect.Response[v1.Task_Pyodide_Response], error)
-	// upload a file to the broker
 	Upload(context.Context, *connect.Request[v1.Filesystem_Upload_Request]) (*connect.Response[v1.Filesystem_Upload_Response], error)
 }
 
@@ -142,12 +120,6 @@ func NewTasksHandler(svc TasksHandler, opts ...connect.HandlerOption) (string, h
 		TasksRunWasip1Procedure,
 		svc.RunWasip1,
 		connect.WithSchema(tasksMethods.ByName("RunWasip1")),
-		connect.WithHandlerOptions(opts...),
-	)
-	tasksRunWasip1JobHandler := connect.NewUnaryHandler(
-		TasksRunWasip1JobProcedure,
-		svc.RunWasip1Job,
-		connect.WithSchema(tasksMethods.ByName("RunWasip1Job")),
 		connect.WithHandlerOptions(opts...),
 	)
 	tasksRunPyodideHandler := connect.NewUnaryHandler(
@@ -166,8 +138,6 @@ func NewTasksHandler(svc TasksHandler, opts ...connect.HandlerOption) (string, h
 		switch r.URL.Path {
 		case TasksRunWasip1Procedure:
 			tasksRunWasip1Handler.ServeHTTP(w, r)
-		case TasksRunWasip1JobProcedure:
-			tasksRunWasip1JobHandler.ServeHTTP(w, r)
 		case TasksRunPyodideProcedure:
 			tasksRunPyodideHandler.ServeHTTP(w, r)
 		case TasksUploadProcedure:
@@ -183,10 +153,6 @@ type UnimplementedTasksHandler struct{}
 
 func (UnimplementedTasksHandler) RunWasip1(context.Context, *connect.Request[v1.Task_Wasip1_Request]) (*connect.Response[v1.Task_Wasip1_Response], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("wasimoff.v1.Tasks.RunWasip1 is not implemented"))
-}
-
-func (UnimplementedTasksHandler) RunWasip1Job(context.Context, *connect.Request[v1.Task_Wasip1_JobRequest]) (*connect.Response[v1.Task_Wasip1_JobResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("wasimoff.v1.Tasks.RunWasip1Job is not implemented"))
 }
 
 func (UnimplementedTasksHandler) RunPyodide(context.Context, *connect.Request[v1.Task_Pyodide_Request]) (*connect.Response[v1.Task_Pyodide_Response], error) {

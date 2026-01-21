@@ -154,15 +154,6 @@ message Task {
       Params params = 3;
     }
 
-    // Offload a job (group of Wasip1 tasks).
-    // Tasks will inherit unset values from the parent.
-    message JobRequest {
-      Metadata info = 1;
-      QoS qos = 2;
-      Params parent = 3;
-      repeated Params tasks = 4;
-    }
-
     // Response for a single Wasip1 task, which can be an Error or OK.
     message Response {
       Metadata info = 1;
@@ -170,13 +161,6 @@ message Task {
         string error = 2;
         Output ok = 3;
       }
-    }
-
-    // Group result of a Wasip1 Job.
-    message JobResponse {
-      Metadata info = 1;
-      string error = 2;
-      repeated Response tasks = 3;
     }
   }
 
@@ -215,15 +199,6 @@ message Task {
       Params params = 3;
     }
 
-    // Offload a job (group of Pyodide tasks).
-    // Tasks will inherit unset values from the parent.
-    message JobRequest {
-      Metadata info = 1;
-      QoS qos = 2;
-      Params parent = 3;
-      repeated Params tasks = 4;
-    }
-
     // Response for a single Pyodide task, which can be an Error or OK.
     message Response {
       Metadata info = 1;
@@ -232,27 +207,13 @@ message Task {
         Output ok = 3;
       }
     }
-
-    // Group result of a Pyodide Job.
-    message JobResponse {
-      Metadata info = 1;
-      string error = 2;
-      repeated Response tasks = 3;
-    }
   }
 }
 
 // The Client service defines RPC interfaces for clients connecting to a Broker.
 service Tasks {
-  // offload a WebAssembly WASI preview 1 tasks
   rpc RunWasip1(Task.Wasip1.Request) returns (Task.Wasip1.Response) {}
-  rpc RunWasip1Job(Task.Wasip1.JobRequest) returns (Task.Wasip1.JobResponse) {}
-
-  // offload a Python task in Pyodide
   rpc RunPyodide(Task.Pyodide.Request) returns (Task.Pyodide.Response) {}
-  // rpc RunPyodideJob(Task.Pyodide.JobRequest) returns (Task.Pyodide.JobResponse) {}
-
-  // upload a file to the broker
   rpc Upload(Filesystem.Upload.Request) returns (Filesystem.Upload.Response) {}
 }
 
