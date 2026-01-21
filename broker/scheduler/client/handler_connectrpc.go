@@ -82,7 +82,7 @@ func (s *ConnectRpcServer) RunWasip1(
 	response := &wasimoff.Task_Wasip1_Response{}
 	done := make(chan *provider.AsyncTask, 1)
 	r.Info.TraceEvent(wasimoff.Task_TraceEvent_BrokerQueueTask)
-	scheduler.TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
+	SubmitToQueue(scheduler.TaskQueue, provider.NewAsyncTask(ctx, r, response, done))
 	call := <-done
 	s.copyTaskInfo(r.Info, &response.Info)
 
@@ -135,7 +135,7 @@ func (s *ConnectRpcServer) RunPyodide(
 	response := &wasimoff.Task_Pyodide_Response{}
 	done := make(chan *provider.AsyncTask, 1)
 	r.Info.TraceEvent(wasimoff.Task_TraceEvent_BrokerQueueTask)
-	scheduler.TaskQueue <- provider.NewAsyncTask(ctx, r, response, done)
+	SubmitToQueue(scheduler.TaskQueue, provider.NewAsyncTask(ctx, r, response, done))
 	call := <-done
 	s.copyTaskInfo(r.Info, &response.Info)
 
@@ -146,6 +146,18 @@ func (s *ConnectRpcServer) RunPyodide(
 		return connect.NewResponse(response), nil
 	}
 
+}
+
+// try to submit a task to the queue or return an error immediately
+func SubmitToQueue(queue chan *provider.AsyncTask, task *provider.AsyncTask) {
+	select {
+	case queue <- task:
+		return // ok
+	default:
+		task.Error = fmt.Errorf("429: Queue Full")
+		task.Done()
+		return
+	}
 }
 
 // -------------------- handlers for task metadata --------------------

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"wasi.team/broker/provider"
 	wasimoff "wasi.team/proto/v1"
 
@@ -69,7 +70,7 @@ func dispatchJob(
 		// create the async task with the common done channel and queue it for dispatch
 		task := provider.NewAsyncTask(ctx, &request, &response, doneChan)
 		pending[i] = task
-		queue <- task
+		SubmitToQueue(queue, task)
 	}
 
 	// wait for all tasks to finish
