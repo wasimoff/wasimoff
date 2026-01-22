@@ -188,6 +188,24 @@ export class WasiWorkerPool {
     }
   }
 
+  // reserve all workers, hand them over for work
+  async reserved(use: (workers: (typeof this.pool)[0][]) => Promise<void>) {
+    // collect workers
+    let workers = [];
+    for (let i = 0; i < this.pool.length; i++) {
+      workers.push(await this.idlequeue.get());
+    }
+    // hand over for work
+    await use(workers);
+    // afterwards reinsert in queue
+    for (let w of workers) {
+      w.busy = false;
+      w.taskid = undefined;
+      w.started = undefined;
+      await this.idlequeue.put(w);
+    }
+  }
+
   // --------->  send tasks to workers
 
   /** The `run` method tries to get an idle worker from

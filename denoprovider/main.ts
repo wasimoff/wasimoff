@@ -104,6 +104,9 @@ if (args.storage !== undefined) fs = await DenoFileSystem.open(args.storage);
 const provider = await WasimoffProvider.init(args.workers, args.url, fs, id);
 const workers = await provider.pool.scale();
 
+// run initial benchmark
+// await provider.runBenchmark();
+
 // register signal handler for clean exits
 new Terminator(provider.pool, 30_000, (_) => provider.disconnect());
 

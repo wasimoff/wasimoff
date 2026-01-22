@@ -16,6 +16,7 @@ import { expose, proxy, transfer, workerReady } from "./comlink";
 import { Wasip1TaskParams } from "./wasiworker";
 import { OriginPrivateFileSystem } from "@wasimoff/storage/fs_opfs";
 import { MemoryFileSystem } from "@wasimoff/storage/fs_memory";
+import { Queue } from "@wasimoff/func/queue";
 
 /**
  *     Wasimoff Provider
@@ -93,6 +94,84 @@ export class WasimoffProvider {
     await p.connect(url.href, id);
 
     return p;
+  }
+
+  // run a quick benchmark with a few argonload.wasm tasks
+  async runBenchmark(): Promise<number> {
+    if (this.storage === undefined) throw "need to open a storage first";
+    if (this.pool.length === 0) throw "no workers in pool";
+
+    // use well-known hash of the argonload binary; broker must have this file
+    const ARGONLOAD = "sha256:a77ee84e1e8b0e9734cc4647b8ee0813c55c697c53a38397cc43e308ec871b8f";
+    const argonwasm = await this.storage.getWasmModule(ARGONLOAD);
+    if (argonwasm === undefined) throw "couldn't fetch argonload.wasm module";
+
+    // prepared task parameters
+    const benchy = (i: number) =>
+      <Wasip1TaskParams>{
+        wasm: argonwasm,
+        argv: ["argonload.wasm", "-m", "32", "-p", "1", "-i", i],
+      };
+
+    this.pool.reserved(async (workers) => {
+      // run once to warm up cache
+      await workers[0].link.runWasip1("benchy-warmup", benchy(1));
+      let chan: BroadcastChannel | undefined;
+      try {
+        chan = new BroadcastChannel("wasimoff");
+      } catch (err) {
+        /* ignore API errors in Deno */
+      }
+      chan?.postMessage("Running initial benchmark ...");
+      console.log(...WasimoffProvider.logprefix, "running initial benchmark");
+
+      // measure singlethread performance with 5 x i10
+      const single = { n: 5, i: 10, dur: 0 };
+      const single_start = performance.now();
+      const single_worker = workers[0];
+      for (let i = 0; i < single.n; i++) {
+        single_worker.busy = true;
+        let res = await single_worker.link.runWasip1(`benchy-single-${i}`, benchy(single.i));
+        if (res.returncode !== 0) throw res.stderr;
+        single_worker.busy = false;
+      }
+      single.dur = performance.now() - single_start;
+
+      // measure multithread with all workers
+      const multi = { n: 5 * workers.length, i: 10, dur: 0 };
+      const multi_start = performance.now();
+      const multi_promises = <Promise<any>[]>[];
+
+      let queue = new Queue<(typeof workers)[0]>();
+      for (let w of workers) {
+        await queue.put(w);
+      }
+      for (let i = 0; i < multi.n; i++) {
+        let w = await queue.get();
+        w.busy = true;
+        let promise = w.link.runWasip1(`benchy-multi-${i}`, benchy(multi.i));
+        multi_promises.push(promise);
+        promise
+          .then(async (res) => {
+            w.busy = false;
+            if (res.returncode !== 0) throw res.stderr;
+            await queue.put(w);
+          })
+          .catch((err) => {
+            throw err;
+          });
+      }
+      await Promise.allSettled(multi_promises);
+      multi.dur = performance.now() - multi_start;
+
+      // TODO: just logging to console for now
+      chan?.postMessage(
+        `Results: { single: ${single.dur.toFixed(1)}ms, multi: ${multi.dur.toFixed(1)}ms }`,
+      );
+      console.log(...WasimoffProvider.logprefix, "benchmark results:", { single, multi });
+    });
+
+    return 0;
   }
 
   // --------->  worker pool

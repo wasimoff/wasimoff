@@ -36,6 +36,9 @@ watch(
 
       // fill remaining workers to capacity
       if ($pool.value) await fillWorkers();
+
+      // run a benchmark
+      // await provider.runBenchmark();
     }
   },
 );
