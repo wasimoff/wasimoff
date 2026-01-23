@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"sync"
+	"time"
 
 	"wasi.team/broker/net/transport"
 	wasimoff "wasi.team/proto/v1"
@@ -33,6 +35,9 @@ type Provider struct {
 
 	// hashmap of files known on this provider
 	files sync.Map // map[string]struct{}
+
+	// keep an exponential average latency measurement
+	latency float64 // in seconds
 }
 
 type ProviderInfoKey string
@@ -64,6 +69,8 @@ func NewProvider(messenger *transport.Messenger) *Provider {
 
 	// start listening on task channel
 	go provider.acceptTasks()
+	// do regular latency measurements
+	go provider.pinger(5 * time.Second)
 
 	return provider
 }
@@ -176,4 +183,45 @@ func (p *Provider) acceptTasks() (err error) {
 		}
 
 	}
+}
+
+// -------------------- ping at interval -------------------- >>
+
+func (p *Provider) pinger(period time.Duration) {
+	timer := time.NewTimer(period)
+	ping := &wasimoff.Ping{}
+	var start time.Time
+	var err error
+	for {
+		select {
+
+		case <-timer.C:
+			start = time.Now()
+			if err = p.messenger.RequestSync(p.lifetime.Context, ping, ping); err != nil {
+				log.Printf("[%s] Error in pinger(): %s", p.Get(Address), err)
+			} else {
+				p.observeLatency(time.Since(start))
+			}
+			timer.Reset(period)
+
+		case <-p.lifetime.Closing():
+			timer.Stop()
+			return
+		}
+	}
+}
+
+// add measurement with an exponential moving average
+func (p *Provider) observeLatency(ping time.Duration) {
+
+	// initialize with first measurement
+	if p.latency == 0 {
+		p.latency = ping.Seconds()
+	}
+
+	// add new measurement with a smoothing factor
+	alpha := 0.3
+	p.latency = (alpha * ping.Seconds()) + (1-alpha)*p.latency
+	// fmt.Printf("latency(%s) = %0.4f\t(%s)\n", p.Get(Name), p.latency, ping)
+
 }

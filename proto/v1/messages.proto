@@ -303,6 +303,13 @@ message Event {
   }
 }
 
+// Ping is sent in Request and Response pairs to make use of existing sequence
+// number handlers and is used to measure latency of Providers. It necessarily
+// includes some (un)marshalling in the application and will thus be a little
+// higher than pure network latency. However it also represents the fastest time
+// a Wasimoff Provider can realistically react to any given request message.
+message Ping {}
+
 // ---------- identifiers for websocket codecs ---------- //
 
 // Subprotocol is used to identify the concrete encoding on the wire.

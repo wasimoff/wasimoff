@@ -1,9 +1,10 @@
 import { create, createRegistry, Message as ProtoMessage, toBinary } from "@bufbuild/protobuf";
 import { type Any, AnySchema, anyUnpack } from "@bufbuild/protobuf/wkt";
 import {
-  Envelope_MessageType as MessageType,
+  Envelope_MessageType,
   EnvelopeSchema,
   file_proto_v1_messages,
+  PingSchema,
 } from "@wasimoff/proto/v1/messages_pb";
 import { type Transport } from "./index";
 import { PushableAsyncIterable } from "@wasimoff/func/pushableiterable";
@@ -47,15 +48,23 @@ export class Messenger implements MessengerInterface {
   private async switchboard() {
     for await (const m of this.transport.messages) {
       switch (m.envelope.type) {
-        case MessageType.Request:
+        case Envelope_MessageType.Request:
+          // prepare a response envelope
+          let r = create(EnvelopeSchema, {
+            type: Envelope_MessageType.Response,
+            sequence: m.envelope.sequence,
+          });
+
+          // handle ping as quickly as possible outside rpchandler
+          if (m.envelope.payload?.typeUrl.endsWith(PingSchema.typeName)) {
+            r.payload = this.pack(create(PingSchema, {}));
+            await this.transport.send({ envelope: r, identifier: m.identifier });
+            continue;
+          }
+
           // construct a RemoteProcedureCall that will send a response when it's done
           //? careful not to await the call itself here, otherwise stream is blocked
           this.requests.push(async (handler) => {
-            // prepare a response envelope
-            let r = create(EnvelopeSchema, {
-              type: MessageType.Response,
-              sequence: m.envelope.sequence,
-            });
             try {
               // unpack the any payload
               let request = this.unpack(m.envelope.payload);
@@ -73,7 +82,7 @@ export class Messenger implements MessengerInterface {
           });
           break;
 
-        case MessageType.Response:
+        case Envelope_MessageType.Response:
           // find a pending request and resolve it; cleanup is done in sendRequest
           let pending = this.pending.get(m.envelope.sequence);
           if (m.envelope.error) {
@@ -84,7 +93,7 @@ export class Messenger implements MessengerInterface {
           }
           break;
 
-        case MessageType.Event:
+        case Envelope_MessageType.Event:
           // push the event to the iterable
           let e = anyUnpack(m.envelope.payload!, this.registry);
           this.events.push(e!);
@@ -116,7 +125,7 @@ export class Messenger implements MessengerInterface {
       await this.transport.send({
         envelope: create(EnvelopeSchema, {
           sequence,
-          type: MessageType.Request,
+          type: Envelope_MessageType.Request,
           payload: this.pack(request),
         }),
       });
@@ -136,7 +145,7 @@ export class Messenger implements MessengerInterface {
     return this.transport.send({
       envelope: create(EnvelopeSchema, {
         sequence: this.eventSequence++,
-        type: MessageType.Event,
+        type: Envelope_MessageType.Event,
         payload: this.pack(event),
       }),
     });

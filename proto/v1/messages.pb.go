@@ -508,6 +508,47 @@ func (*Event) Descriptor() ([]byte, []int) {
 	return file_proto_v1_messages_proto_rawDescGZIP(), []int{4}
 }
 
+// Ping is sent in Request and Response pairs to make use of existing sequence
+// number handlers and is used to measure latency of Providers. It necessarily
+// includes some (un)marshalling in the application and will thus be a little
+// higher than pure network latency. However it also represents the fastest time
+// a Wasimoff Provider can realistically react to any given request message.
+type Ping struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Ping) Reset() {
+	*x = Ping{}
+	mi := &file_proto_v1_messages_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Ping) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Ping) ProtoMessage() {}
+
+func (x *Ping) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_v1_messages_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Ping.ProtoReflect.Descriptor instead.
+func (*Ping) Descriptor() ([]byte, []int) {
+	return file_proto_v1_messages_proto_rawDescGZIP(), []int{5}
+}
+
 // Information about this task for identification and tracing.
 type Task_Metadata struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -522,7 +563,7 @@ type Task_Metadata struct {
 
 func (x *Task_Metadata) Reset() {
 	*x = Task_Metadata{}
-	mi := &file_proto_v1_messages_proto_msgTypes[5]
+	mi := &file_proto_v1_messages_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -534,7 +575,7 @@ func (x *Task_Metadata) String() string {
 func (*Task_Metadata) ProtoMessage() {}
 
 func (x *Task_Metadata) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[5]
+	mi := &file_proto_v1_messages_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -597,7 +638,7 @@ type Task_QoS struct {
 
 func (x *Task_QoS) Reset() {
 	*x = Task_QoS{}
-	mi := &file_proto_v1_messages_proto_msgTypes[6]
+	mi := &file_proto_v1_messages_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -609,7 +650,7 @@ func (x *Task_QoS) String() string {
 func (*Task_QoS) ProtoMessage() {}
 
 func (x *Task_QoS) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[6]
+	mi := &file_proto_v1_messages_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -657,7 +698,7 @@ type Task_Trace struct {
 
 func (x *Task_Trace) Reset() {
 	*x = Task_Trace{}
-	mi := &file_proto_v1_messages_proto_msgTypes[7]
+	mi := &file_proto_v1_messages_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -669,7 +710,7 @@ func (x *Task_Trace) String() string {
 func (*Task_Trace) ProtoMessage() {}
 
 func (x *Task_Trace) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[7]
+	mi := &file_proto_v1_messages_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -718,7 +759,7 @@ type Task_TraceEvent struct {
 
 func (x *Task_TraceEvent) Reset() {
 	*x = Task_TraceEvent{}
-	mi := &file_proto_v1_messages_proto_msgTypes[8]
+	mi := &file_proto_v1_messages_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -730,7 +771,7 @@ func (x *Task_TraceEvent) String() string {
 func (*Task_TraceEvent) ProtoMessage() {}
 
 func (x *Task_TraceEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[8]
+	mi := &file_proto_v1_messages_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -778,7 +819,7 @@ type Task_Cancel struct {
 
 func (x *Task_Cancel) Reset() {
 	*x = Task_Cancel{}
-	mi := &file_proto_v1_messages_proto_msgTypes[9]
+	mi := &file_proto_v1_messages_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -790,7 +831,7 @@ func (x *Task_Cancel) String() string {
 func (*Task_Cancel) ProtoMessage() {}
 
 func (x *Task_Cancel) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[9]
+	mi := &file_proto_v1_messages_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -831,7 +872,7 @@ type Task_Wasip1 struct {
 
 func (x *Task_Wasip1) Reset() {
 	*x = Task_Wasip1{}
-	mi := &file_proto_v1_messages_proto_msgTypes[10]
+	mi := &file_proto_v1_messages_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -843,7 +884,7 @@ func (x *Task_Wasip1) String() string {
 func (*Task_Wasip1) ProtoMessage() {}
 
 func (x *Task_Wasip1) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[10]
+	mi := &file_proto_v1_messages_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -870,7 +911,7 @@ type Task_Pyodide struct {
 
 func (x *Task_Pyodide) Reset() {
 	*x = Task_Pyodide{}
-	mi := &file_proto_v1_messages_proto_msgTypes[11]
+	mi := &file_proto_v1_messages_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -882,7 +923,7 @@ func (x *Task_Pyodide) String() string {
 func (*Task_Pyodide) ProtoMessage() {}
 
 func (x *Task_Pyodide) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[11]
+	mi := &file_proto_v1_messages_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -913,7 +954,7 @@ type Task_Wasip1_Params struct {
 
 func (x *Task_Wasip1_Params) Reset() {
 	*x = Task_Wasip1_Params{}
-	mi := &file_proto_v1_messages_proto_msgTypes[12]
+	mi := &file_proto_v1_messages_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -925,7 +966,7 @@ func (x *Task_Wasip1_Params) String() string {
 func (*Task_Wasip1_Params) ProtoMessage() {}
 
 func (x *Task_Wasip1_Params) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[12]
+	mi := &file_proto_v1_messages_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -997,7 +1038,7 @@ type Task_Wasip1_Output struct {
 
 func (x *Task_Wasip1_Output) Reset() {
 	*x = Task_Wasip1_Output{}
-	mi := &file_proto_v1_messages_proto_msgTypes[13]
+	mi := &file_proto_v1_messages_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1009,7 +1050,7 @@ func (x *Task_Wasip1_Output) String() string {
 func (*Task_Wasip1_Output) ProtoMessage() {}
 
 func (x *Task_Wasip1_Output) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[13]
+	mi := &file_proto_v1_messages_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1065,7 +1106,7 @@ type Task_Wasip1_Request struct {
 
 func (x *Task_Wasip1_Request) Reset() {
 	*x = Task_Wasip1_Request{}
-	mi := &file_proto_v1_messages_proto_msgTypes[14]
+	mi := &file_proto_v1_messages_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1077,7 +1118,7 @@ func (x *Task_Wasip1_Request) String() string {
 func (*Task_Wasip1_Request) ProtoMessage() {}
 
 func (x *Task_Wasip1_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[14]
+	mi := &file_proto_v1_messages_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1129,7 +1170,7 @@ type Task_Wasip1_Response struct {
 
 func (x *Task_Wasip1_Response) Reset() {
 	*x = Task_Wasip1_Response{}
-	mi := &file_proto_v1_messages_proto_msgTypes[15]
+	mi := &file_proto_v1_messages_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1141,7 +1182,7 @@ func (x *Task_Wasip1_Response) String() string {
 func (*Task_Wasip1_Response) ProtoMessage() {}
 
 func (x *Task_Wasip1_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[15]
+	mi := &file_proto_v1_messages_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1224,7 +1265,7 @@ type Task_Pyodide_Params struct {
 
 func (x *Task_Pyodide_Params) Reset() {
 	*x = Task_Pyodide_Params{}
-	mi := &file_proto_v1_messages_proto_msgTypes[16]
+	mi := &file_proto_v1_messages_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1236,7 +1277,7 @@ func (x *Task_Pyodide_Params) String() string {
 func (*Task_Pyodide_Params) ProtoMessage() {}
 
 func (x *Task_Pyodide_Params) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[16]
+	mi := &file_proto_v1_messages_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1343,7 +1384,7 @@ type Task_Pyodide_Output struct {
 
 func (x *Task_Pyodide_Output) Reset() {
 	*x = Task_Pyodide_Output{}
-	mi := &file_proto_v1_messages_proto_msgTypes[17]
+	mi := &file_proto_v1_messages_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1355,7 +1396,7 @@ func (x *Task_Pyodide_Output) String() string {
 func (*Task_Pyodide_Output) ProtoMessage() {}
 
 func (x *Task_Pyodide_Output) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[17]
+	mi := &file_proto_v1_messages_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1418,7 +1459,7 @@ type Task_Pyodide_Request struct {
 
 func (x *Task_Pyodide_Request) Reset() {
 	*x = Task_Pyodide_Request{}
-	mi := &file_proto_v1_messages_proto_msgTypes[18]
+	mi := &file_proto_v1_messages_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1430,7 +1471,7 @@ func (x *Task_Pyodide_Request) String() string {
 func (*Task_Pyodide_Request) ProtoMessage() {}
 
 func (x *Task_Pyodide_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[18]
+	mi := &file_proto_v1_messages_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1482,7 +1523,7 @@ type Task_Pyodide_Response struct {
 
 func (x *Task_Pyodide_Response) Reset() {
 	*x = Task_Pyodide_Response{}
-	mi := &file_proto_v1_messages_proto_msgTypes[19]
+	mi := &file_proto_v1_messages_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1494,7 +1535,7 @@ func (x *Task_Pyodide_Response) String() string {
 func (*Task_Pyodide_Response) ProtoMessage() {}
 
 func (x *Task_Pyodide_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[19]
+	mi := &file_proto_v1_messages_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1567,7 +1608,7 @@ type Filesystem_Listing struct {
 
 func (x *Filesystem_Listing) Reset() {
 	*x = Filesystem_Listing{}
-	mi := &file_proto_v1_messages_proto_msgTypes[20]
+	mi := &file_proto_v1_messages_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1579,7 +1620,7 @@ func (x *Filesystem_Listing) String() string {
 func (*Filesystem_Listing) ProtoMessage() {}
 
 func (x *Filesystem_Listing) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[20]
+	mi := &file_proto_v1_messages_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1604,7 +1645,7 @@ type Filesystem_Probe struct {
 
 func (x *Filesystem_Probe) Reset() {
 	*x = Filesystem_Probe{}
-	mi := &file_proto_v1_messages_proto_msgTypes[21]
+	mi := &file_proto_v1_messages_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1616,7 +1657,7 @@ func (x *Filesystem_Probe) String() string {
 func (*Filesystem_Probe) ProtoMessage() {}
 
 func (x *Filesystem_Probe) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[21]
+	mi := &file_proto_v1_messages_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1641,7 +1682,7 @@ type Filesystem_Upload struct {
 
 func (x *Filesystem_Upload) Reset() {
 	*x = Filesystem_Upload{}
-	mi := &file_proto_v1_messages_proto_msgTypes[22]
+	mi := &file_proto_v1_messages_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1653,7 +1694,7 @@ func (x *Filesystem_Upload) String() string {
 func (*Filesystem_Upload) ProtoMessage() {}
 
 func (x *Filesystem_Upload) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[22]
+	mi := &file_proto_v1_messages_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1678,7 +1719,7 @@ type Filesystem_Download struct {
 
 func (x *Filesystem_Download) Reset() {
 	*x = Filesystem_Download{}
-	mi := &file_proto_v1_messages_proto_msgTypes[23]
+	mi := &file_proto_v1_messages_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1690,7 +1731,7 @@ func (x *Filesystem_Download) String() string {
 func (*Filesystem_Download) ProtoMessage() {}
 
 func (x *Filesystem_Download) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[23]
+	mi := &file_proto_v1_messages_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1714,7 +1755,7 @@ type Filesystem_Listing_Request struct {
 
 func (x *Filesystem_Listing_Request) Reset() {
 	*x = Filesystem_Listing_Request{}
-	mi := &file_proto_v1_messages_proto_msgTypes[24]
+	mi := &file_proto_v1_messages_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1726,7 +1767,7 @@ func (x *Filesystem_Listing_Request) String() string {
 func (*Filesystem_Listing_Request) ProtoMessage() {}
 
 func (x *Filesystem_Listing_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[24]
+	mi := &file_proto_v1_messages_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1751,7 +1792,7 @@ type Filesystem_Listing_Response struct {
 
 func (x *Filesystem_Listing_Response) Reset() {
 	*x = Filesystem_Listing_Response{}
-	mi := &file_proto_v1_messages_proto_msgTypes[25]
+	mi := &file_proto_v1_messages_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1763,7 +1804,7 @@ func (x *Filesystem_Listing_Response) String() string {
 func (*Filesystem_Listing_Response) ProtoMessage() {}
 
 func (x *Filesystem_Listing_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[25]
+	mi := &file_proto_v1_messages_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1795,7 +1836,7 @@ type Filesystem_Probe_Request struct {
 
 func (x *Filesystem_Probe_Request) Reset() {
 	*x = Filesystem_Probe_Request{}
-	mi := &file_proto_v1_messages_proto_msgTypes[26]
+	mi := &file_proto_v1_messages_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1807,7 +1848,7 @@ func (x *Filesystem_Probe_Request) String() string {
 func (*Filesystem_Probe_Request) ProtoMessage() {}
 
 func (x *Filesystem_Probe_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[26]
+	mi := &file_proto_v1_messages_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1839,7 +1880,7 @@ type Filesystem_Probe_Response struct {
 
 func (x *Filesystem_Probe_Response) Reset() {
 	*x = Filesystem_Probe_Response{}
-	mi := &file_proto_v1_messages_proto_msgTypes[27]
+	mi := &file_proto_v1_messages_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1851,7 +1892,7 @@ func (x *Filesystem_Probe_Response) String() string {
 func (*Filesystem_Probe_Response) ProtoMessage() {}
 
 func (x *Filesystem_Probe_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[27]
+	mi := &file_proto_v1_messages_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1883,7 +1924,7 @@ type Filesystem_Upload_Request struct {
 
 func (x *Filesystem_Upload_Request) Reset() {
 	*x = Filesystem_Upload_Request{}
-	mi := &file_proto_v1_messages_proto_msgTypes[28]
+	mi := &file_proto_v1_messages_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1895,7 +1936,7 @@ func (x *Filesystem_Upload_Request) String() string {
 func (*Filesystem_Upload_Request) ProtoMessage() {}
 
 func (x *Filesystem_Upload_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[28]
+	mi := &file_proto_v1_messages_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1927,7 +1968,7 @@ type Filesystem_Upload_Response struct {
 
 func (x *Filesystem_Upload_Response) Reset() {
 	*x = Filesystem_Upload_Response{}
-	mi := &file_proto_v1_messages_proto_msgTypes[29]
+	mi := &file_proto_v1_messages_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1939,7 +1980,7 @@ func (x *Filesystem_Upload_Response) String() string {
 func (*Filesystem_Upload_Response) ProtoMessage() {}
 
 func (x *Filesystem_Upload_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[29]
+	mi := &file_proto_v1_messages_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1971,7 +2012,7 @@ type Filesystem_Download_Request struct {
 
 func (x *Filesystem_Download_Request) Reset() {
 	*x = Filesystem_Download_Request{}
-	mi := &file_proto_v1_messages_proto_msgTypes[30]
+	mi := &file_proto_v1_messages_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1983,7 +2024,7 @@ func (x *Filesystem_Download_Request) String() string {
 func (*Filesystem_Download_Request) ProtoMessage() {}
 
 func (x *Filesystem_Download_Request) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[30]
+	mi := &file_proto_v1_messages_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2016,7 +2057,7 @@ type Filesystem_Download_Response struct {
 
 func (x *Filesystem_Download_Response) Reset() {
 	*x = Filesystem_Download_Response{}
-	mi := &file_proto_v1_messages_proto_msgTypes[31]
+	mi := &file_proto_v1_messages_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2028,7 +2069,7 @@ func (x *Filesystem_Download_Response) String() string {
 func (*Filesystem_Download_Response) ProtoMessage() {}
 
 func (x *Filesystem_Download_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[31]
+	mi := &file_proto_v1_messages_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2068,7 +2109,7 @@ type Event_GenericMessage struct {
 
 func (x *Event_GenericMessage) Reset() {
 	*x = Event_GenericMessage{}
-	mi := &file_proto_v1_messages_proto_msgTypes[32]
+	mi := &file_proto_v1_messages_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2080,7 +2121,7 @@ func (x *Event_GenericMessage) String() string {
 func (*Event_GenericMessage) ProtoMessage() {}
 
 func (x *Event_GenericMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[32]
+	mi := &file_proto_v1_messages_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2114,7 +2155,7 @@ type Event_ProviderResources struct {
 
 func (x *Event_ProviderResources) Reset() {
 	*x = Event_ProviderResources{}
-	mi := &file_proto_v1_messages_proto_msgTypes[33]
+	mi := &file_proto_v1_messages_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2126,7 +2167,7 @@ func (x *Event_ProviderResources) String() string {
 func (*Event_ProviderResources) ProtoMessage() {}
 
 func (x *Event_ProviderResources) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[33]
+	mi := &file_proto_v1_messages_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2166,7 +2207,7 @@ type Event_ClusterInfo struct {
 
 func (x *Event_ClusterInfo) Reset() {
 	*x = Event_ClusterInfo{}
-	mi := &file_proto_v1_messages_proto_msgTypes[34]
+	mi := &file_proto_v1_messages_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2178,7 +2219,7 @@ func (x *Event_ClusterInfo) String() string {
 func (*Event_ClusterInfo) ProtoMessage() {}
 
 func (x *Event_ClusterInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[34]
+	mi := &file_proto_v1_messages_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2212,7 +2253,7 @@ type Event_Throughput struct {
 
 func (x *Event_Throughput) Reset() {
 	*x = Event_Throughput{}
-	mi := &file_proto_v1_messages_proto_msgTypes[35]
+	mi := &file_proto_v1_messages_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2224,7 +2265,7 @@ func (x *Event_Throughput) String() string {
 func (*Event_Throughput) ProtoMessage() {}
 
 func (x *Event_Throughput) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[35]
+	mi := &file_proto_v1_messages_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2265,7 +2306,7 @@ type Event_FileSystemUpdate struct {
 
 func (x *Event_FileSystemUpdate) Reset() {
 	*x = Event_FileSystemUpdate{}
-	mi := &file_proto_v1_messages_proto_msgTypes[36]
+	mi := &file_proto_v1_messages_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2277,7 +2318,7 @@ func (x *Event_FileSystemUpdate) String() string {
 func (*Event_FileSystemUpdate) ProtoMessage() {}
 
 func (x *Event_FileSystemUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_v1_messages_proto_msgTypes[36]
+	mi := &file_proto_v1_messages_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2546,33 +2587,33 @@ var file_proto_v1_messages_proto_rawDesc = string([]byte{
 	0x73, 0x74, 0x65, 0x6d, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x12, 0x14, 0x0a, 0x05, 0x61, 0x64,
 	0x64, 0x65, 0x64, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x05, 0x61, 0x64, 0x64, 0x65, 0x64,
 	0x12, 0x18, 0x0a, 0x07, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x18, 0x02, 0x20, 0x03, 0x28,
-	0x09, 0x52, 0x07, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x2a, 0x5c, 0x0a, 0x0b, 0x53, 0x75,
-	0x62, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b,
-	0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x21, 0x0a, 0x1d, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f,
-	0x66, 0x66, 0x5f, 0x70, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x72, 0x5f, 0x76, 0x31, 0x5f, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x10, 0x01, 0x12, 0x1d, 0x0a, 0x19, 0x77, 0x61, 0x73,
-	0x69, 0x6d, 0x6f, 0x66, 0x66, 0x5f, 0x70, 0x72, 0x6f, 0x76, 0x69, 0x64, 0x65, 0x72, 0x5f, 0x76,
-	0x31, 0x5f, 0x6a, 0x73, 0x6f, 0x6e, 0x10, 0x02, 0x32, 0x8f, 0x02, 0x0a, 0x05, 0x54, 0x61, 0x73,
-	0x6b, 0x73, 0x12, 0x52, 0x0a, 0x09, 0x52, 0x75, 0x6e, 0x57, 0x61, 0x73, 0x69, 0x70, 0x31, 0x12,
-	0x20, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61,
-	0x73, 0x6b, 0x2e, 0x57, 0x61, 0x73, 0x69, 0x70, 0x31, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x21, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e,
-	0x54, 0x61, 0x73, 0x6b, 0x2e, 0x57, 0x61, 0x73, 0x69, 0x70, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x55, 0x0a, 0x0a, 0x52, 0x75, 0x6e, 0x50, 0x79, 0x6f,
-	0x64, 0x69, 0x64, 0x65, 0x12, 0x21, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x2e,
-	0x76, 0x31, 0x2e, 0x54, 0x61, 0x73, 0x6b, 0x2e, 0x50, 0x79, 0x6f, 0x64, 0x69, 0x64, 0x65, 0x2e,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x22, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f,
-	0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x73, 0x6b, 0x2e, 0x50, 0x79, 0x6f, 0x64, 0x69,
-	0x64, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x5b, 0x0a,
-	0x06, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x12, 0x26, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f,
-	0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d,
-	0x2e, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x27, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69,
+	0x09, 0x52, 0x07, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x64, 0x22, 0x06, 0x0a, 0x04, 0x50, 0x69,
+	0x6e, 0x67, 0x2a, 0x5c, 0x0a, 0x0b, 0x53, 0x75, 0x62, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f,
+	0x6c, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x21,
+	0x0a, 0x1d, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x5f, 0x70, 0x72, 0x6f, 0x76, 0x69,
+	0x64, 0x65, 0x72, 0x5f, 0x76, 0x31, 0x5f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x10,
+	0x01, 0x12, 0x1d, 0x0a, 0x19, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x5f, 0x70, 0x72,
+	0x6f, 0x76, 0x69, 0x64, 0x65, 0x72, 0x5f, 0x76, 0x31, 0x5f, 0x6a, 0x73, 0x6f, 0x6e, 0x10, 0x02,
+	0x32, 0x8f, 0x02, 0x0a, 0x05, 0x54, 0x61, 0x73, 0x6b, 0x73, 0x12, 0x52, 0x0a, 0x09, 0x52, 0x75,
+	0x6e, 0x57, 0x61, 0x73, 0x69, 0x70, 0x31, 0x12, 0x20, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f,
+	0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x73, 0x6b, 0x2e, 0x57, 0x61, 0x73, 0x69, 0x70,
+	0x31, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x77, 0x61, 0x73, 0x69,
+	0x6d, 0x6f, 0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x73, 0x6b, 0x2e, 0x57, 0x61, 0x73,
+	0x69, 0x70, 0x31, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x55,
+	0x0a, 0x0a, 0x52, 0x75, 0x6e, 0x50, 0x79, 0x6f, 0x64, 0x69, 0x64, 0x65, 0x12, 0x21, 0x2e, 0x77,
+	0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61, 0x73, 0x6b, 0x2e,
+	0x50, 0x79, 0x6f, 0x64, 0x69, 0x64, 0x65, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x22, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x54, 0x61,
+	0x73, 0x6b, 0x2e, 0x50, 0x79, 0x6f, 0x64, 0x69, 0x64, 0x65, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
+	0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x5b, 0x0a, 0x06, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x12,
+	0x26, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69,
 	0x6c, 0x65, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x2e, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x2e,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x1f, 0x5a, 0x1d, 0x77, 0x61,
-	0x73, 0x69, 0x2e, 0x74, 0x65, 0x61, 0x6d, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x76, 0x31,
-	0x3b, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66, 0x66, 0x76, 0x31, 0x62, 0x08, 0x65, 0x64, 0x69,
-	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x70, 0xe8, 0x07,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f,
+	0x66, 0x66, 0x2e, 0x76, 0x31, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x73, 0x79, 0x73, 0x74, 0x65, 0x6d,
+	0x2e, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x00, 0x42, 0x1f, 0x5a, 0x1d, 0x77, 0x61, 0x73, 0x69, 0x2e, 0x74, 0x65, 0x61, 0x6d, 0x2f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2f, 0x76, 0x31, 0x3b, 0x77, 0x61, 0x73, 0x69, 0x6d, 0x6f, 0x66,
+	0x66, 0x76, 0x31, 0x62, 0x08, 0x65, 0x64, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x70, 0xe8, 0x07,
 })
 
 var (
@@ -2588,7 +2629,7 @@ func file_proto_v1_messages_proto_rawDescGZIP() []byte {
 }
 
 var file_proto_v1_messages_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_proto_v1_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
+var file_proto_v1_messages_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_proto_v1_messages_proto_goTypes = []any{
 	(Subprotocol)(0),                     // 0: wasimoff.v1.Subprotocol
 	(Envelope_MessageType)(0),            // 1: wasimoff.v1.Envelope.MessageType
@@ -2598,71 +2639,72 @@ var file_proto_v1_messages_proto_goTypes = []any{
 	(*File)(nil),                         // 5: wasimoff.v1.File
 	(*Filesystem)(nil),                   // 6: wasimoff.v1.Filesystem
 	(*Event)(nil),                        // 7: wasimoff.v1.Event
-	(*Task_Metadata)(nil),                // 8: wasimoff.v1.Task.Metadata
-	(*Task_QoS)(nil),                     // 9: wasimoff.v1.Task.QoS
-	(*Task_Trace)(nil),                   // 10: wasimoff.v1.Task.Trace
-	(*Task_TraceEvent)(nil),              // 11: wasimoff.v1.Task.TraceEvent
-	(*Task_Cancel)(nil),                  // 12: wasimoff.v1.Task.Cancel
-	(*Task_Wasip1)(nil),                  // 13: wasimoff.v1.Task.Wasip1
-	(*Task_Pyodide)(nil),                 // 14: wasimoff.v1.Task.Pyodide
-	(*Task_Wasip1_Params)(nil),           // 15: wasimoff.v1.Task.Wasip1.Params
-	(*Task_Wasip1_Output)(nil),           // 16: wasimoff.v1.Task.Wasip1.Output
-	(*Task_Wasip1_Request)(nil),          // 17: wasimoff.v1.Task.Wasip1.Request
-	(*Task_Wasip1_Response)(nil),         // 18: wasimoff.v1.Task.Wasip1.Response
-	(*Task_Pyodide_Params)(nil),          // 19: wasimoff.v1.Task.Pyodide.Params
-	(*Task_Pyodide_Output)(nil),          // 20: wasimoff.v1.Task.Pyodide.Output
-	(*Task_Pyodide_Request)(nil),         // 21: wasimoff.v1.Task.Pyodide.Request
-	(*Task_Pyodide_Response)(nil),        // 22: wasimoff.v1.Task.Pyodide.Response
-	(*Filesystem_Listing)(nil),           // 23: wasimoff.v1.Filesystem.Listing
-	(*Filesystem_Probe)(nil),             // 24: wasimoff.v1.Filesystem.Probe
-	(*Filesystem_Upload)(nil),            // 25: wasimoff.v1.Filesystem.Upload
-	(*Filesystem_Download)(nil),          // 26: wasimoff.v1.Filesystem.Download
-	(*Filesystem_Listing_Request)(nil),   // 27: wasimoff.v1.Filesystem.Listing.Request
-	(*Filesystem_Listing_Response)(nil),  // 28: wasimoff.v1.Filesystem.Listing.Response
-	(*Filesystem_Probe_Request)(nil),     // 29: wasimoff.v1.Filesystem.Probe.Request
-	(*Filesystem_Probe_Response)(nil),    // 30: wasimoff.v1.Filesystem.Probe.Response
-	(*Filesystem_Upload_Request)(nil),    // 31: wasimoff.v1.Filesystem.Upload.Request
-	(*Filesystem_Upload_Response)(nil),   // 32: wasimoff.v1.Filesystem.Upload.Response
-	(*Filesystem_Download_Request)(nil),  // 33: wasimoff.v1.Filesystem.Download.Request
-	(*Filesystem_Download_Response)(nil), // 34: wasimoff.v1.Filesystem.Download.Response
-	(*Event_GenericMessage)(nil),         // 35: wasimoff.v1.Event.GenericMessage
-	(*Event_ProviderResources)(nil),      // 36: wasimoff.v1.Event.ProviderResources
-	(*Event_ClusterInfo)(nil),            // 37: wasimoff.v1.Event.ClusterInfo
-	(*Event_Throughput)(nil),             // 38: wasimoff.v1.Event.Throughput
-	(*Event_FileSystemUpdate)(nil),       // 39: wasimoff.v1.Event.FileSystemUpdate
-	(*anypb.Any)(nil),                    // 40: google.protobuf.Any
-	(*timestamppb.Timestamp)(nil),        // 41: google.protobuf.Timestamp
+	(*Ping)(nil),                         // 8: wasimoff.v1.Ping
+	(*Task_Metadata)(nil),                // 9: wasimoff.v1.Task.Metadata
+	(*Task_QoS)(nil),                     // 10: wasimoff.v1.Task.QoS
+	(*Task_Trace)(nil),                   // 11: wasimoff.v1.Task.Trace
+	(*Task_TraceEvent)(nil),              // 12: wasimoff.v1.Task.TraceEvent
+	(*Task_Cancel)(nil),                  // 13: wasimoff.v1.Task.Cancel
+	(*Task_Wasip1)(nil),                  // 14: wasimoff.v1.Task.Wasip1
+	(*Task_Pyodide)(nil),                 // 15: wasimoff.v1.Task.Pyodide
+	(*Task_Wasip1_Params)(nil),           // 16: wasimoff.v1.Task.Wasip1.Params
+	(*Task_Wasip1_Output)(nil),           // 17: wasimoff.v1.Task.Wasip1.Output
+	(*Task_Wasip1_Request)(nil),          // 18: wasimoff.v1.Task.Wasip1.Request
+	(*Task_Wasip1_Response)(nil),         // 19: wasimoff.v1.Task.Wasip1.Response
+	(*Task_Pyodide_Params)(nil),          // 20: wasimoff.v1.Task.Pyodide.Params
+	(*Task_Pyodide_Output)(nil),          // 21: wasimoff.v1.Task.Pyodide.Output
+	(*Task_Pyodide_Request)(nil),         // 22: wasimoff.v1.Task.Pyodide.Request
+	(*Task_Pyodide_Response)(nil),        // 23: wasimoff.v1.Task.Pyodide.Response
+	(*Filesystem_Listing)(nil),           // 24: wasimoff.v1.Filesystem.Listing
+	(*Filesystem_Probe)(nil),             // 25: wasimoff.v1.Filesystem.Probe
+	(*Filesystem_Upload)(nil),            // 26: wasimoff.v1.Filesystem.Upload
+	(*Filesystem_Download)(nil),          // 27: wasimoff.v1.Filesystem.Download
+	(*Filesystem_Listing_Request)(nil),   // 28: wasimoff.v1.Filesystem.Listing.Request
+	(*Filesystem_Listing_Response)(nil),  // 29: wasimoff.v1.Filesystem.Listing.Response
+	(*Filesystem_Probe_Request)(nil),     // 30: wasimoff.v1.Filesystem.Probe.Request
+	(*Filesystem_Probe_Response)(nil),    // 31: wasimoff.v1.Filesystem.Probe.Response
+	(*Filesystem_Upload_Request)(nil),    // 32: wasimoff.v1.Filesystem.Upload.Request
+	(*Filesystem_Upload_Response)(nil),   // 33: wasimoff.v1.Filesystem.Upload.Response
+	(*Filesystem_Download_Request)(nil),  // 34: wasimoff.v1.Filesystem.Download.Request
+	(*Filesystem_Download_Response)(nil), // 35: wasimoff.v1.Filesystem.Download.Response
+	(*Event_GenericMessage)(nil),         // 36: wasimoff.v1.Event.GenericMessage
+	(*Event_ProviderResources)(nil),      // 37: wasimoff.v1.Event.ProviderResources
+	(*Event_ClusterInfo)(nil),            // 38: wasimoff.v1.Event.ClusterInfo
+	(*Event_Throughput)(nil),             // 39: wasimoff.v1.Event.Throughput
+	(*Event_FileSystemUpdate)(nil),       // 40: wasimoff.v1.Event.FileSystemUpdate
+	(*anypb.Any)(nil),                    // 41: google.protobuf.Any
+	(*timestamppb.Timestamp)(nil),        // 42: google.protobuf.Timestamp
 }
 var file_proto_v1_messages_proto_depIdxs = []int32{
 	1,  // 0: wasimoff.v1.Envelope.type:type_name -> wasimoff.v1.Envelope.MessageType
-	40, // 1: wasimoff.v1.Envelope.payload:type_name -> google.protobuf.Any
-	10, // 2: wasimoff.v1.Task.Metadata.trace:type_name -> wasimoff.v1.Task.Trace
-	41, // 3: wasimoff.v1.Task.QoS.deadline:type_name -> google.protobuf.Timestamp
-	11, // 4: wasimoff.v1.Task.Trace.events:type_name -> wasimoff.v1.Task.TraceEvent
+	41, // 1: wasimoff.v1.Envelope.payload:type_name -> google.protobuf.Any
+	11, // 2: wasimoff.v1.Task.Metadata.trace:type_name -> wasimoff.v1.Task.Trace
+	42, // 3: wasimoff.v1.Task.QoS.deadline:type_name -> google.protobuf.Timestamp
+	12, // 4: wasimoff.v1.Task.Trace.events:type_name -> wasimoff.v1.Task.TraceEvent
 	2,  // 5: wasimoff.v1.Task.TraceEvent.event:type_name -> wasimoff.v1.Task.TraceEvent.EventType
 	5,  // 6: wasimoff.v1.Task.Wasip1.Params.binary:type_name -> wasimoff.v1.File
 	5,  // 7: wasimoff.v1.Task.Wasip1.Params.rootfs:type_name -> wasimoff.v1.File
 	5,  // 8: wasimoff.v1.Task.Wasip1.Output.artifacts:type_name -> wasimoff.v1.File
-	8,  // 9: wasimoff.v1.Task.Wasip1.Request.info:type_name -> wasimoff.v1.Task.Metadata
-	9,  // 10: wasimoff.v1.Task.Wasip1.Request.qos:type_name -> wasimoff.v1.Task.QoS
-	15, // 11: wasimoff.v1.Task.Wasip1.Request.params:type_name -> wasimoff.v1.Task.Wasip1.Params
-	8,  // 12: wasimoff.v1.Task.Wasip1.Response.info:type_name -> wasimoff.v1.Task.Metadata
-	16, // 13: wasimoff.v1.Task.Wasip1.Response.ok:type_name -> wasimoff.v1.Task.Wasip1.Output
+	9,  // 9: wasimoff.v1.Task.Wasip1.Request.info:type_name -> wasimoff.v1.Task.Metadata
+	10, // 10: wasimoff.v1.Task.Wasip1.Request.qos:type_name -> wasimoff.v1.Task.QoS
+	16, // 11: wasimoff.v1.Task.Wasip1.Request.params:type_name -> wasimoff.v1.Task.Wasip1.Params
+	9,  // 12: wasimoff.v1.Task.Wasip1.Response.info:type_name -> wasimoff.v1.Task.Metadata
+	17, // 13: wasimoff.v1.Task.Wasip1.Response.ok:type_name -> wasimoff.v1.Task.Wasip1.Output
 	5,  // 14: wasimoff.v1.Task.Pyodide.Params.rootfs:type_name -> wasimoff.v1.File
 	5,  // 15: wasimoff.v1.Task.Pyodide.Output.artifacts:type_name -> wasimoff.v1.File
-	8,  // 16: wasimoff.v1.Task.Pyodide.Request.info:type_name -> wasimoff.v1.Task.Metadata
-	9,  // 17: wasimoff.v1.Task.Pyodide.Request.qos:type_name -> wasimoff.v1.Task.QoS
-	19, // 18: wasimoff.v1.Task.Pyodide.Request.params:type_name -> wasimoff.v1.Task.Pyodide.Params
-	8,  // 19: wasimoff.v1.Task.Pyodide.Response.info:type_name -> wasimoff.v1.Task.Metadata
-	20, // 20: wasimoff.v1.Task.Pyodide.Response.ok:type_name -> wasimoff.v1.Task.Pyodide.Output
+	9,  // 16: wasimoff.v1.Task.Pyodide.Request.info:type_name -> wasimoff.v1.Task.Metadata
+	10, // 17: wasimoff.v1.Task.Pyodide.Request.qos:type_name -> wasimoff.v1.Task.QoS
+	20, // 18: wasimoff.v1.Task.Pyodide.Request.params:type_name -> wasimoff.v1.Task.Pyodide.Params
+	9,  // 19: wasimoff.v1.Task.Pyodide.Response.info:type_name -> wasimoff.v1.Task.Metadata
+	21, // 20: wasimoff.v1.Task.Pyodide.Response.ok:type_name -> wasimoff.v1.Task.Pyodide.Output
 	5,  // 21: wasimoff.v1.Filesystem.Upload.Request.upload:type_name -> wasimoff.v1.File
 	5,  // 22: wasimoff.v1.Filesystem.Download.Response.download:type_name -> wasimoff.v1.File
-	17, // 23: wasimoff.v1.Tasks.RunWasip1:input_type -> wasimoff.v1.Task.Wasip1.Request
-	21, // 24: wasimoff.v1.Tasks.RunPyodide:input_type -> wasimoff.v1.Task.Pyodide.Request
-	31, // 25: wasimoff.v1.Tasks.Upload:input_type -> wasimoff.v1.Filesystem.Upload.Request
-	18, // 26: wasimoff.v1.Tasks.RunWasip1:output_type -> wasimoff.v1.Task.Wasip1.Response
-	22, // 27: wasimoff.v1.Tasks.RunPyodide:output_type -> wasimoff.v1.Task.Pyodide.Response
-	32, // 28: wasimoff.v1.Tasks.Upload:output_type -> wasimoff.v1.Filesystem.Upload.Response
+	18, // 23: wasimoff.v1.Tasks.RunWasip1:input_type -> wasimoff.v1.Task.Wasip1.Request
+	22, // 24: wasimoff.v1.Tasks.RunPyodide:input_type -> wasimoff.v1.Task.Pyodide.Request
+	32, // 25: wasimoff.v1.Tasks.Upload:input_type -> wasimoff.v1.Filesystem.Upload.Request
+	19, // 26: wasimoff.v1.Tasks.RunWasip1:output_type -> wasimoff.v1.Task.Wasip1.Response
+	23, // 27: wasimoff.v1.Tasks.RunPyodide:output_type -> wasimoff.v1.Task.Pyodide.Response
+	33, // 28: wasimoff.v1.Tasks.Upload:output_type -> wasimoff.v1.Filesystem.Upload.Response
 	26, // [26:29] is the sub-list for method output_type
 	23, // [23:26] is the sub-list for method input_type
 	23, // [23:23] is the sub-list for extension type_name
@@ -2675,15 +2717,15 @@ func file_proto_v1_messages_proto_init() {
 	if File_proto_v1_messages_proto != nil {
 		return
 	}
-	file_proto_v1_messages_proto_msgTypes[15].OneofWrappers = []any{
+	file_proto_v1_messages_proto_msgTypes[16].OneofWrappers = []any{
 		(*Task_Wasip1_Response_Error)(nil),
 		(*Task_Wasip1_Response_Ok)(nil),
 	}
-	file_proto_v1_messages_proto_msgTypes[16].OneofWrappers = []any{
+	file_proto_v1_messages_proto_msgTypes[17].OneofWrappers = []any{
 		(*Task_Pyodide_Params_Script)(nil),
 		(*Task_Pyodide_Params_Pickle)(nil),
 	}
-	file_proto_v1_messages_proto_msgTypes[19].OneofWrappers = []any{
+	file_proto_v1_messages_proto_msgTypes[20].OneofWrappers = []any{
 		(*Task_Pyodide_Response_Error)(nil),
 		(*Task_Pyodide_Response_Ok)(nil),
 	}
@@ -2693,7 +2735,7 @@ func file_proto_v1_messages_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_v1_messages_proto_rawDesc), len(file_proto_v1_messages_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   37,
+			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -204,6 +204,10 @@ export async function rpchandler(
         return create(wasimoff.Filesystem_Upload_ResponseSchema, {});
       })();
 
+    // ping should have already been handled, but let's add it here as fallback
+    case isMessage(request, wasimoff.PingSchema):
+      return create(wasimoff.PingSchema, {});
+
     default:
       throw "not implemented yet";
   }
