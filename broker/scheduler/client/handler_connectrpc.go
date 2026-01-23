@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"sync/atomic"
 
@@ -150,7 +149,7 @@ func (s *ConnectRpcServer) prepareTaskInfo(info *wasimoff.Task_Metadata, peer co
 
 func (s *ConnectRpcServer) copyTaskInfo(info *wasimoff.Task_Metadata, res **wasimoff.Task_Metadata) {
 	if *res == nil {
-		log.Printf("WARN: Metadata missing on response for Task %q", *info.Id)
+		// log.Printf("WARN: Metadata missing on response for Task %q", *info.Id)
 		*res = info
 	} else {
 		r := *res
