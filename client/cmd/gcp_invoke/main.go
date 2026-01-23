@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 
 	"google.golang.org/api/idtoken"
@@ -16,7 +17,7 @@ import (
 )
 
 var (
-	credentials = flag.String("credentials", "account.json", "path to service account json")
+	credentials = flag.String("credentials", "", "path to service account json")
 	function    = flag.String("function", "https://wasimoff-runner-308704998937.europe-west10.run.app", "cloud run function url to invoke")
 	readstdin   = flag.Bool("stdin", false, "read from stdin and send with task")
 	verbose     = flag.Bool("v", false, "be more verbose and print messages")
@@ -33,9 +34,15 @@ func main() {
 	}
 
 	// create an idtoken client
-	client, err := idtoken.NewClient(context.Background(), *function, idtoken.WithCredentialsFile(*credentials))
-	if err != nil {
-		log.Fatalf("Failed to create idtoken client: %s", err)
+	var client *http.Client
+	if *credentials != "" {
+		c, err := idtoken.NewClient(context.Background(), *function, idtoken.WithCredentialsFile(*credentials))
+		if err != nil {
+			log.Fatalf("Failed to create idtoken client: %s", err)
+		}
+		client = c
+	} else {
+		client = http.DefaultClient
 	}
 
 	// create the request
