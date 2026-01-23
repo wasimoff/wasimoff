@@ -3,3 +3,8 @@
 /gcp_invoke
 /tspbench
 /tracebench
+*.jsonl
+*.protodelim
+*.proto.zst
+*.pb
+*.pprof
