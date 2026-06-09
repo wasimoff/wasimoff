@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -56,6 +57,17 @@ func (fs *FileStorage) Upload() http.HandlerFunc {
 		w.Header().Add("x-wasimoff-ref", file.Ref())
 		fmt.Fprintln(w, file.Ref())
 
+	}
+}
+
+func (fs *FileStorage) List() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		list := fs.AllRefs()
+		w.WriteHeader(http.StatusOK)
+		w.Header().Add("content-type", "application/json")
+		if err := json.NewEncoder(w).Encode(list); err != nil {
+			log.Printf("ERR: List [%s]: %s", r.RemoteAddr, err)
+		}
 	}
 }
 

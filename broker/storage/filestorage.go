@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"iter"
+	"maps"
+	"slices"
 
 	wasimoff "wasi.team/proto/v1"
 )
@@ -16,6 +18,15 @@ type AbstractFileStorage interface {
 
 type FileStorage struct {
 	AbstractFileStorage
+}
+
+// AllRefs iterates over all known files in storage and returns a Ref list.
+func (fs *FileStorage) AllRefs() []string {
+	files := make(map[string]struct{})
+	for _, fd := range fs.All() {
+		files[fd.ref] = struct{}{}
+	}
+	return slices.Collect(maps.Keys(files))
 }
 
 // ResolvePbFile checks if this file is usable as an argument in offloading

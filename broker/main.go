@@ -61,6 +61,7 @@ func main() {
 	log.Printf("Client HTTP: %s%s", broker.Addr(), "/api/client/run/{wasm}")
 
 	// storage: serve files from and upload into store storage
+	mux.Handle("GET /api/storage", store.Storage.List())
 	mux.Handle("GET /api/storage/{filename}", store.Storage)
 	mux.HandleFunc("POST /api/storage/upload", store.Storage.Upload())
 	log.Printf("Upload at %s/api/storage/upload", broker.Addr())
