@@ -18,6 +18,8 @@ type DirectoryFileStorage struct {
 	kv *diskv.Diskv
 }
 
+const lookupDB = "lookup.db"
+
 func NewDirectoryFileStorage(basedir string) *FileStorage {
 
 	// make sure the basedir exists
@@ -26,7 +28,7 @@ func NewDirectoryFileStorage(basedir string) *FileStorage {
 	}
 
 	// open the boltdb file for aliases
-	db, err := bolt.Open(path.Join(basedir, "lookup.db"), 0600, &bolt.Options{Timeout: 3 * time.Second})
+	db, err := bolt.Open(path.Join(basedir, lookupDB), 0600, &bolt.Options{Timeout: 3 * time.Second})
 	if err != nil {
 		// to keep the API clean, we just abort in here since this happens only at startup
 		log.Fatalf("dirfs: cannot open lookup db: %s", err)
@@ -125,6 +127,9 @@ func (fs *DirectoryFileStorage) All() iter.Seq2[string, *File] {
 	return func(yield func(string, *File) bool) {
 		cancel := make(chan struct{})
 		for key := range fs.kv.Keys(cancel) {
+			if key == lookupDB {
+				continue
+			}
 			file := fs.get(key)
 			if file == nil {
 				panic("dirfs: got a nil *File while iterating in All()")
