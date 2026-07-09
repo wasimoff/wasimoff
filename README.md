@@ -74,7 +74,7 @@ Then go to the `client/` directory and launch some of the example applications.
 
 ### WASI applications
 
-The WebAssembly System Interface (WASI) was chosen initially as an abstraction layer for the
+The WebAssembly System Interface (WASI preview 1) was chosen as an abstraction layer for the
 offloaded tasks and the subdirectory `wasi-apps/` contains a number of example applications, which
 use this compilation target to show off its versatility and serve as example workloads during the
 evaluation.
