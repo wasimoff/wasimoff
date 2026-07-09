@@ -166,20 +166,14 @@ export class WasiWorker {
       console.log(...this.logprefix, "Loading Pyodide runtime for", id);
       let t0 = performance.now();
       const py = await loadPyodide({
+        // ideally, we'd use a clean context but we're respawning the worker afterwards anyway
         // jsglobals: new Map(), // do not pollute worker context
-        jsglobals: { XMLHttpRequest, AbortController, fetch },
-        fullStdLib: false, // probably a little faster
         checkAPIVersion: true, // must be this exact version
         packages: [...task.packages, "cloudpickle"], // preload some packages explicitly
         // if we are a browser, set indexURL to the Pyodide dist URL
         indexURL: "Deno" in globalThis ? undefined : this.pydist,
         env: envs,
       });
-      // if in Deno, you can quasi-set the indexURL by overwriting cdnUrl of the PackageManager
-      if ("Deno" in globalThis && "_api" in py) {
-        //! this needs a fully-qualified URL but it can be a local filesystem path, too
-        ((py._api as any).setCdnUrl as (url: string) => void)(this.pydist);
-      }
       let t1 = (performance.now() - t0).toFixed();
       console.debug(...this.logprefix, "loading Pyodide", py.version, "took", t1, "ms");
 
