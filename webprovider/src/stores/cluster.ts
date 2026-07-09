@@ -22,9 +22,8 @@ export const useClusterState = defineStore("ClusterState", () => {
       if (messenger !== undefined && providerstore.$provider !== undefined) {
         // read messages from the event stream
         for await (const event of messenger.events) {
-          switch (
-            true // switch by message type
-          ) {
+          // switch by message type
+          switch (true) {
             // print generic messages to the terminal
             case isMessage(event, wasimoff.Event_GenericMessageSchema):
               terminal.info(`Message: ${event.message}`);

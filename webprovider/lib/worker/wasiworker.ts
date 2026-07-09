@@ -166,7 +166,8 @@ export class WasiWorker {
       console.log(...this.logprefix, "Loading Pyodide runtime for", id);
       let t0 = performance.now();
       const py = await loadPyodide({
-        jsglobals: new Map(), // do not pollute worker context
+        // jsglobals: new Map(), // do not pollute worker context
+        jsglobals: { XMLHttpRequest, AbortController, fetch },
         fullStdLib: false, // probably a little faster
         checkAPIVersion: true, // must be this exact version
         packages: [...task.packages, "cloudpickle"], // preload some packages explicitly
@@ -179,7 +180,8 @@ export class WasiWorker {
         //! this needs a fully-qualified URL but it can be a local filesystem path, too
         ((py._api as any).setCdnUrl as (url: string) => void)(this.pydist);
       }
-      console.debug(...this.logprefix, "loading took", (performance.now() - t0).toFixed(), "ms");
+      let t1 = (performance.now() - t0).toFixed();
+      console.debug(...this.logprefix, "loading Pyodide", py.version, "took", t1, "ms");
 
       // setup the io buffers
       let stdout = new Uint8Array();
@@ -230,7 +232,7 @@ export class WasiWorker {
       if (typeof task.run === "string") {
         // execute a plaintext script
         await py.loadPackagesFromImports(task.run);
-        ret = py.runPython(task.run);
+        ret = await py.runPythonAsync(task.run);
       } else {
         // input is a pickled [ func, args, kwargs ] list, deserialize and execute it
         ret = py.runPython(
