@@ -89,6 +89,17 @@ evaluation.
 - `web-demo` is a minimal example of using the `browser_wasi_shim` to execute WebAssembly binaries
   with environment variables and commandline arguments in the browser.
 
+### Security
+
+Make no mistake, this is a *research project*. I do get quite a few automatic vulnerability reports
+for dependencies that are used throughout the project. Often, the vulns do not apply because the
+package is used in some non-vulnerable way. But I do not currently have the resources to follow up
+on every single one of them.
+
+Given that there is no real authentication throughout the system right now, you will have more
+glaring problems anyway. Just be advised that you should update the dependencies, if you decide
+to use parts of this project.
+
 ### Experiments
 
 The sibling [`experiments` repository](https://github.com/wasimoff/experiments) contains various
