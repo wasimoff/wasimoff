@@ -83,8 +83,38 @@ func main() {
 		log.Printf("Prometheus metrics: %s/metrics", broker.Addr())
 	}
 
+	// vanity paths for go imports
+	vanity := http.RedirectHandler("/wasimoff.html", http.StatusTemporaryRedirect)
+	mux.Handle("/proto", vanity)
+	mux.Handle("/broker", vanity)
+	mux.Handle("/client", vanity)
+	mux.Handle("/wasimoff", vanity)
+
+	// static vanity html page for go get
+	mux.HandleFunc("/wasimoff.html", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		html := `<!DOCTYPE html>
+<html>
+  <head>
+    <!-- vanity redirect for go imports -->
+    <meta name="go-import" content="wasi.team git https://github.com/wasimoff/wasimoff" />
+    <meta http-equiv="refresh" content="0;URL='https://github.com/wasimoff/wasimoff'" />
+  </head>
+  <body>
+    Redirecting you to the <a href="https://github.com/wasimoff/wasimoff">project page</a>...
+  </body>
+</html>`
+		w.Write([]byte(html))
+	})
+
 	// serve static files for frontend
-	mux.Handle("/", http.FileServer(http.Dir(conf.StaticFiles)))
+	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" && r.URL.Query().Get("go-get") == "1" {
+			http.Redirect(w, r, "/wasimoff.html", http.StatusTemporaryRedirect)
+			return
+		}
+		http.FileServer(http.Dir(conf.StaticFiles)).ServeHTTP(w, r)
+	}))
 
 	// start listening http server
 	log.Printf("Broker listening on %s", broker.Addr())
